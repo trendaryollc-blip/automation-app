@@ -45,7 +45,6 @@ describe("Reports", () => {
     const res = await request(express().use(reportsRouter)).get(
       "/reports/pl?from=2024-01-01&to=2026-01-01",
     );
-    console.log("REPORTS DEBUG", res.status, res.body);
     expect(res.body.totalRevenue).toBe(100);
   });
 });

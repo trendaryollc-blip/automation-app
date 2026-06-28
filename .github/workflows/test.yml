@@ -19,12 +19,18 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run typecheck
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
+          DB_MODE: postgres
       - run: pnpm run test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
+          DB_MODE: postgres
       - name: Run E2E tests (Playwright)
         run: |
           pnpm install --frozen-lockfile
           # start servers in background with explicit ports
-          PORT=8080 pnpm --filter @workspace/api-server run dev > /tmp/api-server.log 2>&1 &
+          DATABASE_URL=${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }} DB_MODE=postgres PORT=8080 pnpm --filter @workspace/api-server run dev > /tmp/api-server.log 2>&1 &
           VITE_API_URL=http://localhost:8080 pnpm --filter @workspace/dropflow run dev > /tmp/dropflow.log 2>&1 &
 
           echo "Waiting for API server to be available..."

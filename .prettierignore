@@ -1,0 +1,7 @@
+coverage
+**/coverage/**
+dist
+**/dist/**
+test-results
+**/test-results/**
+artifacts/mockup-sandbox/src/.generated/**

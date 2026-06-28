@@ -21,17 +21,17 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
         .json({ error: "'from' and 'to' query params are required" });
       return;
     }
-  
+
     const fromDate = new Date(from);
     const toDate = new Date(to);
     // include the full 'to' day
     toDate.setHours(23, 59, 59, 999);
-  
+
     if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
       res.status(400).json({ error: "Invalid date format" });
       return;
     }
-  
+
     const orders = await db
       .select()
       .from(ordersTable)
@@ -41,7 +41,7 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
           lte(ordersTable.createdAt, toDate),
         ),
       );
-  
+
     type Row = {
       label: string;
       orderCount: number;
@@ -49,9 +49,9 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
       cogs: number;
       grossProfit: number;
     };
-  
+
     const grouped = new Map<string, Row>();
-  
+
     for (const o of orders) {
       let label: string;
       if (groupBy === "supplier") {
@@ -61,13 +61,13 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
       } else {
         label = o.productName ?? "Unknown Product";
       }
-  
+
       const qty = o.quantity ?? 1;
       const sell = o.sellPrice != null ? Number(o.sellPrice) : 0;
       const cost = o.costPrice != null ? Number(o.costPrice) : 0;
       const revenue = sell * qty;
       const cogs = cost * qty;
-  
+
       const existing = grouped.get(label);
       if (existing) {
         existing.orderCount += 1;
@@ -84,7 +84,7 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
         });
       }
     }
-  
+
     const rows = Array.from(grouped.values())
       .sort((a, b) => b.grossProfit - a.grossProfit)
       .map((r) => ({
@@ -97,7 +97,7 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
             ? Math.round((r.grossProfit / r.revenue) * 100 * 10) / 10
             : 0,
       }));
-  
+
     const totalRevenue = rows.reduce((s, r) => s + r.revenue, 0);
     const totalCogs = rows.reduce((s, r) => s + r.cogs, 0);
     const totalGrossProfit = rows.reduce((s, r) => s + r.grossProfit, 0);
@@ -106,7 +106,7 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
       totalRevenue > 0
         ? Math.round((totalGrossProfit / totalRevenue) * 100 * 10) / 10
         : 0;
-  
+
     res.json({
       from: fromDate.toISOString(),
       to: toDate.toISOString(),
@@ -119,7 +119,7 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
       totalOrders,
     });
   } catch (err) {
-    console.error('REPORTS ROUTE ERROR', err);
+    console.error("REPORTS ROUTE ERROR", err);
     throw err;
   }
 });

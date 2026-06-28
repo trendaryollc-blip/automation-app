@@ -38,11 +38,9 @@ router.post("/orders/bulk-update", async (req, res): Promise<void> => {
   }
   const { orderIds, status, trackingNumber } = parsed.data;
   if (!status && !trackingNumber) {
-    res
-      .status(400)
-      .json({
-        error: "At least one of status or trackingNumber must be provided",
-      });
+    res.status(400).json({
+      error: "At least one of status or trackingNumber must be provided",
+    });
     return;
   }
 

@@ -32,6 +32,7 @@ jobs:
         run: pnpm run typecheck
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
+          DB_MODE: postgres
 
       - name: Lint
         run: pnpm run lint
@@ -62,6 +63,7 @@ jobs:
         run: pnpm run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
+          DB_MODE: postgres
           NODE_ENV: production
 
       - name: Upload frontend artifact

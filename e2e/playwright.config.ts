@@ -12,8 +12,11 @@ export default defineConfig({
     env: {
       PORT: "8080",
       HOST: "127.0.0.1",
+      DATABASE_URL:
+        process.env.DATABASE_URL || "postgresql://localhost:5432/dropflow",
+      DB_MODE: process.env.DB_MODE || "postgres",
     },
     url: "http://127.0.0.1:8080/api/healthz",
-    reuseExistingServer: false,
+    reuseExistingServer: true,
   },
 });
