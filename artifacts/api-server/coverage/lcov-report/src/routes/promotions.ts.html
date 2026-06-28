@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">29.41% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/17</span>
+                <span class='fraction'>5/17</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">31.25% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>5/16</span>
             </div>
         
             
@@ -106,33 +106,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -144,9 +144,9 @@ import { db } from "@workspace/db";
 import { promotionsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 &nbsp;
-const <span class="cstat-no" title="statement not covered" >router = Router();</span>
+const router = Router();
 &nbsp;
-<span class="cstat-no" title="statement not covered" >router.get("/promotions", <span class="fstat-no" title="function not covered" >async (r</span>eq, res) =&gt; {</span>
+router.get("/promotions", <span class="fstat-no" title="function not covered" >async (r</span>eq, res) =&gt; {
   const all = <span class="cstat-no" title="statement not covered" >await db</span>
     .select()
     .from(promotionsTable)
@@ -154,12 +154,12 @@ const <span class="cstat-no" title="statement not covered" >router = Router();</
 <span class="cstat-no" title="statement not covered" >  res.json(all.reverse());</span>
 });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >router.post("/promotions", <span class="fstat-no" title="function not covered" >async (r</span>eq, res) =&gt; {</span>
+router.post("/promotions", <span class="fstat-no" title="function not covered" >async (r</span>eq, res) =&gt; {
   const [promo] = <span class="cstat-no" title="statement not covered" >await db.insert(promotionsTable).values(req.body).returning();</span>
 <span class="cstat-no" title="statement not covered" >  return res.status(201).json(promo);</span>
 });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >router.patch("/promotions/:id", <span class="fstat-no" title="function not covered" >async (r</span>eq, res) =&gt; {</span>
+router.patch("/promotions/:id", <span class="fstat-no" title="function not covered" >async (r</span>eq, res) =&gt; {
   const id = <span class="cstat-no" title="statement not covered" >parseInt(req.params.id);</span>
   const [updated] = <span class="cstat-no" title="statement not covered" >await db</span>
     .update(promotionsTable)
@@ -170,7 +170,7 @@ const <span class="cstat-no" title="statement not covered" >router = Router();</
 <span class="cstat-no" title="statement not covered" >  return res.json(updated);</span>
 });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >router.delete("/promotions/:id", <span class="fstat-no" title="function not covered" >async (r</span>eq, res) =&gt; {</span>
+router.delete("/promotions/:id", <span class="fstat-no" title="function not covered" >async (r</span>eq, res) =&gt; {
   const id = <span class="cstat-no" title="statement not covered" >parseInt(req.params.id);</span>
 <span class="cstat-no" title="statement not covered" >  await db.delete(promotionsTable).where(eq(promotionsTable.id, id));</span>
 <span class="cstat-no" title="statement not covered" >  return res.json({ success: true });</span>
@@ -184,7 +184,7 @@ export default router;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-28T18:08:45.200Z
+                at 2026-06-28T19:41:46.375Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

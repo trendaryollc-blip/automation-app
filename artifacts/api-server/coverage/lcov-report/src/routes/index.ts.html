@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/24</span>
+                <span class='fraction'>24/24</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/24</span>
+                <span class='fraction'>24/24</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -140,31 +140,31 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Router, type IRouter } from "express";
@@ -192,31 +192,31 @@ import storeConnectionsRouter from "./store-connections";
 import aiSettingsRouter from "./ai-settings";
 import fulfillmentRouter from "./fulfillment";
 &nbsp;
-const <span class="cstat-no" title="statement not covered" >router: IRouter = Router();</span>
+const router: IRouter = Router();
 &nbsp;
-<span class="cstat-no" title="statement not covered" >router.use(healthRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(productsRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(supplierFinderRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(suppliersRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(customerInsightsRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(ordersRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(dashboardRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(researchRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(priceWatchRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(reportsRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(purchaseOrdersRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(returnsRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(orderTimelineRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(promotionsRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(productTagsRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(cashFlowRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(storeConnectionsRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(productScorerRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(rfmRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(launchesRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(adCampaignsRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(aiSettingsRouter);</span>
-<span class="cstat-no" title="statement not covered" >router.use(fulfillmentRouter);</span>
+router.use(healthRouter);
+router.use(productsRouter);
+router.use(supplierFinderRouter);
+router.use(suppliersRouter);
+router.use(customerInsightsRouter);
+router.use(ordersRouter);
+router.use(dashboardRouter);
+router.use(researchRouter);
+router.use(priceWatchRouter);
+router.use(reportsRouter);
+router.use(purchaseOrdersRouter);
+router.use(returnsRouter);
+router.use(orderTimelineRouter);
+router.use(promotionsRouter);
+router.use(productTagsRouter);
+router.use(cashFlowRouter);
+router.use(storeConnectionsRouter);
+router.use(productScorerRouter);
+router.use(rfmRouter);
+router.use(launchesRouter);
+router.use(adCampaignsRouter);
+router.use(aiSettingsRouter);
+router.use(fulfillmentRouter);
 &nbsp;
 export default router;
 &nbsp;</pre></td></tr></table></pre>
@@ -226,7 +226,7 @@ export default router;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-28T18:08:45.200Z
+                at 2026-06-28T19:41:46.375Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

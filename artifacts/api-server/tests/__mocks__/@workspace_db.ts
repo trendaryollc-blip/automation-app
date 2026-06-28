@@ -214,11 +214,14 @@ const db = {
       const record = { ...data, id: idCounter++ };
       if (!record.createdAt) record.createdAt = now;
       if (!record.updatedAt) record.updatedAt = now;
+      if (!record.recordedAt) record.recordedAt = now;
       inMemoryData[table._table] = inMemoryData[table._table] || {};
       inMemoryData[table._table][record.id] = { ...record };
       return {
         returning: () => [normalizeRow(record)],
-        onConflictDoUpdate: () => [normalizeRow(record)],
+        onConflictDoUpdate: (_config: any) => ({
+          returning: () => [normalizeRow(record)],
+        }),
       };
     },
   }),
@@ -366,11 +369,14 @@ export function resetDb() {
 export function seedTable(tableName: string, records: any[]) {
   const now = new Date();
   return records.map((r) => {
+    const id = r.id != null ? r.id : idCounter++;
+    if (id >= idCounter) idCounter = id + 1;
     const record = {
       ...r,
-      id: idCounter++,
+      id,
       createdAt: r.createdAt ? new Date(r.createdAt) : now,
       updatedAt: r.updatedAt ? new Date(r.updatedAt) : now,
+      recordedAt: r.recordedAt ? new Date(r.recordedAt) : now,
     };
     inMemoryData[tableName] = inMemoryData[tableName] || {};
     inMemoryData[tableName][record.id] = record;
