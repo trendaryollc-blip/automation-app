@@ -109,9 +109,11 @@ describe("API route coverage", () => {
     expect(getProducts.status).toBe(200);
     expect(getProducts.body[0].name).toBe("Supplier Item");
 
-    const updateSupplier = await api.patch(`/api/suppliers/${supplierId}`).send({
-      rating: 4,
-    });
+    const updateSupplier = await api
+      .patch(`/api/suppliers/${supplierId}`)
+      .send({
+        rating: 4,
+      });
     expect(updateSupplier.status).toBe(200);
     expect(updateSupplier.body.rating).toBe(4);
 
@@ -191,7 +193,9 @@ describe("API route coverage", () => {
 
     const watchId = createWatch.body.id;
 
-    const getSnapshotsEmpty = await api.get(`/api/price-watch/${watchId}/snapshots`);
+    const getSnapshotsEmpty = await api.get(
+      `/api/price-watch/${watchId}/snapshots`,
+    );
     expect(getSnapshotsEmpty.status).toBe(200);
     expect(getSnapshotsEmpty.body).toEqual([]);
 
@@ -330,7 +334,9 @@ describe("API route coverage", () => {
     expect(forecast.body.cashFlowTimeline).toHaveLength(6);
     expect(forecast.body.platformBreakdown).toHaveProperty("facebook");
 
-    const removed = await api.delete(`/api/ad-campaigns/${createCampaign.body.id}`);
+    const removed = await api.delete(
+      `/api/ad-campaigns/${createCampaign.body.id}`,
+    );
     expect(removed.status).toBe(200);
     expect(removed.body.success).toBe(true);
   });

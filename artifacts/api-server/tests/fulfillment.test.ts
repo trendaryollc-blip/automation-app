@@ -30,7 +30,9 @@ describe("Fulfillment routes", () => {
       },
     ]);
 
-    const res = await api.post("/api/fulfillment/manual").send({ orderId: 200 });
+    const res = await api
+      .post("/api/fulfillment/manual")
+      .send({ orderId: 200 });
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
 
@@ -73,7 +75,12 @@ describe("Fulfillment routes", () => {
 
     // Seed and reject another item
     const [q2] = seedTable("fulfillment_queue", [
-      { id: 401, orderId: 301, orderNumber: "O301", status: "pending_approval" },
+      {
+        id: 401,
+        orderId: 301,
+        orderNumber: "O301",
+        status: "pending_approval",
+      },
     ]);
     const reject = await api
       .post(`/api/fulfillment/reject/${q2.id}`)
@@ -86,7 +93,13 @@ describe("Fulfillment routes", () => {
     const api = request(app);
     seedTable("fulfillment_queue", [
       { id: 500, status: "pending_approval", sellPrice: "10", quantity: 1 },
-      { id: 501, status: "approved", sellPrice: "20", quantity: 2, estimatedCost: "5" },
+      {
+        id: 501,
+        status: "approved",
+        sellPrice: "20",
+        quantity: 2,
+        estimatedCost: "5",
+      },
       { id: 502, status: "rejected", sellPrice: "30", quantity: 1 },
     ]);
 

@@ -18,7 +18,9 @@ describe("AI service unit tests", () => {
 
   it("tryProviders throws when no keys available", async () => {
     const real = await vi.importActual("../src/services/ai.ts");
-    await expect(real.tryProviders("hi", "sys", [])).rejects.toThrow("NO_AI_KEYS");
+    await expect(real.tryProviders("hi", "sys", [])).rejects.toThrow(
+      "NO_AI_KEYS",
+    );
   });
 
   it("tryProviders uses groq when groq key exists and returns chat content", async () => {
@@ -28,10 +30,15 @@ describe("AI service unit tests", () => {
     ]);
 
     // stub fetch to emulate groq response
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ choices: [{ message: { content: "{\"ok\":true}" } }] }),
-    }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          choices: [{ message: { content: '{"ok":true}' } }],
+        }),
+      }),
+    );
 
     const real = await vi.importActual("../src/services/ai.ts");
     const res = await real.tryProviders("prompt", "system", ["groq"] as any);

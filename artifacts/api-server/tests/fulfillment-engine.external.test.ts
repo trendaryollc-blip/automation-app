@@ -20,7 +20,12 @@ describe("fulfillment-engine external placement", () => {
     const { placeCJOrder } = await import("../src/services/cjdropshipping.js");
 
     seedTable("orders", [
-      { id: 1000, orderNumber: "O1000", customerName: "CJ Buyer", status: "new" },
+      {
+        id: 1000,
+        orderNumber: "O1000",
+        customerName: "CJ Buyer",
+        status: "new",
+      },
     ]);
 
     const [q] = seedTable("fulfillment_queue", [
@@ -59,7 +64,12 @@ describe("fulfillment-engine external placement", () => {
     const { placeZendropOrder } = await import("../src/services/zendrop.js");
 
     seedTable("orders", [
-      { id: 2000, orderNumber: "O2000", customerName: "Z Buyer", status: "new" },
+      {
+        id: 2000,
+        orderNumber: "O2000",
+        customerName: "Z Buyer",
+        status: "new",
+      },
     ]);
 
     const [q] = seedTable("fulfillment_queue", [
