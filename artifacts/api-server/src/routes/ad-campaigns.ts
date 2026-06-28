@@ -6,22 +6,32 @@ import { eq, desc } from "drizzle-orm";
 const router: IRouter = Router();
 
 router.get("/ad-campaigns", async (_req, res) => {
-  const all = await db.select().from(adCampaignsTable).orderBy(desc(adCampaignsTable.createdAt));
+  const all = await db
+    .select()
+    .from(adCampaignsTable)
+    .orderBy(desc(adCampaignsTable.createdAt));
   res.json(all);
 });
 
 router.post("/ad-campaigns", async (req, res) => {
-  const [campaign] = await db.insert(adCampaignsTable).values(req.body).returning();
+  const [campaign] = await db
+    .insert(adCampaignsTable)
+    .values(req.body)
+    .returning();
   res.status(201).json(campaign);
 });
 
 router.patch("/ad-campaigns/:id", async (req, res) => {
   const id = parseInt(req.params.id);
-  const [updated] = await db.update(adCampaignsTable)
+  const [updated] = await db
+    .update(adCampaignsTable)
     .set({ ...req.body, updatedAt: new Date() })
     .where(eq(adCampaignsTable.id, id))
     .returning();
-  if (!updated) { res.status(404).json({ error: "Not found" }); return; }
+  if (!updated) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   res.json(updated);
 });
 
@@ -45,7 +55,15 @@ router.get("/ad-campaigns/stats", async (_req, res) => {
 
   const byPlatform = all.reduce((acc: Record<string, any>, c) => {
     const p = c.platform ?? "other";
-    if (!acc[p]) acc[p] = { platform: p, spend: 0, revenue: 0, conversions: 0, clicks: 0, campaigns: 0 };
+    if (!acc[p])
+      acc[p] = {
+        platform: p,
+        spend: 0,
+        revenue: 0,
+        conversions: 0,
+        clicks: 0,
+        campaigns: 0,
+      };
     acc[p].spend += Number(c.spend ?? 0);
     acc[p].revenue += Number(c.revenue ?? 0);
     acc[p].conversions += c.conversions ?? 0;
@@ -55,11 +73,19 @@ router.get("/ad-campaigns/stats", async (_req, res) => {
   }, {});
 
   res.json({
-    totalSpend, totalRevenue, roas, ctr, cpc, cpa,
-    totalImpressions, totalClicks, totalConversions,
-    activeCampaigns: all.filter(c => c.status === "active").length,
+    totalSpend,
+    totalRevenue,
+    roas,
+    ctr,
+    cpc,
+    cpa,
+    totalImpressions,
+    totalClicks,
+    totalConversions,
+    activeCampaigns: all.filter((c) => c.status === "active").length,
     byPlatform: Object.values(byPlatform).map((p: any) => ({
-      ...p, roas: p.spend > 0 ? p.revenue / p.spend : 0,
+      ...p,
+      roas: p.spend > 0 ? p.revenue / p.spend : 0,
     })),
   });
 });

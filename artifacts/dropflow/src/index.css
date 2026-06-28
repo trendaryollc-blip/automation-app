@@ -54,8 +54,8 @@
   --input: 240 6% 15%;
   --ring: 217 91% 60%;
   --radius: 0.3rem;
-  --app-font-sans: 'Inter', sans-serif;
-  --app-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --app-font-sans: "Inter", sans-serif;
+  --app-font-mono: "JetBrains Mono", "Fira Code", monospace;
 }
 
 .dark {

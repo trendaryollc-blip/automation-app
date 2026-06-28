@@ -1,4 +1,12 @@
-import { pgTable, serial, text, integer, numeric, timestamp, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  serial,
+  text,
+  integer,
+  numeric,
+  timestamp,
+  boolean,
+} from "drizzle-orm/pg-core";
 
 export const fulfillmentQueueTable = pgTable("fulfillment_queue", {
   id: serial("id").primaryKey(),
@@ -20,8 +28,13 @@ export const fulfillmentQueueTable = pgTable("fulfillment_queue", {
   purchaseOrderId: integer("purchase_order_id"),
   autoProcessed: boolean("auto_processed").notNull().default(true),
   storeSource: text("store_source"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export type FulfillmentQueueItem = typeof fulfillmentQueueTable.$inferSelect;

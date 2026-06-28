@@ -5,14 +5,20 @@ import { db, ordersTable } from "@workspace/db";
 const router: IRouter = Router();
 
 router.get("/reports/pl", async (req, res): Promise<void> => {
-  const { from, to, groupBy = "product" } = req.query as {
+  const {
+    from,
+    to,
+    groupBy = "product",
+  } = req.query as {
     from?: string;
     to?: string;
     groupBy?: string;
   };
 
   if (!from || !to) {
-    res.status(400).json({ error: "'from' and 'to' query params are required" });
+    res
+      .status(400)
+      .json({ error: "'from' and 'to' query params are required" });
     return;
   }
 
@@ -29,7 +35,12 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
   const orders = await db
     .select()
     .from(ordersTable)
-    .where(and(gte(ordersTable.createdAt, fromDate), lte(ordersTable.createdAt, toDate)));
+    .where(
+      and(
+        gte(ordersTable.createdAt, fromDate),
+        lte(ordersTable.createdAt, toDate),
+      ),
+    );
 
   type Row = {
     label: string;
@@ -81,16 +92,20 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
       revenue: Math.round(r.revenue * 100) / 100,
       cogs: Math.round(r.cogs * 100) / 100,
       grossProfit: Math.round(r.grossProfit * 100) / 100,
-      margin: r.revenue > 0 ? Math.round(((r.grossProfit / r.revenue) * 100) * 10) / 10 : 0,
+      margin:
+        r.revenue > 0
+          ? Math.round((r.grossProfit / r.revenue) * 100 * 10) / 10
+          : 0,
     }));
 
   const totalRevenue = rows.reduce((s, r) => s + r.revenue, 0);
   const totalCogs = rows.reduce((s, r) => s + r.cogs, 0);
   const totalGrossProfit = rows.reduce((s, r) => s + r.grossProfit, 0);
   const totalOrders = rows.reduce((s, r) => s + r.orderCount, 0);
-  const totalMargin = totalRevenue > 0
-    ? Math.round(((totalGrossProfit / totalRevenue) * 100) * 10) / 10
-    : 0;
+  const totalMargin =
+    totalRevenue > 0
+      ? Math.round((totalGrossProfit / totalRevenue) * 100 * 10) / 10
+      : 0;
 
   res.json({
     from: fromDate.toISOString(),

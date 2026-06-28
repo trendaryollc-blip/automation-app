@@ -5,14 +5,21 @@ export type CJDropshippingConfig = {
   [key: string]: unknown;
 };
 
-export async function testCJDropshipping(config: CJDropshippingConfig | null): Promise<{ ok: boolean; message?: string; error?: string }> {
+export async function testCJDropshipping(
+  config: CJDropshippingConfig | null,
+): Promise<{ ok: boolean; message?: string; error?: string }> {
   try {
     const apiKey = config?.apiKey;
     const apiSecret = config?.apiSecret;
-    const baseUrl = (config?.baseUrl as string | undefined) || "https://api.cjdropshipping.com";
+    const baseUrl =
+      (config?.baseUrl as string | undefined) ||
+      "https://api.cjdropshipping.com";
 
     if (!apiKey || !apiSecret) {
-      return { ok: false, error: "CJ Dropshipping API key and secret are required" };
+      return {
+        ok: false,
+        error: "CJ Dropshipping API key and secret are required",
+      };
     }
 
     const url = `${baseUrl}/api/common/v1/accountInfo`;
@@ -29,16 +36,26 @@ export async function testCJDropshipping(config: CJDropshippingConfig | null): P
       },
     });
 
-    const data = (await response.json()) as { data?: { email?: string } | null; message?: string; msg?: string };
+    const data = (await response.json()) as {
+      data?: { email?: string } | null;
+      message?: string;
+      msg?: string;
+    };
 
     if (response.ok && data.data) {
-      return { ok: true, message: `Connected as ${data.data.email || "CJ Dropshipping account"}` };
+      return {
+        ok: true,
+        message: `Connected as ${data.data.email || "CJ Dropshipping account"}`,
+      };
     }
 
     const errorMessage = data.message || data.msg || "Invalid credentials";
     return { ok: false, error: `CJ Dropshipping error: ${errorMessage}` };
   } catch (error) {
-    return { ok: false, error: `CJ Dropshipping connection failed: ${error instanceof Error ? error.message : "Unknown error"}` };
+    return {
+      ok: false,
+      error: `CJ Dropshipping connection failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    };
   }
 }
 

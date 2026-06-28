@@ -11,19 +11,40 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
-import { Search, Loader2, Check, ExternalLink, Mail, Trash2, ShieldCheck, MapPin, Star, Clock } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  Check,
+  ExternalLink,
+  Mail,
+  Trash2,
+  ShieldCheck,
+  MapPin,
+  Star,
+  Clock,
+} from "lucide-react";
 import type { SupplierFinderResult } from "@workspace/api-client-react";
 
 export default function SupplierFinder() {
   const [productName, setProductName] = useState("");
   const [targetCostPrice, setTargetCostPrice] = useState("");
   const [preferredCountry, setPreferredCountry] = useState("");
-  const [activeResult, setActiveResult] = useState<SupplierFinderResult | null>(null);
+  const [activeResult, setActiveResult] = useState<SupplierFinderResult | null>(
+    null,
+  );
 
   const queryClient = useQueryClient();
-  const { data: history, isLoading: historyLoading } = useListSupplierFinderHistory();
+  const { data: history, isLoading: historyLoading } =
+    useListSupplierFinderHistory();
   const findSuppliersMutation = useFindSuppliers();
   const deleteMutation = useDeleteSupplierFinderResult();
 
@@ -35,16 +56,20 @@ export default function SupplierFinder() {
       {
         data: {
           productName,
-          targetCostPrice: targetCostPrice ? parseFloat(targetCostPrice) : undefined,
+          targetCostPrice: targetCostPrice
+            ? parseFloat(targetCostPrice)
+            : undefined,
           preferredCountry: preferredCountry || undefined,
         },
       },
       {
         onSuccess: (data) => {
           setActiveResult(data);
-          queryClient.invalidateQueries({ queryKey: getListSupplierFinderHistoryQueryKey() });
+          queryClient.invalidateQueries({
+            queryKey: getListSupplierFinderHistoryQueryKey(),
+          });
         },
-      }
+      },
     );
   };
 
@@ -67,9 +92,11 @@ export default function SupplierFinder() {
             setTargetCostPrice("");
             setPreferredCountry("");
           }
-          queryClient.invalidateQueries({ queryKey: getListSupplierFinderHistoryQueryKey() });
+          queryClient.invalidateQueries({
+            queryKey: getListSupplierFinderHistoryQueryKey(),
+          });
         },
-      }
+      },
     );
   };
 
@@ -82,7 +109,9 @@ export default function SupplierFinder() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 h-full flex flex-col">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Supplier Finder</h1>
-        <p className="text-muted-foreground mt-1">Discover and vet dropshipping suppliers for any product.</p>
+        <p className="text-muted-foreground mt-1">
+          Discover and vet dropshipping suppliers for any product.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
@@ -109,9 +138,13 @@ export default function SupplierFinder() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="targetCostPrice">Target Cost Price (USD)</Label>
+                  <Label htmlFor="targetCostPrice">
+                    Target Cost Price (USD)
+                  </Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
+                    <span className="absolute left-3 top-2.5 text-muted-foreground">
+                      $
+                    </span>
                     <Input
                       id="targetCostPrice"
                       type="number"
@@ -140,7 +173,13 @@ export default function SupplierFinder() {
                   </div>
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={findSuppliersMutation.isPending || !productName.trim()}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  findSuppliersMutation.isPending || !productName.trim()
+                }
+              >
                 {findSuppliersMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -168,7 +207,9 @@ export default function SupplierFinder() {
             <div className="rounded-lg border border-green-500/30 bg-green-500/5 overflow-hidden">
               <div className="bg-green-500/10 px-4 py-2 border-b border-green-500/20 flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-green-500" />
-                <span className="font-semibold text-green-500">Top Pick: {activeResult.topPick}</span>
+                <span className="font-semibold text-green-500">
+                  Top Pick: {activeResult.topPick}
+                </span>
               </div>
             </div>
 
@@ -180,20 +221,37 @@ export default function SupplierFinder() {
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="font-mono">{idx + 1}st</Badge>
+                            <Badge variant="secondary" className="font-mono">
+                              {idx + 1}st
+                            </Badge>
                             <h3 className="text-lg font-bold">{match.name}</h3>
-                            <Badge variant="outline" className="text-muted-foreground">{match.country}</Badge>
+                            <Badge
+                              variant="outline"
+                              className="text-muted-foreground"
+                            >
+                              {match.country}
+                            </Badge>
                             {match.isExisting ? (
-                              <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20">In Directory</Badge>
+                              <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20">
+                                In Directory
+                              </Badge>
                             ) : (
-                              <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20">New Supplier</Badge>
+                              <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20">
+                                New Supplier
+                              </Badge>
                             )}
                           </div>
-                          <p className="text-sm italic text-muted-foreground">{match.matchReason}</p>
+                          <p className="text-sm italic text-muted-foreground">
+                            {match.matchReason}
+                          </p>
                         </div>
                         <div className="flex flex-col items-end gap-1">
-                          <div className="text-2xl font-bold text-primary">${match.estimatedCostPrice.toFixed(2)}</div>
-                          <div className="text-xs text-muted-foreground">Est. Cost</div>
+                          <div className="text-2xl font-bold text-primary">
+                            ${match.estimatedCostPrice.toFixed(2)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Est. Cost
+                          </div>
                         </div>
                       </div>
 
@@ -207,13 +265,22 @@ export default function SupplierFinder() {
                           <span>{match.rating.toFixed(1)} rating</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Badge variant="secondary" className="font-mono text-xs">{match.matchScore} / 100</Badge>
+                          <Badge
+                            variant="secondary"
+                            className="font-mono text-xs"
+                          >
+                            {match.matchScore} / 100
+                          </Badge>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         {match.pros.map((pro, i) => (
-                          <Badge key={i} variant="outline" className="bg-green-500/5 text-green-600 border-green-500/20">
+                          <Badge
+                            key={i}
+                            variant="outline"
+                            className="bg-green-500/5 text-green-600 border-green-500/20"
+                          >
                             <Check className="w-3 h-3 mr-1" />
                             {pro}
                           </Badge>
@@ -224,18 +291,32 @@ export default function SupplierFinder() {
                     <div className="w-full md:w-48 flex flex-col justify-end space-y-2 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6">
                       {match.isExisting ? (
                         <Link href={`/suppliers/${match.supplierId}`}>
-                          <Button variant="secondary" className="w-full">View Supplier</Button>
+                          <Button variant="secondary" className="w-full">
+                            View Supplier
+                          </Button>
                         </Link>
                       ) : (
                         <>
                           {match.website && (
-                            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => copyToClipboard(match.website!)}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full justify-start gap-2"
+                              onClick={() => copyToClipboard(match.website!)}
+                            >
                               <ExternalLink className="w-4 h-4" />
                               Website
                             </Button>
                           )}
                           {match.contactEmail && (
-                            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => copyToClipboard(match.contactEmail!)}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full justify-start gap-2"
+                              onClick={() =>
+                                copyToClipboard(match.contactEmail!)
+                              }
+                            >
                               <Mail className="w-4 h-4" />
                               Email
                             </Button>
@@ -258,7 +339,9 @@ export default function SupplierFinder() {
               <CardContent>
                 <ol className="space-y-2 list-decimal list-inside text-sm text-muted-foreground ml-2">
                   {activeResult.sourcingTips.map((tip, i) => (
-                    <li key={i} className="pl-1">{tip}</li>
+                    <li key={i} className="pl-1">
+                      {tip}
+                    </li>
                   ))}
                 </ol>
               </CardContent>
@@ -289,7 +372,10 @@ export default function SupplierFinder() {
                 </TableRow>
               ) : history?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-8 text-muted-foreground"
+                  >
                     No searches yet. Run your first supplier search above.
                   </TableCell>
                 </TableRow>
@@ -297,12 +383,16 @@ export default function SupplierFinder() {
                 history?.map((result) => (
                   <TableRow
                     key={result.id}
-                    className={`cursor-pointer ${activeResult?.id === result.id ? 'bg-muted/50' : 'hover:bg-muted/30'}`}
+                    className={`cursor-pointer ${activeResult?.id === result.id ? "bg-muted/50" : "hover:bg-muted/30"}`}
                     onClick={() => handleRowClick(result)}
                   >
-                    <TableCell className="font-medium">{result.productName}</TableCell>
+                    <TableCell className="font-medium">
+                      {result.productName}
+                    </TableCell>
                     <TableCell>{result.topPick}</TableCell>
-                    <TableCell className="text-right font-mono">{result.matches.length}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      {result.matches.length}
+                    </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {new Date(result.createdAt).toLocaleDateString()}
                     </TableCell>

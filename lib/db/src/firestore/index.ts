@@ -1,10 +1,10 @@
 /**
  * Firestore database initialization and client export.
- * 
+ *
  * Usage:
  *   import { firestoreDb } from "@workspace/db/firestore";
  *   const products = await firestoreDb.collection("products").get();
- * 
+ *
  * Environment variables:
  *   - FIREBASE_PROJECT_ID: Firebase project ID
  *   - FIREBASE_CLIENT_EMAIL: Service account client email
@@ -42,10 +42,9 @@ function initFirestore(): Firestore {
 
   // Option 1: GOOGLE_APPLICATION_CREDENTIALS path set (local dev)
   if (process.env["GOOGLE_APPLICATION_CREDENTIALS"]) {
-    logger.info(
-      "Initializing Firestore via GOOGLE_APPLICATION_CREDENTIALS",
-      { path: process.env["GOOGLE_APPLICATION_CREDENTIALS"] },
-    );
+    logger.info("Initializing Firestore via GOOGLE_APPLICATION_CREDENTIALS", {
+      path: process.env["GOOGLE_APPLICATION_CREDENTIALS"],
+    });
     const app = initializeApp({
       projectId,
     });
@@ -54,10 +53,9 @@ function initFirestore(): Firestore {
 
   // Option 2: Use service account credentials from env vars
   if (projectId && clientEmail && privateKey) {
-    logger.info(
-      "Initializing Firestore via service account env vars",
-      { projectId },
-    );
+    logger.info("Initializing Firestore via service account env vars", {
+      projectId,
+    });
     const app = initializeApp({
       credential: cert({
         projectId,

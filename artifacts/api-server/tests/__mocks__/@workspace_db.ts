@@ -8,17 +8,25 @@ let idCounter = 1;
 class QueryBuilder {
   private _table: string;
   private _where: Record<string, any> = {};
-  private _orderBy: { field: string; dir: 'asc' | 'desc' }[] = [];
+  private _orderBy: { field: string; dir: "asc" | "desc" }[] = [];
   private _limitVal: number | null = null;
 
-  constructor(table: string) { this._table = table; }
+  constructor(table: string) {
+    this._table = table;
+  }
 
-  $dynamic() { return this; }
+  $dynamic() {
+    return this;
+  }
 
   where(condition: any) {
     if (condition && condition._and) {
       this._where._and = condition._and;
-    } else if (condition && condition._field && condition._value !== undefined) {
+    } else if (
+      condition &&
+      condition._field &&
+      condition._value !== undefined
+    ) {
       this._where[condition._field] = condition;
     } else if (condition && condition._field && condition._values) {
       this._where[condition._field] = condition;
@@ -27,12 +35,18 @@ class QueryBuilder {
   }
 
   orderBy(...args: any[]) {
-    if (args[0] && typeof args[0] === 'object' && args[0]._field)
-      this._orderBy.push({ field: String(args[0]._field), dir: args[0]._dir || 'asc' });
+    if (args[0] && typeof args[0] === "object" && args[0]._field)
+      this._orderBy.push({
+        field: String(args[0]._field),
+        dir: args[0]._dir || "asc",
+      });
     return this;
   }
 
-  limit(n: number) { this._limitVal = n; return this; }
+  limit(n: number) {
+    this._limitVal = n;
+    return this;
+  }
 
   private _getData(): any[] {
     let data = Object.values(inMemoryData[this._table] || {});
@@ -40,21 +54,23 @@ class QueryBuilder {
     const matchesCondition = (item: any, condition: any): boolean => {
       if (!condition) return true;
       if (condition._and) {
-        return condition._and.every((cond: any) => matchesCondition(item, cond));
+        return condition._and.every((cond: any) =>
+          matchesCondition(item, cond),
+        );
       }
       const field = condition._field;
       const value = condition._value;
       const values = condition._values;
       switch (condition.operator) {
-        case 'gte':
+        case "gte":
           return item[field] >= value;
-        case 'lte':
+        case "lte":
           return item[field] <= value;
-        case 'lt':
+        case "lt":
           return item[field] < value;
-        case 'in':
+        case "in":
           return Array.isArray(values) && values.includes(item[field]);
-        case 'count':
+        case "count":
           return true;
         default:
           return item[field] === value;
@@ -69,94 +85,114 @@ class QueryBuilder {
       data.sort((a, b) => {
         const av = a[field] instanceof Date ? a[field].getTime() : a[field];
         const bv = b[field] instanceof Date ? b[field].getTime() : b[field];
-        return dir === 'desc' ? (bv > av ? 1 : -1) : (av > bv ? 1 : -1);
+        return dir === "desc" ? (bv > av ? 1 : -1) : av > bv ? 1 : -1;
       });
     if (this._limitVal) data = data.slice(0, this._limitVal);
     return data;
   }
 
   then(resolve: (val: any[]) => void, _reject?: (err: any) => void) {
-    try { resolve(this._getData()); } catch (e) { if (_reject) _reject(e); }
+    try {
+      resolve(this._getData());
+    } catch (e) {
+      if (_reject) _reject(e);
+    }
   }
-  catch(reject: (err: any) => void) { this.then(() => {}, reject); }
-  finally(fn: () => void) { this.then(fn, fn); }
-  [Symbol.toStringTag] = 'QueryBuilder';
+  catch(reject: (err: any) => void) {
+    this.then(() => {}, reject);
+  }
+  finally(fn: () => void) {
+    this.then(fn, fn);
+  }
+  [Symbol.toStringTag] = "QueryBuilder";
 }
 
 // --- Drizzle helpers ---
 function toField(fieldOrCol: string | { name?: string }): string {
-  return typeof fieldOrCol === 'string' ? fieldOrCol : (fieldOrCol.name ?? '');
+  return typeof fieldOrCol === "string" ? fieldOrCol : (fieldOrCol.name ?? "");
 }
 function mockEq(field: string | { name?: string }, value: any) {
-  return { _field: toField(field), _value: value, operator: 'eq' };
+  return { _field: toField(field), _value: value, operator: "eq" };
 }
 function mockDesc(field: string | { name?: string }) {
-  return { _field: toField(field), _dir: 'desc' as const };
+  return { _field: toField(field), _dir: "desc" as const };
 }
 function mockAsc(field: string | { name?: string }) {
-  return { _field: toField(field), _dir: 'asc' as const };
+  return { _field: toField(field), _dir: "asc" as const };
 }
 function mockCount() {
-  return { _field: 'count(*)', operator: 'count' };
+  return { _field: "count(*)", operator: "count" };
 }
 function mockInArray(field: string | { name?: string }, values: any[]) {
-  return { _field: toField(field), _values: values, operator: 'in' };
+  return { _field: toField(field), _values: values, operator: "in" };
 }
 function mockGte(field: string | { name?: string }, value: any) {
-  return { _field: toField(field), _value: value, operator: 'gte' };
+  return { _field: toField(field), _value: value, operator: "gte" };
 }
 function mockLte(field: string | { name?: string }, value: any) {
-  return { _field: toField(field), _value: value, operator: 'lte' };
+  return { _field: toField(field), _value: value, operator: "lte" };
 }
 function mockLt(field: string | { name?: string }, value: any) {
-  return { _field: toField(field), _value: value, operator: 'lt' };
+  return { _field: toField(field), _value: value, operator: "lt" };
 }
 function mockAnd(...conditions: any[]) {
-  return { _and: conditions, operator: 'and' };
+  return { _and: conditions, operator: "and" };
 }
 function mockSql(strings: TemplateStringsArray, ...values: any[]) {
-  return { _sql: strings.join('?'), _values: values };
+  return { _sql: strings.join("?"), _values: values };
 }
 
 // --- Table definitions with dynamic field access ---
 function makeTable(name: string) {
-  return new Proxy({}, {
-    get(_, prop) {
-      if (prop === '_table') return name;
-      if (prop === '$inferSelect' || prop === '$inferInsert') return {};
-      if (typeof prop === 'symbol') return undefined;
-      return { name: String(prop) };
+  return new Proxy(
+    {},
+    {
+      get(_, prop) {
+        if (prop === "_table") return name;
+        if (prop === "$inferSelect" || prop === "$inferInsert") return {};
+        if (typeof prop === "symbol") return undefined;
+        return { name: String(prop) };
+      },
     },
-  });
+  );
 }
 
-const productsTable = makeTable('products');
-const suppliersTable = makeTable('suppliers');
-const ordersTable = makeTable('orders');
-const researchTable = makeTable('research');
-const supplierFinderTable = makeTable('supplier_finder');
-const priceWatchTable = makeTable('price_watch');
-const priceSnapshotsTable = makeTable('price_snapshots');
-const purchaseOrdersTable = makeTable('purchase_orders');
-const purchaseOrderItemsTable = makeTable('purchase_order_items');
-const returnsTable = makeTable('returns');
-const orderTimelineTable = makeTable('order_timeline');
-const promotionsTable = makeTable('promotions');
-const productTagsTable = makeTable('product_tags');
-const productTagLinksTable = makeTable('product_tag_links');
-const launchesTable = makeTable('launches');
-const adCampaignsTable = makeTable('ad_campaigns');
-const storeConnectionsTable = makeTable('store_connections');
-const syncLogsTable = makeTable('sync_logs');
-const aiSettingsTable = makeTable('ai_settings');
-const fulfillmentQueueTable = makeTable('fulfillment_queue');
+const productsTable = makeTable("products");
+const suppliersTable = makeTable("suppliers");
+const ordersTable = makeTable("orders");
+const researchTable = makeTable("research");
+const supplierFinderTable = makeTable("supplier_finder");
+const priceWatchTable = makeTable("price_watch");
+const priceSnapshotsTable = makeTable("price_snapshots");
+const purchaseOrdersTable = makeTable("purchase_orders");
+const purchaseOrderItemsTable = makeTable("purchase_order_items");
+const returnsTable = makeTable("returns");
+const orderTimelineTable = makeTable("order_timeline");
+const promotionsTable = makeTable("promotions");
+const productTagsTable = makeTable("product_tags");
+const productTagLinksTable = makeTable("product_tag_links");
+const launchesTable = makeTable("launches");
+const adCampaignsTable = makeTable("ad_campaigns");
+const storeConnectionsTable = makeTable("store_connections");
+const syncLogsTable = makeTable("sync_logs");
+const aiSettingsTable = makeTable("ai_settings");
+const fulfillmentQueueTable = makeTable("fulfillment_queue");
 
 // Wraps numeric string fields back to numbers on select
 function normalizeRow(r: any) {
   if (!r) return r;
   const o = { ...r };
-  for (const k of ['costPrice', 'sellPrice', 'profit', 'totalCost', 'rating', 'estimatedCost', 'estimatedMargin', 'myPrice']) {
-    if (typeof o[k] === 'string') o[k] = Number(o[k]);
+  for (const k of [
+    "costPrice",
+    "sellPrice",
+    "profit",
+    "totalCost",
+    "rating",
+    "estimatedCost",
+    "estimatedMargin",
+    "myPrice",
+  ]) {
+    if (typeof o[k] === "string") o[k] = Number(o[k]);
   }
   return o;
 }
@@ -167,7 +203,8 @@ const db = {
     from: (table: any) => {
       const qb = new QueryBuilder(table._table);
       const origThen = qb.then.bind(qb);
-      qb.then = (resolve: any, reject?: any) => origThen((data: any) => resolve(data.map(normalizeRow)), reject);
+      qb.then = (resolve: any, reject?: any) =>
+        origThen((data: any) => resolve(data.map(normalizeRow)), reject);
       return qb;
     },
   }),
@@ -190,7 +227,9 @@ const db = {
       where: (condition: any) => ({
         returning: () => {
           const matchingIds = resolveMatchingIds(table._table, condition);
-          const items = matchingIds.map((id: number) => inMemoryData[table._table]?.[id]).filter(Boolean);
+          const items = matchingIds
+            .map((id: number) => inMemoryData[table._table]?.[id])
+            .filter(Boolean);
           for (const item of items) Object.assign(item, data);
           return items.map(normalizeRow);
         },
@@ -217,10 +256,26 @@ const db = {
 
 export { db };
 export {
-  productsTable, suppliersTable, ordersTable, researchTable, supplierFinderTable,
-  priceWatchTable, priceSnapshotsTable, purchaseOrdersTable, purchaseOrderItemsTable,
-  returnsTable, orderTimelineTable, promotionsTable, productTagsTable, productTagLinksTable,
-  launchesTable, adCampaignsTable, storeConnectionsTable, syncLogsTable, aiSettingsTable, fulfillmentQueueTable,
+  productsTable,
+  suppliersTable,
+  ordersTable,
+  researchTable,
+  supplierFinderTable,
+  priceWatchTable,
+  priceSnapshotsTable,
+  purchaseOrdersTable,
+  purchaseOrderItemsTable,
+  returnsTable,
+  orderTimelineTable,
+  promotionsTable,
+  productTagsTable,
+  productTagLinksTable,
+  launchesTable,
+  adCampaignsTable,
+  storeConnectionsTable,
+  syncLogsTable,
+  aiSettingsTable,
+  fulfillmentQueueTable,
 };
 
 const eq = mockEq;
@@ -277,10 +332,17 @@ export { eq, desc, asc, count, inArray, gte, lte, lt, and, sql };
 function resolveMatchingIds(tableName: string, condition: any): number[] {
   if (!condition) return Object.keys(inMemoryData[tableName] || {}).map(Number);
   if (condition._and) {
-    return condition._and.reduce((ids: number[] | null, cond: any) => {
-      const matched = resolveMatchingIds(tableName, cond);
-      return ids === null ? matched : ids.filter((id) => matched.includes(id));
-    }, null as number[] | null) ?? [];
+    return (
+      condition._and.reduce(
+        (ids: number[] | null, cond: any) => {
+          const matched = resolveMatchingIds(tableName, cond);
+          return ids === null
+            ? matched
+            : ids.filter((id) => matched.includes(id));
+        },
+        null as number[] | null,
+      ) ?? []
+    );
   }
   const value = condition._value;
   const values = condition._values;
@@ -288,24 +350,33 @@ function resolveMatchingIds(tableName: string, condition: any): number[] {
     .filter(([, item]) => {
       const fieldValue = item[condition._field];
       if (values) return values.includes(fieldValue);
-      if (condition.operator === 'gte') return fieldValue >= value;
-      if (condition.operator === 'lte') return fieldValue <= value;
-      if (condition.operator === 'lt') return fieldValue < value;
+      if (condition.operator === "gte") return fieldValue >= value;
+      if (condition.operator === "lte") return fieldValue <= value;
+      if (condition.operator === "lt") return fieldValue < value;
       return fieldValue === value;
     })
     .map(([id]) => Number(id));
 }
 
 // Helpers for assertions in tests
-export function resetDb() { Object.keys(inMemoryData).forEach(k => inMemoryData[k] = {}); idCounter = 1; }
+export function resetDb() {
+  Object.keys(inMemoryData).forEach((k) => (inMemoryData[k] = {}));
+  idCounter = 1;
+}
 export function seedTable(tableName: string, records: any[]) {
   const now = new Date();
-  return records.map(r => {
-    const record = { ...r, id: idCounter++, createdAt: r.createdAt ? new Date(r.createdAt) : now, updatedAt: r.updatedAt ? new Date(r.updatedAt) : now };
+  return records.map((r) => {
+    const record = {
+      ...r,
+      id: idCounter++,
+      createdAt: r.createdAt ? new Date(r.createdAt) : now,
+      updatedAt: r.updatedAt ? new Date(r.updatedAt) : now,
+    };
     inMemoryData[tableName] = inMemoryData[tableName] || {};
     inMemoryData[tableName][record.id] = record;
     return normalizeRow(record);
   });
 }
-export function getTableData(tableName: string) { return Object.values(inMemoryData[tableName] || {}); }
-
+export function getTableData(tableName: string) {
+  return Object.values(inMemoryData[tableName] || {});
+}

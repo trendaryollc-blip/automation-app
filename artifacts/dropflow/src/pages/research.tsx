@@ -1,20 +1,39 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useAnalyzeProduct, useListResearchHistory, useDeleteResearchReport, getListResearchHistoryQueryKey } from "@workspace/api-client-react";
+import {
+  useAnalyzeProduct,
+  useListResearchHistory,
+  useDeleteResearchReport,
+  getListResearchHistoryQueryKey,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Loader2, CheckCircle2, XCircle, Trash2, ArrowRight } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Search,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Trash2,
+  ArrowRight,
+} from "lucide-react";
 import type { ResearchReport } from "@workspace/api-client-react";
 
 export default function Research() {
   const [query, setQuery] = useState("");
   const [activeReport, setActiveReport] = useState<ResearchReport | null>(null);
-  
+
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
 
@@ -26,12 +45,17 @@ export default function Research() {
     e.preventDefault();
     if (!query.trim()) return;
 
-    analyzeMutation.mutate({ data: { query } }, {
-      onSuccess: (data) => {
-        setActiveReport(data);
-        queryClient.invalidateQueries({ queryKey: getListResearchHistoryQueryKey() });
-      }
-    });
+    analyzeMutation.mutate(
+      { data: { query } },
+      {
+        onSuccess: (data) => {
+          setActiveReport(data);
+          queryClient.invalidateQueries({
+            queryKey: getListResearchHistoryQueryKey(),
+          });
+        },
+      },
+    );
   };
 
   const handleRowClick = (report: ResearchReport) => {
@@ -41,34 +65,49 @@ export default function Research() {
 
   const handleDelete = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
-    deleteMutation.mutate({ id }, {
-      onSuccess: () => {
-        if (activeReport?.id === id) {
-          setActiveReport(null);
-          setQuery("");
-        }
-        queryClient.invalidateQueries({ queryKey: getListResearchHistoryQueryKey() });
-      }
-    });
+    deleteMutation.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          if (activeReport?.id === id) {
+            setActiveReport(null);
+            setQuery("");
+          }
+          queryClient.invalidateQueries({
+            queryKey: getListResearchHistoryQueryKey(),
+          });
+        },
+      },
+    );
   };
 
   const getVerdictColor = (verdict: string) => {
     switch (verdict) {
-      case 'strong-buy': return 'bg-green-500 hover:bg-green-600 text-white';
-      case 'buy': return 'bg-teal-500 hover:bg-teal-600 text-white';
-      case 'hold': return 'bg-yellow-500 hover:bg-yellow-600 text-white';
-      case 'avoid': return 'bg-red-500 hover:bg-red-600 text-white';
-      default: return 'bg-secondary text-secondary-foreground';
+      case "strong-buy":
+        return "bg-green-500 hover:bg-green-600 text-white";
+      case "buy":
+        return "bg-teal-500 hover:bg-teal-600 text-white";
+      case "hold":
+        return "bg-yellow-500 hover:bg-yellow-600 text-white";
+      case "avoid":
+        return "bg-red-500 hover:bg-red-600 text-white";
+      default:
+        return "bg-secondary text-secondary-foreground";
     }
   };
 
   const getCompetitionColor = (level: string) => {
     switch (level) {
-      case 'low': return 'bg-green-500 hover:bg-green-600 text-white';
-      case 'medium': return 'bg-yellow-500 hover:bg-yellow-600 text-white';
-      case 'high': return 'bg-orange-500 hover:bg-orange-600 text-white';
-      case 'very-high': return 'bg-red-500 hover:bg-red-600 text-white';
-      default: return 'bg-secondary text-secondary-foreground';
+      case "low":
+        return "bg-green-500 hover:bg-green-600 text-white";
+      case "medium":
+        return "bg-yellow-500 hover:bg-yellow-600 text-white";
+      case "high":
+        return "bg-orange-500 hover:bg-orange-600 text-white";
+      case "very-high":
+        return "bg-red-500 hover:bg-red-600 text-white";
+      default:
+        return "bg-secondary text-secondary-foreground";
     }
   };
 
@@ -77,7 +116,7 @@ export default function Research() {
     const searchParams = new URLSearchParams({
       name: activeReport.query,
       sellPrice: activeReport.suggestedPrice.toString(),
-      description: activeReport.summary || ""
+      description: activeReport.summary || "",
     });
     // In a real implementation we would prefill the create product flow.
     // For now we just redirect to products page, maybe we could use history state
@@ -91,7 +130,9 @@ export default function Research() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 h-full flex flex-col">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Product Research</h1>
-        <p className="text-muted-foreground mt-1">Analyze product viability, competition, and margins.</p>
+        <p className="text-muted-foreground mt-1">
+          Analyze product viability, competition, and margins.
+        </p>
       </div>
 
       <div className="space-y-4">
@@ -107,8 +148,16 @@ export default function Research() {
               disabled={analyzeMutation.isPending}
             />
           </div>
-          <Button type="submit" className="h-10 px-8" disabled={analyzeMutation.isPending || !query.trim()}>
-            {analyzeMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Analyze"}
+          <Button
+            type="submit"
+            className="h-10 px-8"
+            disabled={analyzeMutation.isPending || !query.trim()}
+          >
+            {analyzeMutation.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              "Analyze"
+            )}
           </Button>
         </form>
 
@@ -127,11 +176,16 @@ export default function Research() {
               <div className="space-y-1">
                 <CardTitle className="text-2xl flex items-center gap-3">
                   {activeReport.query}
-                  <Badge className={`text-sm ${getVerdictColor(activeReport.verdict)}`}>
-                    {activeReport.verdict.toUpperCase().replace('-', ' ')}
+                  <Badge
+                    className={`text-sm ${getVerdictColor(activeReport.verdict)}`}
+                  >
+                    {activeReport.verdict.toUpperCase().replace("-", " ")}
                   </Badge>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">Generated on {new Date(activeReport.createdAt).toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground">
+                  Generated on{" "}
+                  {new Date(activeReport.createdAt).toLocaleDateString()}
+                </p>
               </div>
               <Button onClick={handleAddToProducts} className="gap-2">
                 Add to Products <ArrowRight className="w-4 h-4" />
@@ -142,38 +196,58 @@ export default function Research() {
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-muted-foreground flex justify-between">
                     <span>Demand Score</span>
-                    <span className="text-foreground font-bold">{activeReport.demandScore}/100</span>
+                    <span className="text-foreground font-bold">
+                      {activeReport.demandScore}/100
+                    </span>
                   </div>
                   <Progress value={activeReport.demandScore} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">Competition Level</div>
-                  <Badge className={`${getCompetitionColor(activeReport.competitionLevel)}`}>
-                    {activeReport.competitionLevel.toUpperCase().replace('-', ' ')}
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Competition Level
+                  </div>
+                  <Badge
+                    className={`${getCompetitionColor(activeReport.competitionLevel)}`}
+                  >
+                    {activeReport.competitionLevel
+                      .toUpperCase()
+                      .replace("-", " ")}
                   </Badge>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">Suggested Price</div>
-                  <div className="text-2xl font-bold text-primary">${activeReport.suggestedPrice.toFixed(2)}</div>
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Suggested Price
+                  </div>
+                  <div className="text-2xl font-bold text-primary">
+                    ${activeReport.suggestedPrice.toFixed(2)}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-muted-foreground flex justify-between">
                     <span>Est. Margin</span>
-                    <span className="text-green-500 font-bold">{activeReport.estimatedMargin}%</span>
+                    <span className="text-green-500 font-bold">
+                      {activeReport.estimatedMargin}%
+                    </span>
                   </div>
-                  <Progress value={activeReport.estimatedMargin} className="h-2 [&>div]:bg-green-500" />
+                  <Progress
+                    value={activeReport.estimatedMargin}
+                    className="h-2 [&>div]:bg-green-500"
+                  />
                 </div>
               </div>
 
               <div className="space-y-3">
-                <h4 className="text-sm font-medium text-muted-foreground">Top Niches</h4>
+                <h4 className="text-sm font-medium text-muted-foreground">
+                  Top Niches
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {activeReport.topNiches.map((niche, i) => (
                     <Badge key={i} variant="secondary" className="px-3 py-1">
-                      {niche.name} <span className="ml-2 opacity-60">{niche.score}</span>
+                      {niche.name}{" "}
+                      <span className="ml-2 opacity-60">{niche.score}</span>
                     </Badge>
                   ))}
                 </div>
@@ -181,7 +255,9 @@ export default function Research() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-muted-foreground">Pros</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Pros
+                  </h4>
                   <ul className="space-y-2">
                     {activeReport.pros.map((pro, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
@@ -192,7 +268,9 @@ export default function Research() {
                   </ul>
                 </div>
                 <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-muted-foreground">Cons</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Cons
+                  </h4>
                   <ul className="space-y-2">
                     {activeReport.cons.map((con, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
@@ -206,7 +284,9 @@ export default function Research() {
 
               {activeReport.summary && (
                 <div className="p-4 bg-muted/50 rounded-lg border border-border">
-                  <p className="text-sm leading-relaxed">{activeReport.summary}</p>
+                  <p className="text-sm leading-relaxed">
+                    {activeReport.summary}
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -238,37 +318,50 @@ export default function Research() {
                 </TableRow>
               ) : history?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-8 text-muted-foreground"
+                  >
                     No research history. Run your first analysis above.
                   </TableCell>
                 </TableRow>
               ) : (
                 history?.map((report) => (
-                  <TableRow 
-                    key={report.id} 
-                    className={`cursor-pointer ${activeReport?.id === report.id ? 'bg-muted/50' : 'hover:bg-muted/30'}`}
+                  <TableRow
+                    key={report.id}
+                    className={`cursor-pointer ${activeReport?.id === report.id ? "bg-muted/50" : "hover:bg-muted/30"}`}
                     onClick={() => handleRowClick(report)}
                   >
-                    <TableCell className="font-medium">{report.query}</TableCell>
+                    <TableCell className="font-medium">
+                      {report.query}
+                    </TableCell>
                     <TableCell>
                       <Badge className={getVerdictColor(report.verdict)}>
-                        {report.verdict.toUpperCase().replace('-', ' ')}
+                        {report.verdict.toUpperCase().replace("-", " ")}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-mono">{report.demandScore}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      {report.demandScore}
+                    </TableCell>
                     <TableCell>
-                      <Badge className={getCompetitionColor(report.competitionLevel)}>
-                        {report.competitionLevel.toUpperCase().replace('-', ' ')}
+                      <Badge
+                        className={getCompetitionColor(report.competitionLevel)}
+                      >
+                        {report.competitionLevel
+                          .toUpperCase()
+                          .replace("-", " ")}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-mono">${report.suggestedPrice.toFixed(2)}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      ${report.suggestedPrice.toFixed(2)}
+                    </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {new Date(report.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={(e) => handleDelete(e, report.id)}
                         disabled={deleteMutation.isPending}

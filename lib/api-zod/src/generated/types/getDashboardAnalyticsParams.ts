@@ -5,8 +5,8 @@
  * DropFlow - Dropshipping Automation Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { GetDashboardAnalyticsPeriod } from './getDashboardAnalyticsPeriod';
+import type { GetDashboardAnalyticsPeriod } from "./getDashboardAnalyticsPeriod";
 
 export type GetDashboardAnalyticsParams = {
-period?: GetDashboardAnalyticsPeriod;
+  period?: GetDashboardAnalyticsPeriod;
 };

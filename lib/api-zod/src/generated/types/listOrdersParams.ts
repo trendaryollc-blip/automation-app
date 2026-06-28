@@ -7,5 +7,5 @@
  */
 
 export type ListOrdersParams = {
-status?: string;
+  status?: string;
 };

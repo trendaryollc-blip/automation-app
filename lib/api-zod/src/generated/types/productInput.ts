@@ -5,7 +5,7 @@
  * DropFlow - Dropshipping Automation Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { ProductInputStatus } from './productInputStatus';
+import type { ProductInputStatus } from "./productInputStatus";
 
 export interface ProductInput {
   /** @minLength 1 */

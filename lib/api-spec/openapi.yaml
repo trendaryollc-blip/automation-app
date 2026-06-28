@@ -907,7 +907,17 @@ components:
     # ---- Customer Insights ----
     CustomerInsight:
       type: object
-      required: [customerName, orderCount, totalRevenue, totalProfit, avgOrderValue, firstOrderAt, lastOrderAt, orders]
+      required:
+        [
+          customerName,
+          orderCount,
+          totalRevenue,
+          totalProfit,
+          avgOrderValue,
+          firstOrderAt,
+          lastOrderAt,
+          orders,
+        ]
       properties:
         customerName:
           type: string
@@ -1047,7 +1057,17 @@ components:
 
     DashboardAnalytics:
       type: object
-      required: [period, data, totalRevenue, totalProfit, totalOrders, revenueChange, profitChange, ordersChange]
+      required:
+        [
+          period,
+          data,
+          totalRevenue,
+          totalProfit,
+          totalOrders,
+          revenueChange,
+          profitChange,
+          ordersChange,
+        ]
       properties:
         period:
           type: string
@@ -1114,7 +1134,18 @@ components:
 
     SupplierMatch:
       type: object
-      required: [name, country, estimatedCostPrice, shippingDays, rating, matchScore, matchReason, pros, isExisting]
+      required:
+        [
+          name,
+          country,
+          estimatedCostPrice,
+          shippingDays,
+          rating,
+          matchScore,
+          matchReason,
+          pros,
+          isExisting,
+        ]
       properties:
         supplierId:
           type: ["integer", "null"]
@@ -1189,7 +1220,20 @@ components:
 
     ResearchReport:
       type: object
-      required: [id, query, demandScore, competitionLevel, suggestedPrice, estimatedMargin, topNiches, pros, cons, verdict, createdAt]
+      required:
+        [
+          id,
+          query,
+          demandScore,
+          competitionLevel,
+          suggestedPrice,
+          estimatedMargin,
+          topNiches,
+          pros,
+          cons,
+          verdict,
+          createdAt,
+        ]
       properties:
         id:
           type: integer
@@ -1266,7 +1310,18 @@ components:
 
     PlReport:
       type: object
-      required: [from, to, groupBy, rows, totalRevenue, totalCogs, totalGrossProfit, totalMargin, totalOrders]
+      required:
+        [
+          from,
+          to,
+          groupBy,
+          rows,
+          totalRevenue,
+          totalCogs,
+          totalGrossProfit,
+          totalMargin,
+          totalOrders,
+        ]
       properties:
         from:
           type: string
@@ -1358,7 +1413,17 @@ components:
     # ---- Dashboard ----
     DashboardStats:
       type: object
-      required: [totalRevenue, totalProfit, totalOrders, totalProducts, activeSuppliers, pendingOrders, conversionRate, avgMargin]
+      required:
+        [
+          totalRevenue,
+          totalProfit,
+          totalOrders,
+          totalProducts,
+          activeSuppliers,
+          pendingOrders,
+          conversionRate,
+          avgMargin,
+        ]
       properties:
         totalRevenue:
           type: number

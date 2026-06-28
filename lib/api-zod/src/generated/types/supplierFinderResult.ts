@@ -5,7 +5,7 @@
  * DropFlow - Dropshipping Automation Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { SupplierMatch } from './supplierMatch';
+import type { SupplierMatch } from "./supplierMatch";
 
 export interface SupplierFinderResult {
   id: number;

@@ -8,9 +8,9 @@
 
 export interface SupplierFinderInput {
   /**
-     * Product name to find suppliers for
-     * @minLength 1
-     */
+   * Product name to find suppliers for
+   * @minLength 1
+   */
   productName: string;
   /** Optional target cost price budget */
   targetCostPrice?: number;

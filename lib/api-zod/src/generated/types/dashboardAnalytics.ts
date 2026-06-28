@@ -5,7 +5,7 @@
  * DropFlow - Dropshipping Automation Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { AnalyticsDataPoint } from './analyticsDataPoint';
+import type { AnalyticsDataPoint } from "./analyticsDataPoint";
 
 export interface DashboardAnalytics {
   period: string;

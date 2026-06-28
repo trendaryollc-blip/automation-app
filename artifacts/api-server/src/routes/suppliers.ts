@@ -78,7 +78,8 @@ router.patch("/suppliers/:id", async (req, res): Promise<void> => {
   }
   const { rating, ...rest } = parsed.data;
   const updateData: Record<string, unknown> = { ...rest };
-  if (rating !== undefined) updateData.rating = rating != null ? String(rating) : null;
+  if (rating !== undefined)
+    updateData.rating = rating != null ? String(rating) : null;
 
   const [supplier] = await db
     .update(suppliersTable)
@@ -126,7 +127,11 @@ router.get("/suppliers/:id/products", async (req, res): Promise<void> => {
     sellPrice: p.sellPrice != null ? Number(p.sellPrice) : null,
     margin:
       p.costPrice != null && p.sellPrice != null && Number(p.sellPrice) > 0
-        ? Math.round(((Number(p.sellPrice) - Number(p.costPrice)) / Number(p.sellPrice)) * 100)
+        ? Math.round(
+            ((Number(p.sellPrice) - Number(p.costPrice)) /
+              Number(p.sellPrice)) *
+              100,
+          )
         : null,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),

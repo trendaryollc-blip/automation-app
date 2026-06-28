@@ -1,4 +1,11 @@
-import { pgTable, text, serial, timestamp, numeric, integer } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  timestamp,
+  numeric,
+  integer,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -16,10 +23,19 @@ export const promotionsTable = pgTable("promotions", {
   usageCount: integer("usage_count").notNull().default(0),
   revenueImpact: numeric("revenue_impact", { precision: 10, scale: 2 }),
   notes: text("notes"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
-export const insertPromotionSchema = createInsertSchema(promotionsTable).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertPromotionSchema = createInsertSchema(promotionsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
 export type Promotion = typeof promotionsTable.$inferSelect;

@@ -1,6 +1,13 @@
 import { useListOrders, useListProducts } from "@workspace/api-client-react";
 import { useMemo, useState } from "react";
-import { BarChart2, TrendingUp, Package, DollarSign, ShoppingCart, Trophy } from "lucide-react";
+import {
+  BarChart2,
+  TrendingUp,
+  Package,
+  DollarSign,
+  ShoppingCart,
+  Trophy,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,11 +22,19 @@ import {
 } from "recharts";
 
 function fmt(n: number) {
-  return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  return n.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  });
 }
 
 function fmtFull(n: number) {
-  return n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 });
+  return n.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  });
 }
 
 const RANK_COLORS = ["#f59e0b", "#94a3b8", "#b45309"];
@@ -36,15 +51,18 @@ export default function AnalyticsPage() {
   const isLoading = ordersLoading || productsLoading;
 
   const productStats = useMemo(() => {
-    const map = new Map<string, {
-      productName: string;
-      productId: number | null;
-      units: number;
-      revenue: number;
-      cogs: number;
-      profit: number;
-      orderCount: number;
-    }>();
+    const map = new Map<
+      string,
+      {
+        productName: string;
+        productId: number | null;
+        units: number;
+        revenue: number;
+        cogs: number;
+        profit: number;
+        orderCount: number;
+      }
+    >();
 
     for (const o of orders) {
       if (o.status === "cancelled") continue;
@@ -82,7 +100,10 @@ export default function AnalyticsPage() {
       .sort((a, b) => b[chartMetric] - a[chartMetric])
       .slice(0, 8)
       .map((s) => ({
-        name: s.productName.length > 18 ? s.productName.slice(0, 18) + "…" : s.productName,
+        name:
+          s.productName.length > 18
+            ? s.productName.slice(0, 18) + "…"
+            : s.productName,
         value: Number(s[chartMetric].toFixed(2)),
       }));
   }, [productStats, chartMetric]);
@@ -90,9 +111,12 @@ export default function AnalyticsPage() {
   const totalRevenue = productStats.reduce((s, p) => s + p.revenue, 0);
   const totalProfit = productStats.reduce((s, p) => s + p.profit, 0);
   const totalUnits = productStats.reduce((s, p) => s + p.units, 0);
-  const avgMargin = productStats.length > 0
-    ? Math.round(productStats.reduce((s, p) => s + p.margin, 0) / productStats.length)
-    : 0;
+  const avgMargin =
+    productStats.length > 0
+      ? Math.round(
+          productStats.reduce((s, p) => s + p.margin, 0) / productStats.length,
+        )
+      : 0;
 
   const SORT_OPTIONS: { key: SortKey; label: string }[] = [
     { key: "profit", label: "Profit" },
@@ -101,11 +125,12 @@ export default function AnalyticsPage() {
     { key: "margin", label: "Margin %" },
   ];
 
-  if (isLoading) return (
-    <div className="flex items-center justify-center h-full">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -122,10 +147,30 @@ export default function AnalyticsPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Total Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-blue-400" },
-          { label: "Total Profit", value: fmt(totalProfit), icon: TrendingUp, color: "text-green-400" },
-          { label: "Units Sold", value: totalUnits.toLocaleString(), icon: ShoppingCart, color: "text-purple-400" },
-          { label: "Avg Margin", value: `${avgMargin}%`, icon: BarChart2, color: "text-primary" },
+          {
+            label: "Total Revenue",
+            value: fmt(totalRevenue),
+            icon: DollarSign,
+            color: "text-blue-400",
+          },
+          {
+            label: "Total Profit",
+            value: fmt(totalProfit),
+            icon: TrendingUp,
+            color: "text-green-400",
+          },
+          {
+            label: "Units Sold",
+            value: totalUnits.toLocaleString(),
+            icon: ShoppingCart,
+            color: "text-purple-400",
+          },
+          {
+            label: "Avg Margin",
+            value: `${avgMargin}%`,
+            icon: BarChart2,
+            color: "text-primary",
+          },
         ].map((kpi) => (
           <Card key={kpi.label}>
             <CardContent className="pt-5 pb-4">
@@ -133,7 +178,9 @@ export default function AnalyticsPage() {
                 <kpi.icon className={`w-3.5 h-3.5 ${kpi.color}`} />
                 {kpi.label}
               </div>
-              <div className={`text-2xl font-bold ${kpi.color}`}>{kpi.value}</div>
+              <div className={`text-2xl font-bold ${kpi.color}`}>
+                {kpi.value}
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -143,7 +190,9 @@ export default function AnalyticsPage() {
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold">Top Products by Metric</CardTitle>
+            <CardTitle className="text-sm font-semibold">
+              Top Products by Metric
+            </CardTitle>
             <div className="flex gap-1">
               {SORT_OPTIONS.map((o) => (
                 <button
@@ -164,18 +213,50 @@ export default function AnalyticsPage() {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={chartData} margin={{ top: 4, right: 12, left: 0, bottom: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94a3b8" }} angle={-30} textAnchor="end" interval={0} />
-                <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} tickFormatter={(v) => chartMetric === "margin" ? `${v}%` : `$${v}`} width={55} />
+              <BarChart
+                data={chartData}
+                margin={{ top: 4, right: 12, left: 0, bottom: 40 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.06)"
+                />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  angle={-30}
+                  textAnchor="end"
+                  interval={0}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  tickFormatter={(v) =>
+                    chartMetric === "margin" ? `${v}%` : `$${v}`
+                  }
+                  width={55}
+                />
                 <Tooltip
-                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
+                  contentStyle={{
+                    background: "#1e293b",
+                    border: "1px solid #334155",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
                   labelStyle={{ color: "#e2e8f0", fontWeight: 600 }}
-                  formatter={(v: number) => chartMetric === "margin" ? [`${v}%`, "Value"] : [fmtFull(v), "Value"]}
+                  formatter={(v: number) =>
+                    chartMetric === "margin"
+                      ? [`${v}%`, "Value"]
+                      : [fmtFull(v), "Value"]
+                  }
                 />
                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                   {chartData.map((_, i) => (
-                    <Cell key={i} fill={i < 3 ? ["#6366f1", "#8b5cf6", "#a78bfa"][i] : "#475569"} />
+                    <Cell
+                      key={i}
+                      fill={
+                        i < 3 ? ["#6366f1", "#8b5cf6", "#a78bfa"][i] : "#475569"
+                      }
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -218,26 +299,48 @@ export default function AnalyticsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="pb-2 text-left font-semibold text-muted-foreground text-xs w-10">#</th>
-                    <th className="pb-2 text-left font-semibold text-muted-foreground text-xs">Product</th>
-                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">Units</th>
-                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">Revenue</th>
-                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">COGS</th>
-                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">Profit</th>
-                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">Margin</th>
-                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">Orders</th>
+                    <th className="pb-2 text-left font-semibold text-muted-foreground text-xs w-10">
+                      #
+                    </th>
+                    <th className="pb-2 text-left font-semibold text-muted-foreground text-xs">
+                      Product
+                    </th>
+                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">
+                      Units
+                    </th>
+                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">
+                      Revenue
+                    </th>
+                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">
+                      COGS
+                    </th>
+                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">
+                      Profit
+                    </th>
+                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">
+                      Margin
+                    </th>
+                    <th className="pb-2 text-right font-semibold text-muted-foreground text-xs">
+                      Orders
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {productStats.map((p, i) => (
-                    <tr key={p.productName} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <tr
+                      key={p.productName}
+                      className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                    >
                       <td className="py-3 pr-2">
                         <div
                           className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            i === 0 ? "bg-amber-500/20 text-amber-400" :
-                            i === 1 ? "bg-slate-500/20 text-slate-300" :
-                            i === 2 ? "bg-orange-700/20 text-orange-500" :
-                            "bg-muted text-muted-foreground"
+                            i === 0
+                              ? "bg-amber-500/20 text-amber-400"
+                              : i === 1
+                                ? "bg-slate-500/20 text-slate-300"
+                                : i === 2
+                                  ? "bg-orange-700/20 text-orange-500"
+                                  : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {i + 1}
@@ -246,39 +349,69 @@ export default function AnalyticsPage() {
                       <td className="py-3">
                         <div className="font-medium">{p.productName}</div>
                       </td>
-                      <td className="py-3 text-right font-mono text-muted-foreground">{p.units}</td>
-                      <td className="py-3 text-right font-mono text-blue-400">{fmtFull(p.revenue)}</td>
-                      <td className="py-3 text-right font-mono text-muted-foreground">{fmtFull(p.cogs)}</td>
-                      <td className="py-3 text-right font-mono font-semibold text-green-400">{fmtFull(p.profit)}</td>
+                      <td className="py-3 text-right font-mono text-muted-foreground">
+                        {p.units}
+                      </td>
+                      <td className="py-3 text-right font-mono text-blue-400">
+                        {fmtFull(p.revenue)}
+                      </td>
+                      <td className="py-3 text-right font-mono text-muted-foreground">
+                        {fmtFull(p.cogs)}
+                      </td>
+                      <td className="py-3 text-right font-mono font-semibold text-green-400">
+                        {fmtFull(p.profit)}
+                      </td>
                       <td className="py-3 text-right">
                         <Badge
                           variant="outline"
                           className={`text-xs font-mono ${
-                            p.margin >= 60 ? "border-green-500/30 text-green-400 bg-green-500/10" :
-                            p.margin >= 40 ? "border-blue-500/30 text-blue-400 bg-blue-500/10" :
-                            "border-red-500/30 text-red-400 bg-red-500/10"
+                            p.margin >= 60
+                              ? "border-green-500/30 text-green-400 bg-green-500/10"
+                              : p.margin >= 40
+                                ? "border-blue-500/30 text-blue-400 bg-blue-500/10"
+                                : "border-red-500/30 text-red-400 bg-red-500/10"
                           }`}
                         >
                           {p.margin}%
                         </Badge>
                       </td>
-                      <td className="py-3 text-right text-muted-foreground">{p.orderCount}</td>
+                      <td className="py-3 text-right text-muted-foreground">
+                        {p.orderCount}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr className="border-t border-border bg-muted/20">
-                    <td colSpan={2} className="py-3 text-xs font-semibold text-muted-foreground pl-1">TOTAL</td>
-                    <td className="py-3 text-right font-mono text-sm font-semibold">{totalUnits}</td>
-                    <td className="py-3 text-right font-mono text-sm font-semibold text-blue-400">{fmtFull(totalRevenue)}</td>
-                    <td className="py-3 text-right font-mono text-sm text-muted-foreground">{fmtFull(totalRevenue - totalProfit)}</td>
-                    <td className="py-3 text-right font-mono text-sm font-semibold text-green-400">{fmtFull(totalProfit)}</td>
+                    <td
+                      colSpan={2}
+                      className="py-3 text-xs font-semibold text-muted-foreground pl-1"
+                    >
+                      TOTAL
+                    </td>
+                    <td className="py-3 text-right font-mono text-sm font-semibold">
+                      {totalUnits}
+                    </td>
+                    <td className="py-3 text-right font-mono text-sm font-semibold text-blue-400">
+                      {fmtFull(totalRevenue)}
+                    </td>
+                    <td className="py-3 text-right font-mono text-sm text-muted-foreground">
+                      {fmtFull(totalRevenue - totalProfit)}
+                    </td>
+                    <td className="py-3 text-right font-mono text-sm font-semibold text-green-400">
+                      {fmtFull(totalProfit)}
+                    </td>
                     <td className="py-3 text-right">
-                      <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary bg-primary/10">
+                      <Badge
+                        variant="outline"
+                        className="text-xs font-mono border-primary/30 text-primary bg-primary/10"
+                      >
                         {avgMargin}%
                       </Badge>
                     </td>
-                    <td className="py-3 text-right text-muted-foreground text-sm">{orders.filter(o => o.status !== "cancelled").length}</td>
+                    <td className="py-3 text-right text-muted-foreground text-sm">
+                      {orders.filter((o) => o.status !== "cancelled").length}
+                    </td>
                   </tr>
                 </tfoot>
               </table>

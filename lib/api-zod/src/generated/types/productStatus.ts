@@ -6,12 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ProductStatus = typeof ProductStatus[keyof typeof ProductStatus];
-
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus];
 
 export const ProductStatus = {
-  hunting: 'hunting',
-  researching: 'researching',
-  listed: 'listed',
-  archived: 'archived',
+  hunting: "hunting",
+  researching: "researching",
+  listed: "listed",
+  archived: "archived",
 } as const;

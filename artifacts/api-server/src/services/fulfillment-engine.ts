@@ -1,4 +1,12 @@
-import { db, suppliersTable, fulfillmentQueueTable, purchaseOrdersTable, purchaseOrderItemsTable, ordersTable, storeConnectionsTable } from "@workspace/db";
+import {
+  db,
+  suppliersTable,
+  fulfillmentQueueTable,
+  purchaseOrdersTable,
+  purchaseOrderItemsTable,
+  ordersTable,
+  storeConnectionsTable,
+} from "@workspace/db";
 import { desc, eq } from "drizzle-orm";
 import { placeCJOrder } from "./cjdropshipping.js";
 import { placeZendropOrder } from "./zendrop.js";
@@ -20,7 +28,10 @@ async function matchBestSupplier(productName: string): Promise<{
   estimatedCost: number;
   matchReason: string;
 } | null> {
-  const suppliers = await db.select().from(suppliersTable).orderBy(desc(suppliersTable.rating));
+  const suppliers = await db
+    .select()
+    .from(suppliersTable)
+    .orderBy(desc(suppliersTable.rating));
   if (suppliers.length === 0) return null;
 
   const category = detectCategory(productName);
@@ -30,8 +41,13 @@ async function matchBestSupplier(productName: string): Promise<{
 
   for (const s of suppliers) {
     let score = Number(s.rating ?? 3) * 20;
-    const nameMatch = s.name.toLowerCase().split(/\s+/).some(w => productName.toLowerCase().includes(w) && w.length > 3);
-    if (nameMatch) { score += 25; }
+    const nameMatch = s.name
+      .toLowerCase()
+      .split(/\s+/)
+      .some((w) => productName.toLowerCase().includes(w) && w.length > 3);
+    if (nameMatch) {
+      score += 25;
+    }
     if (s.shippingDays != null && s.shippingDays <= 7) score += 15;
     else if (s.shippingDays != null && s.shippingDays <= 14) score += 8;
     if (s.notes?.toLowerCase().includes(category)) score += 10;
@@ -52,7 +68,8 @@ async function matchBestSupplier(productName: string): Promise<{
     supplierId: best.id,
     supplierName: best.name,
     estimatedCost: Math.round(estimatedCost * 100) / 100,
-    matchReason: bestReason || `Best available supplier (${Number(best.rating ?? 3)}★)`,
+    matchReason:
+      bestReason || `Best available supplier (${Number(best.rating ?? 3)}★)`,
   };
 }
 
@@ -61,10 +78,12 @@ export async function autoFulfillOrder(order: OrderPayload): Promise<void> {
 
   const match = await matchBestSupplier(order.productName);
 
-  const estimatedCost = match?.estimatedCost ?? (sellPrice ? sellPrice * 0.35 : null);
-  const estimatedMargin = sellPrice && estimatedCost
-    ? Math.round(((sellPrice - estimatedCost) / sellPrice) * 100)
-    : null;
+  const estimatedCost =
+    match?.estimatedCost ?? (sellPrice ? sellPrice * 0.35 : null);
+  const estimatedMargin =
+    sellPrice && estimatedCost
+      ? Math.round(((sellPrice - estimatedCost) / sellPrice) * 100)
+      : null;
 
   await db.insert(fulfillmentQueueTable).values({
     orderId: order.id,
@@ -77,17 +96,24 @@ export async function autoFulfillOrder(order: OrderPayload): Promise<void> {
     supplierName: match?.supplierName ?? null,
     estimatedCost: estimatedCost?.toString() ?? null,
     estimatedMargin: estimatedMargin?.toString() ?? null,
-    matchReason: match?.matchReason ?? "No supplier matched — please assign manually",
+    matchReason:
+      match?.matchReason ?? "No supplier matched — please assign manually",
     status: "pending_approval",
     autoProcessed: true,
     storeSource: order.storeSource ?? null,
   });
 }
 
-export async function approveFulfillmentItem(itemId: number): Promise<{ success: boolean; poId?: number; error?: string }> {
-  const [item] = await db.select().from(fulfillmentQueueTable).where(eq(fulfillmentQueueTable.id, itemId));
+export async function approveFulfillmentItem(
+  itemId: number,
+): Promise<{ success: boolean; poId?: number; error?: string }> {
+  const [item] = await db
+    .select()
+    .from(fulfillmentQueueTable)
+    .where(eq(fulfillmentQueueTable.id, itemId));
   if (!item) return { success: false, error: "Item not found" };
-  if (item.status !== "pending_approval") return { success: false, error: "Item is not pending approval" };
+  if (item.status !== "pending_approval")
+    return { success: false, error: "Item is not pending approval" };
 
   const count = await db.select().from(purchaseOrdersTable);
   const poNumber = `PO-${String(count.length + 1).padStart(4, "0")}`;
@@ -95,14 +121,17 @@ export async function approveFulfillmentItem(itemId: number): Promise<{ success:
   const unitCost = item.estimatedCost ? Number(item.estimatedCost) : 0;
   const totalCost = unitCost * item.quantity;
 
-  const [po] = await db.insert(purchaseOrdersTable).values({
-    poNumber,
-    supplierId: item.supplierId ?? null,
-    supplierName: item.supplierName ?? null,
-    status: "draft",
-    totalCost: totalCost.toString(),
-    notes: `Auto-generated from order ${item.orderNumber} via fulfillment queue`,
-  }).returning();
+  const [po] = await db
+    .insert(purchaseOrdersTable)
+    .values({
+      poNumber,
+      supplierId: item.supplierId ?? null,
+      supplierName: item.supplierName ?? null,
+      status: "draft",
+      totalCost: totalCost.toString(),
+      notes: `Auto-generated from order ${item.orderNumber} via fulfillment queue`,
+    })
+    .returning();
 
   await db.insert(purchaseOrderItemsTable).values({
     purchaseOrderId: po.id,
@@ -112,11 +141,13 @@ export async function approveFulfillmentItem(itemId: number): Promise<{ success:
     totalCost: totalCost ? totalCost.toString() : null,
   });
 
-  await db.update(fulfillmentQueueTable)
+  await db
+    .update(fulfillmentQueueTable)
     .set({ status: "approved", approvedAt: new Date(), purchaseOrderId: po.id })
     .where(eq(fulfillmentQueueTable.id, itemId));
 
-  await db.update(ordersTable)
+  await db
+    .update(ordersTable)
     .set({ status: "processing" })
     .where(eq(ordersTable.id, item.orderId));
 
@@ -124,10 +155,17 @@ export async function approveFulfillmentItem(itemId: number): Promise<{ success:
   // try to place the order externally after local approval.
   if (item.storeSource) {
     try {
-      const [conn] = await db.select().from(storeConnectionsTable).where(eq(storeConnectionsTable.storeName, item.storeSource));
+      const [conn] = await db
+        .select()
+        .from(storeConnectionsTable)
+        .where(eq(storeConnectionsTable.storeName, item.storeSource));
       if (conn && conn.config) {
         const config = JSON.parse(conn.config) as Record<string, unknown>;
-        if (conn.platform === "cjdropshipping" && config.apiKey && config.apiSecret) {
+        if (
+          conn.platform === "cjdropshipping" &&
+          config.apiKey &&
+          config.apiSecret
+        ) {
           await placeCJOrder({
             productId: item.productName,
             quantity: item.quantity,
@@ -169,12 +207,23 @@ export async function approveFulfillmentItem(itemId: number): Promise<{ success:
   return { success: true, poId: po.id };
 }
 
-export async function rejectFulfillmentItem(itemId: number, reason?: string): Promise<{ success: boolean; error?: string }> {
-  const [item] = await db.select().from(fulfillmentQueueTable).where(eq(fulfillmentQueueTable.id, itemId));
+export async function rejectFulfillmentItem(
+  itemId: number,
+  reason?: string,
+): Promise<{ success: boolean; error?: string }> {
+  const [item] = await db
+    .select()
+    .from(fulfillmentQueueTable)
+    .where(eq(fulfillmentQueueTable.id, itemId));
   if (!item) return { success: false, error: "Item not found" };
 
-  await db.update(fulfillmentQueueTable)
-    .set({ status: "rejected", rejectedAt: new Date(), rejectionReason: reason ?? null })
+  await db
+    .update(fulfillmentQueueTable)
+    .set({
+      status: "rejected",
+      rejectedAt: new Date(),
+      rejectionReason: reason ?? null,
+    })
     .where(eq(fulfillmentQueueTable.id, itemId));
 
   return { success: true };

@@ -17,6 +17,7 @@ A full dropshipping automation platform covering product hunting, supplier manag
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 22+ (v25 recommended)
 - pnpm 11+ (`npm install -g pnpm`)
 - PostgreSQL (default) OR a Firebase project
@@ -40,20 +41,25 @@ pnpm --filter @workspace/db run seed:firestore
 ## Database Options
 
 ### PostgreSQL (default)
+
 Set `DB_MODE=postgres` (or leave unset) and provide a `DATABASE_URL`:
+
 ```
 DATABASE_URL=postgresql://user:password@localhost:5432/dropflow
 ```
 
 ### Firestore
+
 Set `DB_MODE=firestore` and provide Firebase credentials:
 
 **Option A** - Service account JSON:
+
 ```
 GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
 ```
 
 **Option B** - Environment variables:
+
 ```
 FIREBASE_PROJECT_ID=your-project-id
 FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
@@ -81,16 +87,16 @@ Drop-Ship-Automatezip/
 
 ## Available Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm run dev` | Start API + frontend |
-| `pnpm run dev:server` | Start API server only |
-| `pnpm run dev:client` | Start frontend only |
-| `pnpm run build` | Typecheck + build all |
-| `pnpm run db:push` | Push Drizzle schema to PostgreSQL |
-| `pnpm run db:seed` | Seed PostgreSQL data |
-| `pnpm run lint` | Format check |
-| `pnpm run format` | Format all files |
+| Command               | Description                       |
+| --------------------- | --------------------------------- |
+| `pnpm run dev`        | Start API + frontend              |
+| `pnpm run dev:server` | Start API server only             |
+| `pnpm run dev:client` | Start frontend only               |
+| `pnpm run build`      | Typecheck + build all             |
+| `pnpm run db:push`    | Push Drizzle schema to PostgreSQL |
+| `pnpm run db:seed`    | Seed PostgreSQL data              |
+| `pnpm run lint`       | Format check                      |
+| `pnpm run format`     | Format all files                  |
 
 ## Vercel Deployment
 
@@ -105,17 +111,17 @@ Drop-Ship-Automatezip/
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `PORT` | No | API server port (default: 8080) |
-| `DATABASE_URL` | PostgreSQL | PostgreSQL connection string |
-| `DB_MODE` | No | `postgres` or `firestore` |
-| `FIREBASE_PROJECT_ID` | Firestore | Firebase project ID |
-| `FIREBASE_CLIENT_EMAIL` | Firestore | Service account email |
-| `FIREBASE_PRIVATE_KEY` | Firestore | Service account private key |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Firestore | Path to service account JSON |
-| `VITE_API_URL` | No | API URL for dev proxy |
-| `CORS_ORIGIN` | No | CORS origin for production |
+| Variable                         | Required   | Description                     |
+| -------------------------------- | ---------- | ------------------------------- |
+| `PORT`                           | No         | API server port (default: 8080) |
+| `DATABASE_URL`                   | PostgreSQL | PostgreSQL connection string    |
+| `DB_MODE`                        | No         | `postgres` or `firestore`       |
+| `FIREBASE_PROJECT_ID`            | Firestore  | Firebase project ID             |
+| `FIREBASE_CLIENT_EMAIL`          | Firestore  | Service account email           |
+| `FIREBASE_PRIVATE_KEY`           | Firestore  | Service account private key     |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Firestore  | Path to service account JSON    |
+| `VITE_API_URL`                   | No         | API URL for dev proxy           |
+| `CORS_ORIGIN`                    | No         | CORS origin for production      |
 
 ## Architecture
 
@@ -123,7 +129,6 @@ Drop-Ship-Automatezip/
 - **Dual DB**: PostgreSQL (Drizzle ORM) or Firestore (Firebase Admin SDK) via `DB_MODE`
 - **AI descriptions**: Template-based generator, swappable for real LLM
 - **Order numbers**: Auto-generated as `DF-<timestamp>`
-
 
 ### Run Development
 

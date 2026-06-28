@@ -7,6 +7,6 @@
  */
 
 export type ListProductsParams = {
-status?: string;
-category?: string;
+  status?: string;
+  category?: string;
 };

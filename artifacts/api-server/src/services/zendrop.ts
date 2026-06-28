@@ -4,10 +4,13 @@ export type ZendropConfig = {
   [key: string]: unknown;
 };
 
-export async function testZendrop(config: ZendropConfig | null): Promise<{ ok: boolean; message?: string; error?: string }> {
+export async function testZendrop(
+  config: ZendropConfig | null,
+): Promise<{ ok: boolean; message?: string; error?: string }> {
   try {
     const apiKey = config?.apiKey;
-    const baseUrl = (config?.baseUrl as string | undefined) || "https://api.zendrop.com";
+    const baseUrl =
+      (config?.baseUrl as string | undefined) || "https://api.zendrop.com";
 
     if (!apiKey) {
       return { ok: false, error: "Zendrop API key is required" };
@@ -18,21 +21,31 @@ export async function testZendrop(config: ZendropConfig | null): Promise<{ ok: b
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
     });
 
-    const data = (await response.json()) as { data?: { email?: string } | null; message?: string; error?: string };
+    const data = (await response.json()) as {
+      data?: { email?: string } | null;
+      message?: string;
+      error?: string;
+    };
 
     if (response.ok && data.data) {
-      return { ok: true, message: `Connected as ${data.data.email || "Zendrop account"}` };
+      return {
+        ok: true,
+        message: `Connected as ${data.data.email || "Zendrop account"}`,
+      };
     }
 
     const errorMessage = data.message || data.error || "Invalid API key";
     return { ok: false, error: `Zendrop error: ${errorMessage}` };
   } catch (error) {
-    return { ok: false, error: `Zendrop connection failed: ${error instanceof Error ? error.message : "Unknown error"}` };
+    return {
+      ok: false,
+      error: `Zendrop connection failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    };
   }
 }
 
@@ -63,7 +76,7 @@ export async function placeZendropOrder(params: {
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -93,7 +106,7 @@ export async function getZendropInventory(productId: string) {
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
   });

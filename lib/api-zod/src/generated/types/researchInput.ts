@@ -8,8 +8,8 @@
 
 export interface ResearchInput {
   /**
-     * Product keyword or URL to research
-     * @minLength 1
-     */
+   * Product keyword or URL to research
+   * @minLength 1
+   */
   query: string;
 }

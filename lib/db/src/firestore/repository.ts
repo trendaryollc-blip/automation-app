@@ -5,12 +5,13 @@
  * API route handlers can work with either PostgreSQL or Firestore.
  */
 
+import { getFirestoreDb, isFirestoreMode, logger } from "./index";
 import {
-  getFirestoreDb,
-  isFirestoreMode,
-  logger,
-} from "./index";
-import { docToData, docsToData, COLLECTIONS, CollectionName } from "./collections";
+  docToData,
+  docsToData,
+  COLLECTIONS,
+  CollectionName,
+} from "./collections";
 import type { Firestore } from "firebase-admin/firestore";
 
 // =============================================================================
@@ -101,7 +102,9 @@ export function createRepository<T extends Record<string, unknown>>(
    * Create a new document with a specific ID
    */
   async function createWithId(id: string, data: Partial<T>): Promise<T> {
-    await collection().doc(id).set(data as Record<string, unknown>);
+    await collection()
+      .doc(id)
+      .set(data as Record<string, unknown>);
     const doc = await collection().doc(id).get();
     return { id: doc.id, ...doc.data() } as unknown as T;
   }
@@ -109,11 +112,10 @@ export function createRepository<T extends Record<string, unknown>>(
   /**
    * Update a document by ID
    */
-  async function update(
-    id: string,
-    data: Partial<T>,
-  ): Promise<T | null> {
-    await collection().doc(id).update(data as Record<string, unknown>);
+  async function update(id: string, data: Partial<T>): Promise<T | null> {
+    await collection()
+      .doc(id)
+      .update(data as Record<string, unknown>);
     return findById(id);
   }
 
@@ -160,19 +162,26 @@ export function createRepository<T extends Record<string, unknown>>(
 export const productsRepo = () => createRepository(COLLECTIONS.PRODUCTS);
 export const suppliersRepo = () => createRepository(COLLECTIONS.SUPPLIERS);
 export const ordersRepo = () => createRepository(COLLECTIONS.ORDERS);
-export const orderTimelineRepo = () => createRepository(COLLECTIONS.ORDER_TIMELINE);
-export const purchaseOrdersRepo = () => createRepository(COLLECTIONS.PURCHASE_ORDERS);
+export const orderTimelineRepo = () =>
+  createRepository(COLLECTIONS.ORDER_TIMELINE);
+export const purchaseOrdersRepo = () =>
+  createRepository(COLLECTIONS.PURCHASE_ORDERS);
 export const returnsRepo = () => createRepository(COLLECTIONS.RETURNS);
 export const researchRepo = () => createRepository(COLLECTIONS.RESEARCH);
-export const fulfillmentQueueRepo = () => createRepository(COLLECTIONS.FULFILLMENT_QUEUE);
+export const fulfillmentQueueRepo = () =>
+  createRepository(COLLECTIONS.FULFILLMENT_QUEUE);
 export const promotionsRepo = () => createRepository(COLLECTIONS.PROMOTIONS);
 export const priceWatchRepo = () => createRepository(COLLECTIONS.PRICE_WATCH);
-export const priceSnapshotsRepo = () => createRepository(COLLECTIONS.PRICE_SNAPSHOTS);
+export const priceSnapshotsRepo = () =>
+  createRepository(COLLECTIONS.PRICE_SNAPSHOTS);
 export const productTagsRepo = () => createRepository(COLLECTIONS.PRODUCT_TAGS);
-export const storeConnectionsRepo = () => createRepository(COLLECTIONS.STORE_CONNECTIONS);
+export const storeConnectionsRepo = () =>
+  createRepository(COLLECTIONS.STORE_CONNECTIONS);
 export const launchesRepo = () => createRepository(COLLECTIONS.LAUNCHES);
 export const adCampaignsRepo = () => createRepository(COLLECTIONS.AD_CAMPAIGNS);
 export const aiSettingsRepo = () => createRepository(COLLECTIONS.AI_SETTINGS);
-export const customerInsightsRepo = () => createRepository(COLLECTIONS.CUSTOMER_INSIGHTS);
+export const customerInsightsRepo = () =>
+  createRepository(COLLECTIONS.CUSTOMER_INSIGHTS);
 export const cashFlowRepo = () => createRepository(COLLECTIONS.CASH_FLOW);
-export const supplierFinderRepo = () => createRepository(COLLECTIONS.SUPPLIER_FINDER);
+export const supplierFinderRepo = () =>
+  createRepository(COLLECTIONS.SUPPLIER_FINDER);

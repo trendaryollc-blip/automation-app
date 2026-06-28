@@ -1,16 +1,33 @@
 import { useState, useMemo } from "react";
-import { ShoppingBag, ChevronDown, ChevronUp, CheckCircle2, AlertTriangle, Package, DollarSign } from "lucide-react";
+import {
+  ShoppingBag,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  AlertTriangle,
+  Package,
+  DollarSign,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useListProducts, useListSuppliers, useUpdateProduct, getListProductsQueryKey } from "@workspace/api-client-react";
+import {
+  useListProducts,
+  useListSuppliers,
+  useUpdateProduct,
+  getListProductsQueryKey,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 
 function fmt(n: number) {
-  return n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 });
+  return n.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  });
 }
 
 type ReorderRow = {
@@ -38,7 +55,12 @@ function SupplierGroup({
 }) {
   const [open, setOpen] = useState(true);
   const [quantities, setQuantities] = useState<Record<number, string>>(() =>
-    Object.fromEntries(rows.map((r) => [r.id, String(Math.max(r.deficit, Math.ceil(r.stockThreshold * 1.2)))]))
+    Object.fromEntries(
+      rows.map((r) => [
+        r.id,
+        String(Math.max(r.deficit, Math.ceil(r.stockThreshold * 1.2))),
+      ]),
+    ),
   );
   const [ordered, setOrdered] = useState<Record<number, boolean>>({});
   const updateProduct = useUpdateProduct();
@@ -56,7 +78,10 @@ function SupplierGroup({
   const handleMarkOrdered = async (row: ReorderRow) => {
     const reorderQty = parseInt(quantities[row.id] ?? "0") || 0;
     if (reorderQty <= 0) {
-      toast({ title: "Enter a valid reorder quantity", variant: "destructive" });
+      toast({
+        title: "Enter a valid reorder quantity",
+        variant: "destructive",
+      });
       return;
     }
     try {
@@ -105,8 +130,13 @@ function SupplierGroup({
               <Package className="w-4 h-4 text-primary" />
               <span className="font-semibold">{supplierName}</span>
               {supplierId && (
-                <Link href={`/suppliers/${supplierId}`} onClick={(e) => e.stopPropagation()}>
-                  <span className="text-xs text-primary underline underline-offset-2 hover:opacity-80">view supplier</span>
+                <Link
+                  href={`/suppliers/${supplierId}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span className="text-xs text-primary underline underline-offset-2 hover:opacity-80">
+                    view supplier
+                  </span>
                 </Link>
               )}
             </div>
@@ -115,12 +145,19 @@ function SupplierGroup({
                 {pendingCount} item{pendingCount !== 1 ? "s" : ""} pending
               </Badge>
               {pendingCount < rows.length && (
-                <Badge variant="outline" className="text-xs border-green-500/30 text-green-400 bg-green-500/10">
+                <Badge
+                  variant="outline"
+                  className="text-xs border-green-500/30 text-green-400 bg-green-500/10"
+                >
                   {rows.length - pendingCount} ordered
                 </Badge>
               )}
             </div>
-            {open ? <ChevronUp className="w-4 h-4 text-muted-foreground ml-auto" /> : <ChevronDown className="w-4 h-4 text-muted-foreground ml-auto" />}
+            {open ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground ml-auto" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-muted-foreground ml-auto" />
+            )}
           </button>
           {open && pendingCount > 1 && (
             <Button size="sm" variant="outline" onClick={handleMarkAllOrdered}>
@@ -155,22 +192,35 @@ function SupplierGroup({
                     <tr key={row.id} className={isOrdered ? "opacity-40" : ""}>
                       <td className="py-2.5 pr-4">
                         <Link href={`/products/${row.id}`}>
-                          <span className="font-medium hover:underline cursor-pointer">{row.name}</span>
+                          <span className="font-medium hover:underline cursor-pointer">
+                            {row.name}
+                          </span>
                         </Link>
-                        <div className="text-xs text-muted-foreground capitalize">{row.status}</div>
+                        <div className="text-xs text-muted-foreground capitalize">
+                          {row.status}
+                        </div>
                       </td>
                       <td className="py-2.5 pr-3 text-right">
-                        <span className="font-mono text-orange-400 font-semibold">{row.stockQuantity}</span>
+                        <span className="font-mono text-orange-400 font-semibold">
+                          {row.stockQuantity}
+                        </span>
                       </td>
-                      <td className="py-2.5 pr-3 text-right text-muted-foreground font-mono">{row.stockThreshold}</td>
+                      <td className="py-2.5 pr-3 text-right text-muted-foreground font-mono">
+                        {row.stockThreshold}
+                      </td>
                       <td className="py-2.5 pr-3 text-right">
-                        <Badge variant="outline" className="text-xs border-red-500/30 text-red-400 bg-red-500/10 font-mono">
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-red-500/30 text-red-400 bg-red-500/10 font-mono"
+                        >
                           -{row.deficit}
                         </Badge>
                       </td>
                       <td className="py-2.5 pr-3 text-right">
                         {isOrdered ? (
-                          <span className="text-muted-foreground font-mono">{qty}</span>
+                          <span className="text-muted-foreground font-mono">
+                            {qty}
+                          </span>
                         ) : (
                           <Input
                             type="number"
@@ -178,7 +228,10 @@ function SupplierGroup({
                             className="w-20 h-7 text-right text-sm font-mono ml-auto"
                             value={quantities[row.id] ?? ""}
                             onChange={(e) =>
-                              setQuantities((q) => ({ ...q, [row.id]: e.target.value }))
+                              setQuantities((q) => ({
+                                ...q,
+                                [row.id]: e.target.value,
+                              }))
                             }
                           />
                         )}
@@ -214,8 +267,12 @@ function SupplierGroup({
               {pendingCount > 0 && (
                 <tfoot>
                   <tr className="border-t-2 border-border">
-                    <td colSpan={6} className="pt-3 text-sm font-semibold">Estimated Order Cost</td>
-                    <td className="pt-3 text-right font-bold text-primary">{fmt(totalCost)}</td>
+                    <td colSpan={6} className="pt-3 text-sm font-semibold">
+                      Estimated Order Cost
+                    </td>
+                    <td className="pt-3 text-right font-bold text-primary">
+                      {fmt(totalCost)}
+                    </td>
                     <td />
                   </tr>
                 </tfoot>
@@ -234,7 +291,7 @@ export default function ReorderPage() {
 
   const supplierMap = useMemo(
     () => new Map(suppliers.map((s) => [s.id, s])),
-    [suppliers]
+    [suppliers],
   );
 
   const lowStockRows: ReorderRow[] = useMemo(() => {
@@ -243,10 +300,11 @@ export default function ReorderPage() {
         (p) =>
           p.stockQuantity != null &&
           p.stockThreshold != null &&
-          p.stockQuantity < p.stockThreshold
+          p.stockQuantity < p.stockThreshold,
       )
       .map((p) => {
-        const supplier = p.supplierId != null ? supplierMap.get(p.supplierId) : null;
+        const supplier =
+          p.supplierId != null ? supplierMap.get(p.supplierId) : null;
         return {
           id: p.id,
           name: p.name,
@@ -263,7 +321,10 @@ export default function ReorderPage() {
   }, [products, supplierMap]);
 
   const grouped = useMemo(() => {
-    const map = new Map<string, { supplierId: number | null; rows: ReorderRow[] }>();
+    const map = new Map<
+      string,
+      { supplierId: number | null; rows: ReorderRow[] }
+    >();
     for (const row of lowStockRows) {
       const key = row.supplierName;
       if (!map.has(key)) map.set(key, { supplierId: row.supplierId, rows: [] });
@@ -289,7 +350,8 @@ export default function ReorderPage() {
             Reorder Suggestions
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Purchase order drafts for products running below their stock threshold.
+            Purchase order drafts for products running below their stock
+            threshold.
           </p>
         </div>
         <Card className="flex flex-col items-center justify-center py-16 text-center">
@@ -315,7 +377,8 @@ export default function ReorderPage() {
             Reorder Suggestions
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Purchase order drafts for products running below their stock threshold.
+            Purchase order drafts for products running below their stock
+            threshold.
           </p>
         </div>
       </div>
@@ -328,7 +391,9 @@ export default function ReorderPage() {
               <AlertTriangle className="w-3.5 h-3.5" />
               Low Stock Items
             </div>
-            <div className="text-2xl font-bold text-orange-400">{totalProducts}</div>
+            <div className="text-2xl font-bold text-orange-400">
+              {totalProducts}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -355,7 +420,9 @@ export default function ReorderPage() {
               <DollarSign className="w-3.5 h-3.5" />
               Est. Restock Cost
             </div>
-            <div className="text-2xl font-bold text-primary">{fmt(totalEstimatedCost)}</div>
+            <div className="text-2xl font-bold text-primary">
+              {fmt(totalEstimatedCost)}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -374,7 +441,9 @@ export default function ReorderPage() {
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
-        Reorder quantities default to the deficit plus a 20% buffer. Adjust any quantity before marking as ordered. Marking as ordered adds the quantity to the product's current stock.
+        Reorder quantities default to the deficit plus a 20% buffer. Adjust any
+        quantity before marking as ordered. Marking as ordered adds the quantity
+        to the product's current stock.
       </p>
     </div>
   );

@@ -207,7 +207,12 @@ async function seed() {
     { name: "Lucas Petit", email: "lucas@example.com" },
   ];
 
-  type OrderStatus = "pending" | "placed" | "shipped" | "delivered" | "cancelled";
+  type OrderStatus =
+    | "pending"
+    | "placed"
+    | "shipped"
+    | "delivered"
+    | "cancelled";
   const orderRows: {
     orderNumber: string;
     productId: number;
@@ -228,7 +233,15 @@ async function seed() {
 
   const listedProducts = products.filter((p) => p.status === "listed");
 
-  const statuses: OrderStatus[] = ["delivered", "delivered", "delivered", "shipped", "placed", "pending", "cancelled"];
+  const statuses: OrderStatus[] = [
+    "delivered",
+    "delivered",
+    "delivered",
+    "shipped",
+    "placed",
+    "pending",
+    "cancelled",
+  ];
 
   for (let i = 0; i < 40; i++) {
     const product = listedProducts[i % listedProducts.length];
@@ -254,7 +267,10 @@ async function seed() {
       sellPrice: String(sell),
       profit: String(Math.round(profit * 100) / 100),
       status,
-      trackingNumber: status === "shipped" || status === "delivered" ? `TRK${100000 + i}` : null,
+      trackingNumber:
+        status === "shipped" || status === "delivered"
+          ? `TRK${100000 + i}`
+          : null,
       createdAt: daysAgo(daysBack),
       placedAt: status !== "pending" ? daysAgo(daysBack - 1) : null,
     });

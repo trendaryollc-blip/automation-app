@@ -1,6 +1,22 @@
 import { useState, useRef, useCallback } from "react";
-import { Upload, FileText, Download, CheckCircle2, XCircle, AlertTriangle, RotateCcw, Package, ShoppingCart } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Upload,
+  FileText,
+  Download,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  RotateCcw,
+  Package,
+  ShoppingCart,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -18,9 +34,41 @@ interface ImportResult {
   errors: { row: number; error: string }[];
 }
 
-const PRODUCTS_COLUMNS = ["name", "category", "niche", "status", "costPrice", "sellPrice", "stockQuantity", "stockThreshold", "description", "sourceUrl", "notes"];
-const ORDERS_COLUMNS = ["orderNumber", "productName", "customerName", "customerEmail", "quantity", "status", "costPrice", "sellPrice", "supplierName", "trackingNumber"];
-const SHOPIFY_COLUMNS = ["Name", "Email", "Financial Status", "Paid at", "Fulfillment Status", "Lineitem name", "Lineitem quantity", "Lineitem price"];
+const PRODUCTS_COLUMNS = [
+  "name",
+  "category",
+  "niche",
+  "status",
+  "costPrice",
+  "sellPrice",
+  "stockQuantity",
+  "stockThreshold",
+  "description",
+  "sourceUrl",
+  "notes",
+];
+const ORDERS_COLUMNS = [
+  "orderNumber",
+  "productName",
+  "customerName",
+  "customerEmail",
+  "quantity",
+  "status",
+  "costPrice",
+  "sellPrice",
+  "supplierName",
+  "trackingNumber",
+];
+const SHOPIFY_COLUMNS = [
+  "Name",
+  "Email",
+  "Financial Status",
+  "Paid at",
+  "Fulfillment Status",
+  "Lineitem name",
+  "Lineitem quantity",
+  "Lineitem price",
+];
 
 const SAMPLE_SHOPIFY = [
   "Name,Email,Financial Status,Paid at,Fulfillment Status,Lineitem name,Lineitem quantity,Lineitem price",
@@ -36,11 +84,19 @@ function mapShopifyRow(row: Record<string, string>): Record<string, string> {
     productName: row["Lineitem name"] || "",
     quantity: row["Lineitem quantity"] || "1",
     sellPrice: row["Lineitem price"] || "",
-    status: row["Fulfillment Status"] === "fulfilled" ? "delivered" : row["Fulfillment Status"] === "partial" ? "shipped" : "pending",
+    status:
+      row["Fulfillment Status"] === "fulfilled"
+        ? "delivered"
+        : row["Fulfillment Status"] === "partial"
+          ? "shipped"
+          : "pending",
   };
 }
 
-function validateShopifyRow(row: Record<string, string>, index: number): ParsedRow {
+function validateShopifyRow(
+  row: Record<string, string>,
+  index: number,
+): ParsedRow {
   const errors: string[] = [];
   if (!row["Lineitem name"]?.trim()) errors.push("Lineitem name is required");
   if (!row["Name"]?.trim()) errors.push("Order Name is required");
@@ -48,7 +104,13 @@ function validateShopifyRow(row: Record<string, string>, index: number): ParsedR
 }
 
 const PRODUCT_STATUSES = ["hunting", "researching", "listed", "archived"];
-const ORDER_STATUSES = ["pending", "placed", "shipped", "delivered", "cancelled"];
+const ORDER_STATUSES = [
+  "pending",
+  "placed",
+  "shipped",
+  "delivered",
+  "cancelled",
+];
 
 const SAMPLE_PRODUCTS = [
   "name,category,niche,status,costPrice,sellPrice,stockQuantity,stockThreshold,description",
@@ -64,36 +126,57 @@ const SAMPLE_ORDERS = [
   "DF-2003,Silicone Kitchen Set,Chloe Dubois,chloe@example.com,3,pending,11.00,38.99,",
 ].join("\n");
 
-function parseCsv(text: string): { headers: string[]; rows: Record<string, string>[] } {
+function parseCsv(text: string): {
+  headers: string[];
+  rows: Record<string, string>[];
+} {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return { headers: [], rows: [] };
-  const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+  const headers = lines[0]
+    .split(",")
+    .map((h) => h.trim().replace(/^"|"$/g, ""));
   const rows = lines.slice(1).map((line) => {
     const vals = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
     const obj: Record<string, string> = {};
-    headers.forEach((h, i) => { obj[h] = vals[i] ?? ""; });
+    headers.forEach((h, i) => {
+      obj[h] = vals[i] ?? "";
+    });
     return obj;
   });
   return { headers, rows };
 }
 
-function validateProductRow(row: Record<string, string>, index: number): ParsedRow {
+function validateProductRow(
+  row: Record<string, string>,
+  index: number,
+): ParsedRow {
   const errors: string[] = [];
   if (!row.name?.trim()) errors.push("name is required");
-  if (row.costPrice && isNaN(Number(row.costPrice))) errors.push("costPrice must be a number");
-  if (row.sellPrice && isNaN(Number(row.sellPrice))) errors.push("sellPrice must be a number");
-  if (row.stockQuantity && isNaN(Number(row.stockQuantity))) errors.push("stockQuantity must be a number");
-  if (row.status && !PRODUCT_STATUSES.includes(row.status)) errors.push(`status must be one of: ${PRODUCT_STATUSES.join(", ")}`);
+  if (row.costPrice && isNaN(Number(row.costPrice)))
+    errors.push("costPrice must be a number");
+  if (row.sellPrice && isNaN(Number(row.sellPrice)))
+    errors.push("sellPrice must be a number");
+  if (row.stockQuantity && isNaN(Number(row.stockQuantity)))
+    errors.push("stockQuantity must be a number");
+  if (row.status && !PRODUCT_STATUSES.includes(row.status))
+    errors.push(`status must be one of: ${PRODUCT_STATUSES.join(", ")}`);
   return { index, data: row, errors };
 }
 
-function validateOrderRow(row: Record<string, string>, index: number): ParsedRow {
+function validateOrderRow(
+  row: Record<string, string>,
+  index: number,
+): ParsedRow {
   const errors: string[] = [];
   if (!row.productName?.trim()) errors.push("productName is required");
-  if (row.costPrice && isNaN(Number(row.costPrice))) errors.push("costPrice must be a number");
-  if (row.sellPrice && isNaN(Number(row.sellPrice))) errors.push("sellPrice must be a number");
-  if (row.quantity && isNaN(Number(row.quantity))) errors.push("quantity must be a number");
-  if (row.status && !ORDER_STATUSES.includes(row.status)) errors.push(`status must be one of: ${ORDER_STATUSES.join(", ")}`);
+  if (row.costPrice && isNaN(Number(row.costPrice)))
+    errors.push("costPrice must be a number");
+  if (row.sellPrice && isNaN(Number(row.sellPrice)))
+    errors.push("sellPrice must be a number");
+  if (row.quantity && isNaN(Number(row.quantity)))
+    errors.push("quantity must be a number");
+  if (row.status && !ORDER_STATUSES.includes(row.status))
+    errors.push(`status must be one of: ${ORDER_STATUSES.join(", ")}`);
   return { index, data: row, errors };
 }
 
@@ -133,30 +216,45 @@ export default function ImportPage() {
     reset();
   };
 
-  const processFile = useCallback((file: File) => {
-    if (!file.name.endsWith(".csv")) {
-      toast({ title: "Invalid file", description: "Please upload a .csv file", variant: "destructive" });
-      return;
-    }
-    setFileName(file.name);
-    setResult(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      const { headers: h, rows } = parseCsv(text);
-      setHeaders(h);
-      const validate = tab === "products" ? validateProductRow : tab === "shopify" ? validateShopifyRow : validateOrderRow;
-      setParsed(rows.map((r, i) => validate(r, i)));
-    };
-    reader.readAsText(file);
-  }, [tab, toast]);
+  const processFile = useCallback(
+    (file: File) => {
+      if (!file.name.endsWith(".csv")) {
+        toast({
+          title: "Invalid file",
+          description: "Please upload a .csv file",
+          variant: "destructive",
+        });
+        return;
+      }
+      setFileName(file.name);
+      setResult(null);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const { headers: h, rows } = parseCsv(text);
+        setHeaders(h);
+        const validate =
+          tab === "products"
+            ? validateProductRow
+            : tab === "shopify"
+              ? validateShopifyRow
+              : validateOrderRow;
+        setParsed(rows.map((r, i) => validate(r, i)));
+      };
+      reader.readAsText(file);
+    },
+    [tab, toast],
+  );
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) processFile(file);
-  }, [processFile]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) processFile(file);
+    },
+    [processFile],
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -170,7 +268,10 @@ export default function ImportPage() {
     if (validRows.length === 0) return;
     setImporting(true);
     try {
-      const endpoint = tab === "products" ? `${BASE}/api/products/import` : `${BASE}/api/orders/import`; // shopify also imports as orders
+      const endpoint =
+        tab === "products"
+          ? `${BASE}/api/products/import`
+          : `${BASE}/api/orders/import`; // shopify also imports as orders
       const resp = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -182,10 +283,17 @@ export default function ImportPage() {
         toast({ title: `Imported ${data.imported} ${tab} successfully` });
       }
       if (data.errors.length > 0) {
-        toast({ title: `${data.errors.length} rows failed`, variant: "destructive" });
+        toast({
+          title: `${data.errors.length} rows failed`,
+          variant: "destructive",
+        });
       }
     } catch {
-      toast({ title: "Import failed", description: "Could not reach the server", variant: "destructive" });
+      toast({
+        title: "Import failed",
+        description: "Could not reach the server",
+        variant: "destructive",
+      });
     } finally {
       setImporting(false);
     }
@@ -208,14 +316,26 @@ export default function ImportPage() {
 
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
-        <button onClick={() => handleTab("products")} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors border ${tab === "products" ? "bg-primary/10 border-primary/30 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}>
-          <Package className="w-4 h-4" />Products
+        <button
+          onClick={() => handleTab("products")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors border ${tab === "products" ? "bg-primary/10 border-primary/30 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}
+        >
+          <Package className="w-4 h-4" />
+          Products
         </button>
-        <button onClick={() => handleTab("orders")} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors border ${tab === "orders" ? "bg-primary/10 border-primary/30 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}>
-          <ShoppingCart className="w-4 h-4" />Orders
+        <button
+          onClick={() => handleTab("orders")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors border ${tab === "orders" ? "bg-primary/10 border-primary/30 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}
+        >
+          <ShoppingCart className="w-4 h-4" />
+          Orders
         </button>
-        <button onClick={() => handleTab("shopify")} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors border ${tab === "shopify" ? "bg-primary/10 border-primary/30 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}>
-          <Upload className="w-4 h-4" />Shopify / WooCommerce
+        <button
+          onClick={() => handleTab("shopify")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors border ${tab === "shopify" ? "bg-primary/10 border-primary/30 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}
+        >
+          <Upload className="w-4 h-4" />
+          Shopify / WooCommerce
         </button>
       </div>
 
@@ -230,29 +350,52 @@ export default function ImportPage() {
             {tab === "products"
               ? `Required: name. Optional: ${PRODUCTS_COLUMNS.slice(1).join(", ")}`
               : tab === "shopify"
-              ? `Shopify / WooCommerce export format. Required columns: ${SHOPIFY_COLUMNS.slice(0, 3).join(", ")}…`
-              : `Required: productName. Optional: ${ORDERS_COLUMNS.slice(1).join(", ")}`}
+                ? `Shopify / WooCommerce export format. Required columns: ${SHOPIFY_COLUMNS.slice(0, 3).join(", ")}…`
+                : `Required: productName. Optional: ${ORDERS_COLUMNS.slice(1).join(", ")}`}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="flex flex-wrap gap-2 mb-3">
-            {(tab === "products" ? PRODUCTS_COLUMNS : tab === "shopify" ? SHOPIFY_COLUMNS : ORDERS_COLUMNS).map((col) => (
-              <code key={col} className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">{col}</code>
+            {(tab === "products"
+              ? PRODUCTS_COLUMNS
+              : tab === "shopify"
+                ? SHOPIFY_COLUMNS
+                : ORDERS_COLUMNS
+            ).map((col) => (
+              <code
+                key={col}
+                className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono"
+              >
+                {col}
+              </code>
             ))}
           </div>
           {tab === "shopify" && (
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-md p-3 text-xs text-blue-300 mb-3">
-              <p className="font-medium mb-1">Shopify / WooCommerce export instructions:</p>
-              <p>In Shopify: <strong>Orders → Export → All orders → CSV</strong>. In WooCommerce: <strong>WooCommerce → Orders → Export</strong>. Upload the file as-is — columns are auto-mapped to DropFlow orders.</p>
+              <p className="font-medium mb-1">
+                Shopify / WooCommerce export instructions:
+              </p>
+              <p>
+                In Shopify: <strong>Orders → Export → All orders → CSV</strong>.
+                In WooCommerce: <strong>WooCommerce → Orders → Export</strong>.
+                Upload the file as-is — columns are auto-mapped to DropFlow
+                orders.
+              </p>
             </div>
           )}
           <Button
             variant="outline"
             size="sm"
-            onClick={() => downloadCsv(
-              tab === "products" ? SAMPLE_PRODUCTS : tab === "shopify" ? SAMPLE_SHOPIFY : SAMPLE_ORDERS,
-              `dropflow-${tab}-template.csv`
-            )}
+            onClick={() =>
+              downloadCsv(
+                tab === "products"
+                  ? SAMPLE_PRODUCTS
+                  : tab === "shopify"
+                    ? SAMPLE_SHOPIFY
+                    : SAMPLE_ORDERS,
+                `dropflow-${tab}-template.csv`,
+              )
+            }
           >
             <Download className="w-3.5 h-3.5 mr-1.5" />
             Download sample CSV
@@ -263,18 +406,27 @@ export default function ImportPage() {
       {/* Drop Zone */}
       {!parsed && (
         <div
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
           className={`border-2 border-dashed rounded-xl flex flex-col items-center justify-center py-16 cursor-pointer transition-colors
             ${dragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-accent/30"}`}
         >
-          <Upload className={`w-8 h-8 mb-3 ${dragging ? "text-primary" : "text-muted-foreground"}`} />
+          <Upload
+            className={`w-8 h-8 mb-3 ${dragging ? "text-primary" : "text-muted-foreground"}`}
+          />
           <p className="font-medium text-sm">
-            {dragging ? "Drop your CSV here" : "Drag & drop a CSV file, or click to browse"}
+            {dragging
+              ? "Drop your CSV here"
+              : "Drag & drop a CSV file, or click to browse"}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">Only .csv files are supported</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Only .csv files are supported
+          </p>
           <input
             ref={fileRef}
             type="file"
@@ -297,9 +449,17 @@ export default function ImportPage() {
                 </CardTitle>
                 <CardDescription className="text-xs mt-0.5">
                   {parsed.length} rows parsed ·{" "}
-                  <span className="text-green-400">{validRows.length} valid</span>
+                  <span className="text-green-400">
+                    {validRows.length} valid
+                  </span>
                   {invalidRows.length > 0 && (
-                    <> · <span className="text-red-400">{invalidRows.length} with errors</span></>
+                    <>
+                      {" "}
+                      ·{" "}
+                      <span className="text-red-400">
+                        {invalidRows.length} with errors
+                      </span>
+                    </>
                   )}
                 </CardDescription>
               </div>
@@ -314,10 +474,17 @@ export default function ImportPage() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-muted/40">
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-10">#</th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-8">✓</th>
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-10">
+                      #
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-8">
+                      ✓
+                    </th>
                     {headers.map((h) => (
-                      <th key={h} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap">
+                      <th
+                        key={h}
+                        className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap"
+                      >
                         {h}
                       </th>
                     ))}
@@ -325,8 +492,13 @@ export default function ImportPage() {
                 </thead>
                 <tbody>
                   {previewRows.map((row) => (
-                    <tr key={row.index} className={`border-t border-border ${row.errors.length > 0 ? "bg-red-500/5" : ""}`}>
-                      <td className="px-3 py-2 text-muted-foreground">{row.index + 1}</td>
+                    <tr
+                      key={row.index}
+                      className={`border-t border-border ${row.errors.length > 0 ? "bg-red-500/5" : ""}`}
+                    >
+                      <td className="px-3 py-2 text-muted-foreground">
+                        {row.index + 1}
+                      </td>
                       <td className="px-3 py-2">
                         {row.errors.length === 0 ? (
                           <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
@@ -335,15 +507,24 @@ export default function ImportPage() {
                         )}
                       </td>
                       {headers.map((h) => (
-                        <td key={h} className="px-3 py-2 max-w-[140px] truncate" title={row.data[h]}>
-                          {row.data[h] || <span className="text-muted-foreground/40">—</span>}
+                        <td
+                          key={h}
+                          className="px-3 py-2 max-w-[140px] truncate"
+                          title={row.data[h]}
+                        >
+                          {row.data[h] || (
+                            <span className="text-muted-foreground/40">—</span>
+                          )}
                         </td>
                       ))}
                     </tr>
                   ))}
                   {hasMore && (
                     <tr className="border-t border-border">
-                      <td colSpan={headers.length + 2} className="px-3 py-2 text-center text-muted-foreground text-xs italic">
+                      <td
+                        colSpan={headers.length + 2}
+                        className="px-3 py-2 text-center text-muted-foreground text-xs italic"
+                      >
                         + {parsed.length - 8} more rows
                       </td>
                     </tr>
@@ -365,7 +546,9 @@ export default function ImportPage() {
                   </p>
                 ))}
                 {invalidRows.length > 5 && (
-                  <p className="text-xs text-muted-foreground ml-5">and {invalidRows.length - 5} more…</p>
+                  <p className="text-xs text-muted-foreground ml-5">
+                    and {invalidRows.length - 5} more…
+                  </p>
                 )}
               </div>
             )}
@@ -380,9 +563,15 @@ export default function ImportPage() {
                 size="sm"
               >
                 {importing ? (
-                  <><div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-2" />Importing…</>
+                  <>
+                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-2" />
+                    Importing…
+                  </>
                 ) : (
-                  <><Upload className="w-3.5 h-3.5 mr-1.5" />Import {validRows.length} rows</>
+                  <>
+                    <Upload className="w-3.5 h-3.5 mr-1.5" />
+                    Import {validRows.length} rows
+                  </>
                 )}
               </Button>
             </div>
@@ -403,21 +592,31 @@ export default function ImportPage() {
               <p className="font-semibold text-lg">Import complete</p>
               <div className="flex gap-3 mt-3">
                 {result.imported > 0 && (
-                  <Badge variant="outline" className="text-green-400 border-green-500/30 bg-green-500/10">
+                  <Badge
+                    variant="outline"
+                    className="text-green-400 border-green-500/30 bg-green-500/10"
+                  >
                     {result.imported} imported
                   </Badge>
                 )}
                 {result.errors.length > 0 && (
-                  <Badge variant="outline" className="text-red-400 border-red-500/30 bg-red-500/10">
+                  <Badge
+                    variant="outline"
+                    className="text-red-400 border-red-500/30 bg-red-500/10"
+                  >
                     {result.errors.length} failed
                   </Badge>
                 )}
               </div>
               {result.errors.length > 0 && (
                 <div className="mt-4 text-left w-full max-w-md">
-                  <p className="text-xs font-semibold text-red-400 mb-1">Server errors:</p>
+                  <p className="text-xs font-semibold text-red-400 mb-1">
+                    Server errors:
+                  </p>
                   {result.errors.slice(0, 5).map((e, i) => (
-                    <p key={i} className="text-xs text-red-400/80">Row {e.row}: {e.error}</p>
+                    <p key={i} className="text-xs text-red-400/80">
+                      Row {e.row}: {e.error}
+                    </p>
                   ))}
                 </div>
               )}

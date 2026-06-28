@@ -8,13 +8,17 @@ router.get("/customers/rfm", async (_req, res) => {
   const orders = await db.select().from(ordersTable);
   const now = Date.now();
 
-  const map: Record<string, {
-    name: string; email: string | null;
-    orders: typeof orders;
-    lastOrderDate: number;
-    totalSpend: number;
-    orderCount: number;
-  }> = {};
+  const map: Record<
+    string,
+    {
+      name: string;
+      email: string | null;
+      orders: typeof orders;
+      lastOrderDate: number;
+      totalSpend: number;
+      orderCount: number;
+    }
+  > = {};
 
   for (const o of orders) {
     if (o.status === "cancelled") continue;
@@ -39,9 +43,14 @@ router.get("/customers/rfm", async (_req, res) => {
   }
 
   const customers = Object.values(map);
-  if (!customers.length) { res.json({ customers: [], segments: {} }); return; }
+  if (!customers.length) {
+    res.json({ customers: [], segments: {} });
+    return;
+  }
 
-  const recencies = customers.map((c) => Math.floor((now - c.lastOrderDate) / 86400000));
+  const recencies = customers.map((c) =>
+    Math.floor((now - c.lastOrderDate) / 86400000),
+  );
   const frequencies = customers.map((c) => c.orderCount);
   const monetaries = customers.map((c) => c.totalSpend);
 
@@ -73,7 +82,11 @@ router.get("/customers/rfm", async (_req, res) => {
     return {
       name: c.name,
       email: c.email,
-      r, f, m, rfmScore, segment,
+      r,
+      f,
+      m,
+      rfmScore,
+      segment,
       daysSinceLast,
       orderCount: c.orderCount,
       totalSpend: c.totalSpend,
@@ -90,7 +103,8 @@ router.get("/customers/rfm", async (_req, res) => {
     customers: scored.sort((a, b) => b.rfmScore - a.rfmScore),
     segments: segmentCounts,
     totalCustomers: scored.length,
-    avgSpend: scored.reduce((s, c) => s + c.totalSpend, 0) / Math.max(scored.length, 1),
+    avgSpend:
+      scored.reduce((s, c) => s + c.totalSpend, 0) / Math.max(scored.length, 1),
   });
 });
 

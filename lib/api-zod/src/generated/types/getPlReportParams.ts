@@ -5,19 +5,19 @@
  * DropFlow - Dropshipping Automation Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { GetPlReportGroupBy } from './getPlReportGroupBy';
+import type { GetPlReportGroupBy } from "./getPlReportGroupBy";
 
 export type GetPlReportParams = {
-/**
- * ISO date string — start of range (inclusive)
- */
-from: string;
-/**
- * ISO date string — end of range (inclusive)
- */
-to: string;
-/**
- * Dimension to group rows by (default product)
- */
-groupBy?: GetPlReportGroupBy;
+  /**
+   * ISO date string — start of range (inclusive)
+   */
+  from: string;
+  /**
+   * ISO date string — end of range (inclusive)
+   */
+  to: string;
+  /**
+   * Dimension to group rows by (default product)
+   */
+  groupBy?: GetPlReportGroupBy;
 };

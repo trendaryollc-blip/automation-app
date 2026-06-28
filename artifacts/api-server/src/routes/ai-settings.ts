@@ -6,12 +6,48 @@ import { eq } from "drizzle-orm";
 const router: IRouter = Router();
 
 const PROVIDERS = [
-  { id: "groq", label: "Groq", defaultModel: "llama-3.3-70b-versatile", freeUrl: "https://console.groq.com/keys", task: "Product scoring & descriptions" },
-  { id: "mistral", label: "Mistral AI", defaultModel: "mistral-small-latest", freeUrl: "https://console.mistral.ai/api-keys/", task: "Market analysis & research" },
-  { id: "deepseek", label: "DeepSeek", defaultModel: "deepseek-chat", freeUrl: "https://platform.deepseek.com/api_keys", task: "Product research & supplier finding" },
-  { id: "openrouter", label: "OpenRouter", defaultModel: "mistralai/mistral-7b-instruct:free", freeUrl: "https://openrouter.ai/keys", task: "General fallback (free models)" },
-  { id: "cohere", label: "Cohere", defaultModel: "command-r", freeUrl: "https://dashboard.cohere.com/api-keys", task: "Semantic search & embeddings" },
-  { id: "serpapi", label: "SerpAPI", defaultModel: null, freeUrl: "https://serpapi.com/manage-api-key", task: "Web search for supplier research" },
+  {
+    id: "groq",
+    label: "Groq",
+    defaultModel: "llama-3.3-70b-versatile",
+    freeUrl: "https://console.groq.com/keys",
+    task: "Product scoring & descriptions",
+  },
+  {
+    id: "mistral",
+    label: "Mistral AI",
+    defaultModel: "mistral-small-latest",
+    freeUrl: "https://console.mistral.ai/api-keys/",
+    task: "Market analysis & research",
+  },
+  {
+    id: "deepseek",
+    label: "DeepSeek",
+    defaultModel: "deepseek-chat",
+    freeUrl: "https://platform.deepseek.com/api_keys",
+    task: "Product research & supplier finding",
+  },
+  {
+    id: "openrouter",
+    label: "OpenRouter",
+    defaultModel: "mistralai/mistral-7b-instruct:free",
+    freeUrl: "https://openrouter.ai/keys",
+    task: "General fallback (free models)",
+  },
+  {
+    id: "cohere",
+    label: "Cohere",
+    defaultModel: "command-r",
+    freeUrl: "https://dashboard.cohere.com/api-keys",
+    task: "Semantic search & embeddings",
+  },
+  {
+    id: "serpapi",
+    label: "SerpAPI",
+    defaultModel: null,
+    freeUrl: "https://serpapi.com/manage-api-key",
+    task: "Web search for supplier research",
+  },
 ];
 
 router.get("/ai-settings/providers", (_req, res) => {
@@ -33,7 +69,8 @@ router.get("/ai-settings", async (_req, res) => {
   }
   const rows = await db.select().from(aiSettingsTable);
   const result = rows.map((r) => {
-    const safeApiKey = typeof r.apiKey === "string" ? r.apiKey : String(r.apiKey ?? "");
+    const safeApiKey =
+      typeof r.apiKey === "string" ? r.apiKey : String(r.apiKey ?? "");
     return {
       provider: r.provider,
       model: r.model,
@@ -70,7 +107,8 @@ router.put("/ai-settings/:provider", async (req, res) => {
       res.status(500).json({ error: "Failed to save settings" });
       return;
     }
-    const safeApiKey = typeof row.apiKey === "string" ? row.apiKey : String(row.apiKey ?? "");
+    const safeApiKey =
+      typeof row.apiKey === "string" ? row.apiKey : String(row.apiKey ?? "");
     res.json({
       provider: row.provider,
       model: row.model,
@@ -86,11 +124,16 @@ router.put("/ai-settings/:provider", async (req, res) => {
     .values({ provider, apiKey: apiKey.trim(), model: model?.trim() || null })
     .onConflictDoUpdate({
       target: aiSettingsTable.provider,
-      set: { apiKey: apiKey.trim(), model: model?.trim() || null, updatedAt: new Date() },
+      set: {
+        apiKey: apiKey.trim(),
+        model: model?.trim() || null,
+        updatedAt: new Date(),
+      },
     })
     .returning();
 
-  const safeApiKey = typeof row.apiKey === "string" ? row.apiKey : String(row.apiKey ?? "");
+  const safeApiKey =
+    typeof row.apiKey === "string" ? row.apiKey : String(row.apiKey ?? "");
   res.json({
     provider: row.provider,
     model: row.model,
@@ -107,23 +150,43 @@ router.delete("/ai-settings/:provider", async (req, res) => {
     res.sendStatus(204);
     return;
   }
-  await db.delete(aiSettingsTable).where(eq(aiSettingsTable.provider, provider));
+  await db
+    .delete(aiSettingsTable)
+    .where(eq(aiSettingsTable.provider, provider));
   res.sendStatus(204);
 });
 
 router.post("/ai-settings/test/:provider", async (req, res) => {
   const { provider } = req.params;
   const row = isFirestoreMode()
-    ? (await aiSettingsRepo().findOne({ filters: [{ field: "provider", operator: "==", value: provider }] }))
-    : (await db.select().from(aiSettingsTable).where(eq(aiSettingsTable.provider, provider)))[0];
+    ? await aiSettingsRepo().findOne({
+        filters: [{ field: "provider", operator: "==", value: provider }],
+      })
+    : (
+        await db
+          .select()
+          .from(aiSettingsTable)
+          .where(eq(aiSettingsTable.provider, provider))
+      )[0];
 
-  if (!row) { res.status(404).json({ ok: false, error: "No key saved for this provider" }); return; }
+  if (!row) {
+    res
+      .status(404)
+      .json({ ok: false, error: "No key saved for this provider" });
+    return;
+  }
 
-  const apiKey = typeof row.apiKey === "string" ? row.apiKey : String(row.apiKey ?? "");
+  const apiKey =
+    typeof row.apiKey === "string" ? row.apiKey : String(row.apiKey ?? "");
 
   try {
     if (provider === "serpapi") {
-      const params = new URLSearchParams({ q: "test", api_key: apiKey, num: "1", engine: "google" });
+      const params = new URLSearchParams({
+        q: "test",
+        api_key: apiKey,
+        num: "1",
+        engine: "google",
+      });
       const r = await fetch(`https://serpapi.com/search.json?${params}`);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       res.json({ ok: true, message: "SerpAPI key is valid" });
@@ -139,22 +202,47 @@ router.post("/ai-settings/test/:provider", async (req, res) => {
     };
 
     const url = endpoints[provider];
-    if (!url) { res.json({ ok: true, message: "Key saved (test not available for this provider)" }); return; }
+    if (!url) {
+      res.json({
+        ok: true,
+        message: "Key saved (test not available for this provider)",
+      });
+      return;
+    }
 
     let body: object;
-    let headers: Record<string, string> = { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` };
+    let headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    };
 
     if (provider === "cohere") {
-      body = { model: row.model ?? "command-r", messages: [{ role: "user", content: "Hi" }], max_tokens: 5 };
+      body = {
+        model: row.model ?? "command-r",
+        messages: [{ role: "user", content: "Hi" }],
+        max_tokens: 5,
+      };
     } else if (provider === "openrouter") {
       headers["HTTP-Referer"] = "https://dropflow.app";
       headers["X-Title"] = "DropFlow";
-      body = { model: row.model ?? "mistralai/mistral-7b-instruct:free", messages: [{ role: "user", content: "Hi" }], max_tokens: 5 };
+      body = {
+        model: row.model ?? "mistralai/mistral-7b-instruct:free",
+        messages: [{ role: "user", content: "Hi" }],
+        max_tokens: 5,
+      };
     } else {
-      body = { model: row.model ?? "llama-3.3-70b-versatile", messages: [{ role: "user", content: "Hi" }], max_tokens: 5 };
+      body = {
+        model: row.model ?? "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: "Hi" }],
+        max_tokens: 5,
+      };
     }
 
-    const r = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+    const r = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
     if (!r.ok) {
       const errText = await r.text();
       throw new Error(`HTTP ${r.status}: ${errText.slice(0, 200)}`);

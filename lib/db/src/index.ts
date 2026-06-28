@@ -10,7 +10,7 @@
 
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import * as schema from "./schema/index.ts";
+import * as schema from "./schema/index";
 
 const { Pool } = pg;
 
@@ -34,14 +34,17 @@ let _pool: pg.Pool | null = null;
 let _db: ReturnType<typeof drizzle> | null = null;
 
 if (dbMode === "postgres" && (process.env.DATABASE_URL || isVitest)) {
-  _pool = new Pool({ connectionString: process.env.DATABASE_URL || "postgresql://localhost:5432/dropflow" });
+  _pool = new Pool({
+    connectionString:
+      process.env.DATABASE_URL || "postgresql://localhost:5432/dropflow",
+  });
   _db = drizzle(_pool, { schema });
 }
 
 export const pool = _pool!;
 export const db = _db!;
 
-export * from "./schema/index.ts";
+export * from "./schema/index";
 
 /**
  * Returns the Firestore database instance.
@@ -51,4 +54,3 @@ export async function getFirestoreDb() {
   const { getFirestoreDb: getFsDb } = await import("./firestore/index");
   return getFsDb();
 }
-

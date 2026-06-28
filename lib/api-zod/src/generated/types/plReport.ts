@@ -5,7 +5,7 @@
  * DropFlow - Dropshipping Automation Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { PlReportRow } from './plReportRow';
+import type { PlReportRow } from "./plReportRow";
 
 export interface PlReport {
   from: string;

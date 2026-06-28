@@ -1,4 +1,11 @@
-import { pgTable, text, serial, timestamp, integer, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  timestamp,
+  integer,
+  jsonb,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -10,10 +17,19 @@ export const launchesTable = pgTable("launches", {
   targetLaunchDate: timestamp("target_launch_date", { withTimezone: true }),
   notes: text("notes"),
   steps: jsonb("steps").notNull().default([]),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
-export const insertLaunchSchema = createInsertSchema(launchesTable).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertLaunchSchema = createInsertSchema(launchesTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 export type InsertLaunch = z.infer<typeof insertLaunchSchema>;
 export type Launch = typeof launchesTable.$inferSelect;

@@ -1,6 +1,10 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
-import { ordersTable, purchaseOrdersTable, adCampaignsTable } from "@workspace/db";
+import {
+  ordersTable,
+  purchaseOrdersTable,
+  adCampaignsTable,
+} from "@workspace/db";
 import { gte, and, lte } from "drizzle-orm";
 
 const router: IRouter = Router();
@@ -17,15 +21,26 @@ router.get("/cash-flow/forecast", async (_req, res) => {
 
   const totalRevenue = allOrders
     .filter((o) => o.status !== "cancelled")
-    .reduce((s, o) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1), 0);
+    .reduce(
+      (s, o) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
+      0,
+    );
 
   const totalCogs = allOrders
     .filter((o) => o.status !== "cancelled")
-    .reduce((s, o) => s + Number(o.costPrice ?? 0) * Number(o.quantity ?? 1), 0);
+    .reduce(
+      (s, o) => s + Number(o.costPrice ?? 0) * Number(o.quantity ?? 1),
+      0,
+    );
 
   const pendingRevenue = allOrders
-    .filter((o) => ["pending", "processing", "shipped"].includes(o.status ?? ""))
-    .reduce((s, o) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1), 0);
+    .filter((o) =>
+      ["pending", "processing", "shipped"].includes(o.status ?? ""),
+    )
+    .reduce(
+      (s, o) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
+      0,
+    );
 
   const pendingCosts = allPOs
     .filter((p) => ["draft", "sent", "confirmed"].includes(p.status ?? ""))
@@ -38,11 +53,17 @@ router.get("/cash-flow/forecast", async (_req, res) => {
   const totalProfit = totalRevenue - totalCogs;
   const netCashPosition = totalRevenue - totalCogs - activeAdSpend;
 
-  const months: Record<string, { inflow: number; outflow: number; month: string }> = {};
+  const months: Record<
+    string,
+    { inflow: number; outflow: number; month: string }
+  > = {};
   for (let i = 0; i < 6; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" });
+    const label = d.toLocaleString("en-US", {
+      month: "short",
+      year: "2-digit",
+    });
     months[key] = { inflow: 0, outflow: 0, month: label };
   }
 
@@ -57,7 +78,8 @@ router.get("/cash-flow/forecast", async (_req, res) => {
   }
 
   for (const p of allPOs) {
-    if (!p.createdAt || ["cancelled", "received"].includes(p.status ?? "")) continue;
+    if (!p.createdAt || ["cancelled", "received"].includes(p.status ?? ""))
+      continue;
     const d = new Date(p.createdAt);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     if (months[key]) {
@@ -70,13 +92,16 @@ router.get("/cash-flow/forecast", async (_req, res) => {
     net: m.inflow - m.outflow,
   }));
 
-  const platformBreakdown = allCampaigns.reduce((acc: Record<string, { spend: number; revenue: number }>, c) => {
-    const p = c.platform ?? "other";
-    if (!acc[p]) acc[p] = { spend: 0, revenue: 0 };
-    acc[p].spend += Number(c.spend ?? 0);
-    acc[p].revenue += Number(c.revenue ?? 0);
-    return acc;
-  }, {});
+  const platformBreakdown = allCampaigns.reduce(
+    (acc: Record<string, { spend: number; revenue: number }>, c) => {
+      const p = c.platform ?? "other";
+      if (!acc[p]) acc[p] = { spend: 0, revenue: 0 };
+      acc[p].spend += Number(c.spend ?? 0);
+      acc[p].revenue += Number(c.revenue ?? 0);
+      return acc;
+    },
+    {},
+  );
 
   res.json({
     summary: {

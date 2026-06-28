@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ResearchReportVerdict = typeof ResearchReportVerdict[keyof typeof ResearchReportVerdict];
-
+export type ResearchReportVerdict =
+  (typeof ResearchReportVerdict)[keyof typeof ResearchReportVerdict];
 
 export const ResearchReportVerdict = {
-  'strong-buy': 'strong-buy',
-  buy: 'buy',
-  hold: 'hold',
-  avoid: 'avoid',
+  "strong-buy": "strong-buy",
+  buy: "buy",
+  hold: "hold",
+  avoid: "avoid",
 } as const;

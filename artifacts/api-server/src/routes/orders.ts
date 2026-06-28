@@ -1,6 +1,11 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, inArray, sql } from "drizzle-orm";
-import { db, ordersTable, productsTable, orderTimelineTable } from "@workspace/db";
+import {
+  db,
+  ordersTable,
+  productsTable,
+  orderTimelineTable,
+} from "@workspace/db";
 import {
   ListOrdersQueryParams,
   CreateOrderBody,
@@ -33,14 +38,22 @@ router.post("/orders/bulk-update", async (req, res): Promise<void> => {
   }
   const { orderIds, status, trackingNumber } = parsed.data;
   if (!status && !trackingNumber) {
-    res.status(400).json({ error: "At least one of status or trackingNumber must be provided" });
+    res
+      .status(400)
+      .json({
+        error: "At least one of status or trackingNumber must be provided",
+      });
     return;
   }
 
   // Fetch existing orders before updating (for stock decrement logic)
-  const existingOrders = status === "delivered"
-    ? await db.select().from(ordersTable).where(inArray(ordersTable.id, orderIds))
-    : [];
+  const existingOrders =
+    status === "delivered"
+      ? await db
+          .select()
+          .from(ordersTable)
+          .where(inArray(ordersTable.id, orderIds))
+      : [];
 
   const updateData: Record<string, unknown> = {};
   if (status) updateData.status = status;
@@ -55,7 +68,7 @@ router.post("/orders/bulk-update", async (req, res): Promise<void> => {
   // Auto-decrement stock for orders newly transitioned to "delivered"
   if (status === "delivered") {
     const toDecrement = existingOrders.filter(
-      (o) => o.status !== "delivered" && o.productId != null
+      (o) => o.status !== "delivered" && o.productId != null,
     );
     for (const o of toDecrement) {
       await db
@@ -89,14 +102,25 @@ router.post("/orders/import", async (req, res): Promise<void> => {
       continue;
     }
     try {
-      const costPrice = row.costPrice != null && row.costPrice !== "" ? Number(row.costPrice) : null;
-      const sellPrice = row.sellPrice != null && row.sellPrice !== "" ? Number(row.sellPrice) : null;
+      const costPrice =
+        row.costPrice != null && row.costPrice !== ""
+          ? Number(row.costPrice)
+          : null;
+      const sellPrice =
+        row.sellPrice != null && row.sellPrice !== ""
+          ? Number(row.sellPrice)
+          : null;
       const qty = row.quantity != null ? Number(row.quantity) : 1;
-      const profit = costPrice != null && sellPrice != null ? String((sellPrice - costPrice) * qty) : undefined;
+      const profit =
+        costPrice != null && sellPrice != null
+          ? String((sellPrice - costPrice) * qty)
+          : undefined;
       const [order] = await db
         .insert(ordersTable)
         .values({
-          orderNumber: row.orderNumber ? String(row.orderNumber) : `DF-${Date.now()}-${i}`,
+          orderNumber: row.orderNumber
+            ? String(row.orderNumber)
+            : `DF-${Date.now()}-${i}`,
           productName: String(row.productName),
           customerName: row.customerName ? String(row.customerName) : "Unknown",
           customerEmail: row.customerEmail ? String(row.customerEmail) : null,
@@ -105,7 +129,9 @@ router.post("/orders/import", async (req, res): Promise<void> => {
           costPrice: costPrice != null ? String(costPrice) : null,
           sellPrice: sellPrice != null ? String(sellPrice) : null,
           profit: profit ?? null,
-          trackingNumber: row.trackingNumber ? String(row.trackingNumber) : null,
+          trackingNumber: row.trackingNumber
+            ? String(row.trackingNumber)
+            : null,
           supplierName: row.supplierName ? String(row.supplierName) : null,
         })
         .returning();
@@ -142,7 +168,8 @@ router.post("/orders", async (req, res): Promise<void> => {
   const { costPrice, sellPrice, ...rest } = parsed.data;
   const cost = costPrice != null ? Number(costPrice) : null;
   const sell = sellPrice != null ? Number(sellPrice) : null;
-  const profit = cost != null && sell != null ? (sell - cost) * (rest.quantity ?? 1) : null;
+  const profit =
+    cost != null && sell != null ? (sell - cost) * (rest.quantity ?? 1) : null;
   const orderNumber = rest.orderNumber ?? `DF-${Date.now()}`;
   const [order] = await db
     .insert(ordersTable)
@@ -195,19 +222,39 @@ router.patch("/orders/:id", async (req, res): Promise<void> => {
   }
   const { costPrice, sellPrice, placedAt, ...rest } = parsed.data;
   const updateData: Record<string, unknown> = { ...rest };
-  if (costPrice !== undefined) updateData.costPrice = costPrice != null ? String(costPrice) : null;
-  if (sellPrice !== undefined) updateData.sellPrice = sellPrice != null ? String(sellPrice) : null;
-  if (placedAt !== undefined) updateData.placedAt = placedAt != null ? new Date(placedAt) : null;
+  if (costPrice !== undefined)
+    updateData.costPrice = costPrice != null ? String(costPrice) : null;
+  if (sellPrice !== undefined)
+    updateData.sellPrice = sellPrice != null ? String(sellPrice) : null;
+  if (placedAt !== undefined)
+    updateData.placedAt = placedAt != null ? new Date(placedAt) : null;
 
-  const existing = await db.select().from(ordersTable).where(eq(ordersTable.id, params.data.id));
+  const existing = await db
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.id, params.data.id));
   if (!existing[0]) {
     res.status(404).json({ error: "Order not found" });
     return;
   }
 
   if (costPrice !== undefined || sellPrice !== undefined) {
-    const cost = costPrice !== undefined ? (costPrice != null ? Number(costPrice) : null) : (existing[0].costPrice != null ? Number(existing[0].costPrice) : null);
-    const sell = sellPrice !== undefined ? (sellPrice != null ? Number(sellPrice) : null) : (existing[0].sellPrice != null ? Number(existing[0].sellPrice) : null);
+    const cost =
+      costPrice !== undefined
+        ? costPrice != null
+          ? Number(costPrice)
+          : null
+        : existing[0].costPrice != null
+          ? Number(existing[0].costPrice)
+          : null;
+    const sell =
+      sellPrice !== undefined
+        ? sellPrice != null
+          ? Number(sellPrice)
+          : null
+        : existing[0].sellPrice != null
+          ? Number(existing[0].sellPrice)
+          : null;
     const qty = rest.quantity ?? existing[0].quantity;
     if (cost != null && sell != null) {
       updateData.profit = String((sell - cost) * qty);

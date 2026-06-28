@@ -22,7 +22,9 @@ router.get("/orders/customer-insights", async (_req, res): Promise<void> => {
   const map = new Map<string, CustomerBucket>();
 
   for (const o of allOrders) {
-    const key = o.customerEmail?.trim().toLowerCase() || o.customerName.trim().toLowerCase();
+    const key =
+      o.customerEmail?.trim().toLowerCase() ||
+      o.customerName.trim().toLowerCase();
 
     if (!map.has(key)) {
       map.set(key, {
@@ -46,7 +48,7 @@ router.get("/orders/customer-insights", async (_req, res): Promise<void> => {
     if (o.productName) {
       bucket.productCounts.set(
         o.productName,
-        (bucket.productCounts.get(o.productName) ?? 0) + 1
+        (bucket.productCounts.get(o.productName) ?? 0) + 1,
       );
     }
 
@@ -67,7 +69,7 @@ router.get("/orders/customer-insights", async (_req, res): Promise<void> => {
     .map((b) => {
       const orderCount = b.orders.length;
       const sorted = [...b.orders].sort(
-        (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+        (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
       );
       const topProduct =
         b.productCounts.size > 0

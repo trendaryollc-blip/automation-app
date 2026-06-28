@@ -5,717 +5,718 @@
  * DropFlow - Dropshipping Automation Platform API
  * OpenAPI spec version: 0.1.0
  */
-import * as zod from 'zod';
-
+import * as zod from "zod";
 
 /**
  * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
-  "status": zod.string()
-})
-
+  status: zod.string(),
+});
 
 /**
  * @summary List all products
  */
 export const ListProductsQueryParams = zod.object({
-  "status": zod.coerce.string().optional(),
-  "category": zod.coerce.string().optional()
-})
+  status: zod.coerce.string().optional(),
+  category: zod.coerce.string().optional(),
+});
 
 export const ListProductsResponseItem = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "category": zod.string().nullish(),
-  "niche": zod.string().nullish(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "margin": zod.number().nullish(),
-  "status": zod.enum(['hunting', 'researching', 'listed', 'archived']),
-  "description": zod.string().nullish(),
-  "aiDescription": zod.string().nullish(),
-  "imageUrl": zod.string().nullish(),
-  "sourceUrl": zod.string().nullish(),
-  "notes": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "stockQuantity": zod.number().nullish(),
-  "stockThreshold": zod.number().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-export const ListProductsResponse = zod.array(ListProductsResponseItem)
-
+  id: zod.number(),
+  name: zod.string(),
+  category: zod.string().nullish(),
+  niche: zod.string().nullish(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  margin: zod.number().nullish(),
+  status: zod.enum(["hunting", "researching", "listed", "archived"]),
+  description: zod.string().nullish(),
+  aiDescription: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  sourceUrl: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  stockQuantity: zod.number().nullish(),
+  stockThreshold: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+export const ListProductsResponse = zod.array(ListProductsResponseItem);
 
 /**
  * @summary Add a hunted product
  */
 
-
-
 export const CreateProductBody = zod.object({
-  "name": zod.string().min(1),
-  "category": zod.string().optional(),
-  "niche": zod.string().optional(),
-  "costPrice": zod.number().optional(),
-  "sellPrice": zod.number().optional(),
-  "status": zod.enum(['hunting', 'researching', 'listed', 'archived']).optional(),
-  "description": zod.string().optional(),
-  "imageUrl": zod.string().optional(),
-  "sourceUrl": zod.string().optional(),
-  "notes": zod.string().optional(),
-  "supplierId": zod.number().optional(),
-  "stockQuantity": zod.number().optional(),
-  "stockThreshold": zod.number().optional()
-})
-
+  name: zod.string().min(1),
+  category: zod.string().optional(),
+  niche: zod.string().optional(),
+  costPrice: zod.number().optional(),
+  sellPrice: zod.number().optional(),
+  status: zod.enum(["hunting", "researching", "listed", "archived"]).optional(),
+  description: zod.string().optional(),
+  imageUrl: zod.string().optional(),
+  sourceUrl: zod.string().optional(),
+  notes: zod.string().optional(),
+  supplierId: zod.number().optional(),
+  stockQuantity: zod.number().optional(),
+  stockThreshold: zod.number().optional(),
+});
 
 /**
  * @summary Get products below their stock threshold
  */
 export const GetStockAlertsResponseItem = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "status": zod.string(),
-  "stockQuantity": zod.number(),
-  "stockThreshold": zod.number(),
-  "deficit": zod.number().optional().describe('How many units below threshold')
-})
-export const GetStockAlertsResponse = zod.array(GetStockAlertsResponseItem)
-
+  id: zod.number(),
+  name: zod.string(),
+  status: zod.string(),
+  stockQuantity: zod.number(),
+  stockThreshold: zod.number(),
+  deficit: zod.number().optional().describe("How many units below threshold"),
+});
+export const GetStockAlertsResponse = zod.array(GetStockAlertsResponseItem);
 
 /**
  * @summary Get top trending products by profit margin
  */
 export const GetTrendingProductsResponseItem = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "category": zod.string().nullish(),
-  "niche": zod.string().nullish(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "margin": zod.number().nullish(),
-  "status": zod.enum(['hunting', 'researching', 'listed', 'archived']),
-  "description": zod.string().nullish(),
-  "aiDescription": zod.string().nullish(),
-  "imageUrl": zod.string().nullish(),
-  "sourceUrl": zod.string().nullish(),
-  "notes": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "stockQuantity": zod.number().nullish(),
-  "stockThreshold": zod.number().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-export const GetTrendingProductsResponse = zod.array(GetTrendingProductsResponseItem)
-
+  id: zod.number(),
+  name: zod.string(),
+  category: zod.string().nullish(),
+  niche: zod.string().nullish(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  margin: zod.number().nullish(),
+  status: zod.enum(["hunting", "researching", "listed", "archived"]),
+  description: zod.string().nullish(),
+  aiDescription: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  sourceUrl: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  stockQuantity: zod.number().nullish(),
+  stockThreshold: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+export const GetTrendingProductsResponse = zod.array(
+  GetTrendingProductsResponseItem,
+);
 
 /**
  * @summary Get a product by ID
  */
 export const GetProductParams = zod.object({
-  "id": zod.coerce.number()
-})
+  id: zod.coerce.number(),
+});
 
 export const GetProductResponse = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "category": zod.string().nullish(),
-  "niche": zod.string().nullish(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "margin": zod.number().nullish(),
-  "status": zod.enum(['hunting', 'researching', 'listed', 'archived']),
-  "description": zod.string().nullish(),
-  "aiDescription": zod.string().nullish(),
-  "imageUrl": zod.string().nullish(),
-  "sourceUrl": zod.string().nullish(),
-  "notes": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "stockQuantity": zod.number().nullish(),
-  "stockThreshold": zod.number().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-
+  id: zod.number(),
+  name: zod.string(),
+  category: zod.string().nullish(),
+  niche: zod.string().nullish(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  margin: zod.number().nullish(),
+  status: zod.enum(["hunting", "researching", "listed", "archived"]),
+  description: zod.string().nullish(),
+  aiDescription: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  sourceUrl: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  stockQuantity: zod.number().nullish(),
+  stockThreshold: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
 
 /**
  * @summary Update a product
  */
 export const UpdateProductParams = zod.object({
-  "id": zod.coerce.number()
-})
-
-
-
+  id: zod.coerce.number(),
+});
 
 export const UpdateProductBody = zod.object({
-  "name": zod.string().min(1).optional(),
-  "category": zod.string().optional(),
-  "niche": zod.string().optional(),
-  "costPrice": zod.number().optional(),
-  "sellPrice": zod.number().optional(),
-  "status": zod.enum(['hunting', 'researching', 'listed', 'archived']).optional(),
-  "description": zod.string().optional(),
-  "aiDescription": zod.string().optional(),
-  "imageUrl": zod.string().optional(),
-  "sourceUrl": zod.string().optional(),
-  "notes": zod.string().optional(),
-  "supplierId": zod.number().optional(),
-  "stockQuantity": zod.number().optional(),
-  "stockThreshold": zod.number().optional()
-})
+  name: zod.string().min(1).optional(),
+  category: zod.string().optional(),
+  niche: zod.string().optional(),
+  costPrice: zod.number().optional(),
+  sellPrice: zod.number().optional(),
+  status: zod.enum(["hunting", "researching", "listed", "archived"]).optional(),
+  description: zod.string().optional(),
+  aiDescription: zod.string().optional(),
+  imageUrl: zod.string().optional(),
+  sourceUrl: zod.string().optional(),
+  notes: zod.string().optional(),
+  supplierId: zod.number().optional(),
+  stockQuantity: zod.number().optional(),
+  stockThreshold: zod.number().optional(),
+});
 
 export const UpdateProductResponse = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "category": zod.string().nullish(),
-  "niche": zod.string().nullish(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "margin": zod.number().nullish(),
-  "status": zod.enum(['hunting', 'researching', 'listed', 'archived']),
-  "description": zod.string().nullish(),
-  "aiDescription": zod.string().nullish(),
-  "imageUrl": zod.string().nullish(),
-  "sourceUrl": zod.string().nullish(),
-  "notes": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "stockQuantity": zod.number().nullish(),
-  "stockThreshold": zod.number().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-
+  id: zod.number(),
+  name: zod.string(),
+  category: zod.string().nullish(),
+  niche: zod.string().nullish(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  margin: zod.number().nullish(),
+  status: zod.enum(["hunting", "researching", "listed", "archived"]),
+  description: zod.string().nullish(),
+  aiDescription: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  sourceUrl: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  stockQuantity: zod.number().nullish(),
+  stockThreshold: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
 
 /**
  * @summary Delete a product
  */
 export const DeleteProductParams = zod.object({
-  "id": zod.coerce.number()
-})
-
+  id: zod.coerce.number(),
+});
 
 /**
  * @summary AI-generate a product description
  */
 export const GenerateProductDescriptionParams = zod.object({
-  "id": zod.coerce.number()
-})
+  id: zod.coerce.number(),
+});
 
 export const GenerateProductDescriptionResponse = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "category": zod.string().nullish(),
-  "niche": zod.string().nullish(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "margin": zod.number().nullish(),
-  "status": zod.enum(['hunting', 'researching', 'listed', 'archived']),
-  "description": zod.string().nullish(),
-  "aiDescription": zod.string().nullish(),
-  "imageUrl": zod.string().nullish(),
-  "sourceUrl": zod.string().nullish(),
-  "notes": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "stockQuantity": zod.number().nullish(),
-  "stockThreshold": zod.number().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-
+  id: zod.number(),
+  name: zod.string(),
+  category: zod.string().nullish(),
+  niche: zod.string().nullish(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  margin: zod.number().nullish(),
+  status: zod.enum(["hunting", "researching", "listed", "archived"]),
+  description: zod.string().nullish(),
+  aiDescription: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  sourceUrl: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  stockQuantity: zod.number().nullish(),
+  stockThreshold: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
 
 /**
  * @summary List all suppliers
  */
 export const ListSuppliersQueryParams = zod.object({
-  "country": zod.coerce.string().optional()
-})
+  country: zod.coerce.string().optional(),
+});
 
 export const ListSuppliersResponseItem = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "country": zod.string().nullish(),
-  "rating": zod.number().nullish(),
-  "minOrder": zod.number().nullish(),
-  "shippingDays": zod.number().nullish(),
-  "website": zod.string().nullish(),
-  "contactEmail": zod.string().nullish(),
-  "notes": zod.string().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-export const ListSuppliersResponse = zod.array(ListSuppliersResponseItem)
-
+  id: zod.number(),
+  name: zod.string(),
+  country: zod.string().nullish(),
+  rating: zod.number().nullish(),
+  minOrder: zod.number().nullish(),
+  shippingDays: zod.number().nullish(),
+  website: zod.string().nullish(),
+  contactEmail: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+export const ListSuppliersResponse = zod.array(ListSuppliersResponseItem);
 
 /**
  * @summary Add a supplier
  */
 
-
-
 export const CreateSupplierBody = zod.object({
-  "name": zod.string().min(1),
-  "country": zod.string().optional(),
-  "rating": zod.number().optional(),
-  "minOrder": zod.number().optional(),
-  "shippingDays": zod.number().optional(),
-  "website": zod.string().optional(),
-  "contactEmail": zod.string().optional(),
-  "notes": zod.string().optional()
-})
-
+  name: zod.string().min(1),
+  country: zod.string().optional(),
+  rating: zod.number().optional(),
+  minOrder: zod.number().optional(),
+  shippingDays: zod.number().optional(),
+  website: zod.string().optional(),
+  contactEmail: zod.string().optional(),
+  notes: zod.string().optional(),
+});
 
 /**
  * @summary Get a supplier by ID
  */
 export const GetSupplierParams = zod.object({
-  "id": zod.coerce.number()
-})
+  id: zod.coerce.number(),
+});
 
 export const GetSupplierResponse = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "country": zod.string().nullish(),
-  "rating": zod.number().nullish(),
-  "minOrder": zod.number().nullish(),
-  "shippingDays": zod.number().nullish(),
-  "website": zod.string().nullish(),
-  "contactEmail": zod.string().nullish(),
-  "notes": zod.string().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-
+  id: zod.number(),
+  name: zod.string(),
+  country: zod.string().nullish(),
+  rating: zod.number().nullish(),
+  minOrder: zod.number().nullish(),
+  shippingDays: zod.number().nullish(),
+  website: zod.string().nullish(),
+  contactEmail: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
 
 /**
  * @summary Update a supplier
  */
 export const UpdateSupplierParams = zod.object({
-  "id": zod.coerce.number()
-})
-
-
-
+  id: zod.coerce.number(),
+});
 
 export const UpdateSupplierBody = zod.object({
-  "name": zod.string().min(1).optional(),
-  "country": zod.string().optional(),
-  "rating": zod.number().optional(),
-  "minOrder": zod.number().optional(),
-  "shippingDays": zod.number().optional(),
-  "website": zod.string().optional(),
-  "contactEmail": zod.string().optional(),
-  "notes": zod.string().optional()
-})
+  name: zod.string().min(1).optional(),
+  country: zod.string().optional(),
+  rating: zod.number().optional(),
+  minOrder: zod.number().optional(),
+  shippingDays: zod.number().optional(),
+  website: zod.string().optional(),
+  contactEmail: zod.string().optional(),
+  notes: zod.string().optional(),
+});
 
 export const UpdateSupplierResponse = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "country": zod.string().nullish(),
-  "rating": zod.number().nullish(),
-  "minOrder": zod.number().nullish(),
-  "shippingDays": zod.number().nullish(),
-  "website": zod.string().nullish(),
-  "contactEmail": zod.string().nullish(),
-  "notes": zod.string().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-
+  id: zod.number(),
+  name: zod.string(),
+  country: zod.string().nullish(),
+  rating: zod.number().nullish(),
+  minOrder: zod.number().nullish(),
+  shippingDays: zod.number().nullish(),
+  website: zod.string().nullish(),
+  contactEmail: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
 
 /**
  * @summary Delete a supplier
  */
 export const DeleteSupplierParams = zod.object({
-  "id": zod.coerce.number()
-})
-
+  id: zod.coerce.number(),
+});
 
 /**
  * @summary List products linked to a supplier
  */
 export const GetSupplierProductsParams = zod.object({
-  "id": zod.coerce.number()
-})
+  id: zod.coerce.number(),
+});
 
 export const GetSupplierProductsResponseItem = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "category": zod.string().nullish(),
-  "niche": zod.string().nullish(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "margin": zod.number().nullish(),
-  "status": zod.enum(['hunting', 'researching', 'listed', 'archived']),
-  "description": zod.string().nullish(),
-  "aiDescription": zod.string().nullish(),
-  "imageUrl": zod.string().nullish(),
-  "sourceUrl": zod.string().nullish(),
-  "notes": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "stockQuantity": zod.number().nullish(),
-  "stockThreshold": zod.number().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-export const GetSupplierProductsResponse = zod.array(GetSupplierProductsResponseItem)
-
+  id: zod.number(),
+  name: zod.string(),
+  category: zod.string().nullish(),
+  niche: zod.string().nullish(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  margin: zod.number().nullish(),
+  status: zod.enum(["hunting", "researching", "listed", "archived"]),
+  description: zod.string().nullish(),
+  aiDescription: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  sourceUrl: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  stockQuantity: zod.number().nullish(),
+  stockThreshold: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+export const GetSupplierProductsResponse = zod.array(
+  GetSupplierProductsResponseItem,
+);
 
 /**
  * @summary List all orders
  */
 export const ListOrdersQueryParams = zod.object({
-  "status": zod.coerce.string().optional()
-})
+  status: zod.coerce.string().optional(),
+});
 
 export const ListOrdersResponseItem = zod.object({
-  "id": zod.number(),
-  "orderNumber": zod.string(),
-  "productId": zod.number().nullish(),
-  "productName": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "supplierName": zod.string().nullish(),
-  "customerName": zod.string().optional(),
-  "customerEmail": zod.string().nullish(),
-  "quantity": zod.number().optional(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "profit": zod.number().nullish(),
-  "status": zod.enum(['pending', 'placed', 'shipped', 'delivered', 'cancelled']),
-  "trackingNumber": zod.string().nullish(),
-  "shippingAddress": zod.string().nullish(),
-  "placedAt": zod.string().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-export const ListOrdersResponse = zod.array(ListOrdersResponseItem)
-
+  id: zod.number(),
+  orderNumber: zod.string(),
+  productId: zod.number().nullish(),
+  productName: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  supplierName: zod.string().nullish(),
+  customerName: zod.string().optional(),
+  customerEmail: zod.string().nullish(),
+  quantity: zod.number().optional(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  profit: zod.number().nullish(),
+  status: zod.enum(["pending", "placed", "shipped", "delivered", "cancelled"]),
+  trackingNumber: zod.string().nullish(),
+  shippingAddress: zod.string().nullish(),
+  placedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+export const ListOrdersResponse = zod.array(ListOrdersResponseItem);
 
 /**
  * @summary Create an order
  */
 
-
-
 export const CreateOrderBody = zod.object({
-  "orderNumber": zod.string().optional(),
-  "productId": zod.number().optional(),
-  "supplierId": zod.number().optional(),
-  "customerName": zod.string().min(1),
-  "customerEmail": zod.string().optional(),
-  "quantity": zod.number(),
-  "costPrice": zod.number().optional(),
-  "sellPrice": zod.number().optional(),
-  "status": zod.enum(['pending', 'placed', 'shipped', 'delivered', 'cancelled']).optional(),
-  "shippingAddress": zod.string().optional(),
-  "trackingNumber": zod.string().optional()
-})
-
+  orderNumber: zod.string().optional(),
+  productId: zod.number().optional(),
+  supplierId: zod.number().optional(),
+  customerName: zod.string().min(1),
+  customerEmail: zod.string().optional(),
+  quantity: zod.number(),
+  costPrice: zod.number().optional(),
+  sellPrice: zod.number().optional(),
+  status: zod
+    .enum(["pending", "placed", "shipped", "delivered", "cancelled"])
+    .optional(),
+  shippingAddress: zod.string().optional(),
+  trackingNumber: zod.string().optional(),
+});
 
 /**
  * @summary Get top customers ranked by revenue with order history
  */
 export const GetCustomerInsightsResponseItem = zod.object({
-  "customerName": zod.string(),
-  "customerEmail": zod.string().nullish(),
-  "orderCount": zod.number(),
-  "totalRevenue": zod.number(),
-  "totalProfit": zod.number(),
-  "avgOrderValue": zod.number(),
-  "firstOrderAt": zod.string(),
-  "lastOrderAt": zod.string(),
-  "topProduct": zod.string().nullish(),
-  "orders": zod.array(zod.object({
-  "id": zod.number(),
-  "orderNumber": zod.string(),
-  "productId": zod.number().nullish(),
-  "productName": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "supplierName": zod.string().nullish(),
-  "customerName": zod.string().optional(),
-  "customerEmail": zod.string().nullish(),
-  "quantity": zod.number().optional(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "profit": zod.number().nullish(),
-  "status": zod.enum(['pending', 'placed', 'shipped', 'delivered', 'cancelled']),
-  "trackingNumber": zod.string().nullish(),
-  "shippingAddress": zod.string().nullish(),
-  "placedAt": zod.string().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-}))
-})
-export const GetCustomerInsightsResponse = zod.array(GetCustomerInsightsResponseItem)
-
+  customerName: zod.string(),
+  customerEmail: zod.string().nullish(),
+  orderCount: zod.number(),
+  totalRevenue: zod.number(),
+  totalProfit: zod.number(),
+  avgOrderValue: zod.number(),
+  firstOrderAt: zod.string(),
+  lastOrderAt: zod.string(),
+  topProduct: zod.string().nullish(),
+  orders: zod.array(
+    zod.object({
+      id: zod.number(),
+      orderNumber: zod.string(),
+      productId: zod.number().nullish(),
+      productName: zod.string().nullish(),
+      supplierId: zod.number().nullish(),
+      supplierName: zod.string().nullish(),
+      customerName: zod.string().optional(),
+      customerEmail: zod.string().nullish(),
+      quantity: zod.number().optional(),
+      costPrice: zod.number().nullish(),
+      sellPrice: zod.number().nullish(),
+      profit: zod.number().nullish(),
+      status: zod.enum([
+        "pending",
+        "placed",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ]),
+      trackingNumber: zod.string().nullish(),
+      shippingAddress: zod.string().nullish(),
+      placedAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string().optional(),
+    }),
+  ),
+});
+export const GetCustomerInsightsResponse = zod.array(
+  GetCustomerInsightsResponseItem,
+);
 
 /**
  * @summary Bulk update status and/or tracking number on multiple orders
  */
 
-
-
 export const BulkUpdateOrdersBody = zod.object({
-  "orderIds": zod.array(zod.number()).min(1),
-  "status": zod.enum(['pending', 'placed', 'shipped', 'delivered', 'cancelled']).optional(),
-  "trackingNumber": zod.string().optional()
-})
+  orderIds: zod.array(zod.number()).min(1),
+  status: zod
+    .enum(["pending", "placed", "shipped", "delivered", "cancelled"])
+    .optional(),
+  trackingNumber: zod.string().optional(),
+});
 
 export const BulkUpdateOrdersResponse = zod.object({
-  "updatedCount": zod.number(),
-  "orders": zod.array(zod.object({
-  "id": zod.number(),
-  "orderNumber": zod.string(),
-  "productId": zod.number().nullish(),
-  "productName": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "supplierName": zod.string().nullish(),
-  "customerName": zod.string().optional(),
-  "customerEmail": zod.string().nullish(),
-  "quantity": zod.number().optional(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "profit": zod.number().nullish(),
-  "status": zod.enum(['pending', 'placed', 'shipped', 'delivered', 'cancelled']),
-  "trackingNumber": zod.string().nullish(),
-  "shippingAddress": zod.string().nullish(),
-  "placedAt": zod.string().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-}))
-})
-
+  updatedCount: zod.number(),
+  orders: zod.array(
+    zod.object({
+      id: zod.number(),
+      orderNumber: zod.string(),
+      productId: zod.number().nullish(),
+      productName: zod.string().nullish(),
+      supplierId: zod.number().nullish(),
+      supplierName: zod.string().nullish(),
+      customerName: zod.string().optional(),
+      customerEmail: zod.string().nullish(),
+      quantity: zod.number().optional(),
+      costPrice: zod.number().nullish(),
+      sellPrice: zod.number().nullish(),
+      profit: zod.number().nullish(),
+      status: zod.enum([
+        "pending",
+        "placed",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ]),
+      trackingNumber: zod.string().nullish(),
+      shippingAddress: zod.string().nullish(),
+      placedAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string().optional(),
+    }),
+  ),
+});
 
 /**
  * @summary Get an order by ID
  */
 export const GetOrderParams = zod.object({
-  "id": zod.coerce.number()
-})
+  id: zod.coerce.number(),
+});
 
 export const GetOrderResponse = zod.object({
-  "id": zod.number(),
-  "orderNumber": zod.string(),
-  "productId": zod.number().nullish(),
-  "productName": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "supplierName": zod.string().nullish(),
-  "customerName": zod.string().optional(),
-  "customerEmail": zod.string().nullish(),
-  "quantity": zod.number().optional(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "profit": zod.number().nullish(),
-  "status": zod.enum(['pending', 'placed', 'shipped', 'delivered', 'cancelled']),
-  "trackingNumber": zod.string().nullish(),
-  "shippingAddress": zod.string().nullish(),
-  "placedAt": zod.string().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-
+  id: zod.number(),
+  orderNumber: zod.string(),
+  productId: zod.number().nullish(),
+  productName: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  supplierName: zod.string().nullish(),
+  customerName: zod.string().optional(),
+  customerEmail: zod.string().nullish(),
+  quantity: zod.number().optional(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  profit: zod.number().nullish(),
+  status: zod.enum(["pending", "placed", "shipped", "delivered", "cancelled"]),
+  trackingNumber: zod.string().nullish(),
+  shippingAddress: zod.string().nullish(),
+  placedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
 
 /**
  * @summary Update order (status, tracking, etc.)
  */
 export const UpdateOrderParams = zod.object({
-  "id": zod.coerce.number()
-})
+  id: zod.coerce.number(),
+});
 
 export const UpdateOrderBody = zod.object({
-  "productId": zod.number().optional(),
-  "supplierId": zod.number().optional(),
-  "customerName": zod.string().optional(),
-  "customerEmail": zod.string().optional(),
-  "quantity": zod.number().optional(),
-  "costPrice": zod.number().optional(),
-  "sellPrice": zod.number().optional(),
-  "status": zod.enum(['pending', 'placed', 'shipped', 'delivered', 'cancelled']).optional(),
-  "trackingNumber": zod.string().optional(),
-  "shippingAddress": zod.string().optional(),
-  "placedAt": zod.string().optional()
-})
+  productId: zod.number().optional(),
+  supplierId: zod.number().optional(),
+  customerName: zod.string().optional(),
+  customerEmail: zod.string().optional(),
+  quantity: zod.number().optional(),
+  costPrice: zod.number().optional(),
+  sellPrice: zod.number().optional(),
+  status: zod
+    .enum(["pending", "placed", "shipped", "delivered", "cancelled"])
+    .optional(),
+  trackingNumber: zod.string().optional(),
+  shippingAddress: zod.string().optional(),
+  placedAt: zod.string().optional(),
+});
 
 export const UpdateOrderResponse = zod.object({
-  "id": zod.number(),
-  "orderNumber": zod.string(),
-  "productId": zod.number().nullish(),
-  "productName": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "supplierName": zod.string().nullish(),
-  "customerName": zod.string().optional(),
-  "customerEmail": zod.string().nullish(),
-  "quantity": zod.number().optional(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "profit": zod.number().nullish(),
-  "status": zod.enum(['pending', 'placed', 'shipped', 'delivered', 'cancelled']),
-  "trackingNumber": zod.string().nullish(),
-  "shippingAddress": zod.string().nullish(),
-  "placedAt": zod.string().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-
+  id: zod.number(),
+  orderNumber: zod.string(),
+  productId: zod.number().nullish(),
+  productName: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  supplierName: zod.string().nullish(),
+  customerName: zod.string().optional(),
+  customerEmail: zod.string().nullish(),
+  quantity: zod.number().optional(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  profit: zod.number().nullish(),
+  status: zod.enum(["pending", "placed", "shipped", "delivered", "cancelled"]),
+  trackingNumber: zod.string().nullish(),
+  shippingAddress: zod.string().nullish(),
+  placedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
 
 /**
  * @summary Delete an order
  */
 export const DeleteOrderParams = zod.object({
-  "id": zod.coerce.number()
-})
-
+  id: zod.coerce.number(),
+});
 
 /**
  * @summary Find and rank suppliers for a product
  */
 
-
-
 export const FindSuppliersBody = zod.object({
-  "productName": zod.string().min(1).describe('Product name to find suppliers for'),
-  "targetCostPrice": zod.number().optional().describe('Optional target cost price budget'),
-  "preferredCountry": zod.string().optional().describe('Optional preferred supplier country')
-})
+  productName: zod
+    .string()
+    .min(1)
+    .describe("Product name to find suppliers for"),
+  targetCostPrice: zod
+    .number()
+    .optional()
+    .describe("Optional target cost price budget"),
+  preferredCountry: zod
+    .string()
+    .optional()
+    .describe("Optional preferred supplier country"),
+});
 
 export const FindSuppliersResponse = zod.object({
-  "id": zod.number(),
-  "productName": zod.string(),
-  "targetCostPrice": zod.number().nullish(),
-  "preferredCountry": zod.string().nullish(),
-  "topPick": zod.string(),
-  "matches": zod.array(zod.object({
-  "supplierId": zod.number().nullish(),
-  "name": zod.string(),
-  "country": zod.string(),
-  "estimatedCostPrice": zod.number(),
-  "shippingDays": zod.number(),
-  "rating": zod.number(),
-  "matchScore": zod.number(),
-  "matchReason": zod.string(),
-  "pros": zod.array(zod.string()),
-  "isExisting": zod.boolean(),
-  "website": zod.string().nullish(),
-  "contactEmail": zod.string().nullish()
-})),
-  "sourcingTips": zod.array(zod.string()),
-  "createdAt": zod.string()
-})
-
+  id: zod.number(),
+  productName: zod.string(),
+  targetCostPrice: zod.number().nullish(),
+  preferredCountry: zod.string().nullish(),
+  topPick: zod.string(),
+  matches: zod.array(
+    zod.object({
+      supplierId: zod.number().nullish(),
+      name: zod.string(),
+      country: zod.string(),
+      estimatedCostPrice: zod.number(),
+      shippingDays: zod.number(),
+      rating: zod.number(),
+      matchScore: zod.number(),
+      matchReason: zod.string(),
+      pros: zod.array(zod.string()),
+      isExisting: zod.boolean(),
+      website: zod.string().nullish(),
+      contactEmail: zod.string().nullish(),
+    }),
+  ),
+  sourcingTips: zod.array(zod.string()),
+  createdAt: zod.string(),
+});
 
 /**
  * @summary List past supplier finder searches
  */
 export const ListSupplierFinderHistoryResponseItem = zod.object({
-  "id": zod.number(),
-  "productName": zod.string(),
-  "targetCostPrice": zod.number().nullish(),
-  "preferredCountry": zod.string().nullish(),
-  "topPick": zod.string(),
-  "matches": zod.array(zod.object({
-  "supplierId": zod.number().nullish(),
-  "name": zod.string(),
-  "country": zod.string(),
-  "estimatedCostPrice": zod.number(),
-  "shippingDays": zod.number(),
-  "rating": zod.number(),
-  "matchScore": zod.number(),
-  "matchReason": zod.string(),
-  "pros": zod.array(zod.string()),
-  "isExisting": zod.boolean(),
-  "website": zod.string().nullish(),
-  "contactEmail": zod.string().nullish()
-})),
-  "sourcingTips": zod.array(zod.string()),
-  "createdAt": zod.string()
-})
-export const ListSupplierFinderHistoryResponse = zod.array(ListSupplierFinderHistoryResponseItem)
-
+  id: zod.number(),
+  productName: zod.string(),
+  targetCostPrice: zod.number().nullish(),
+  preferredCountry: zod.string().nullish(),
+  topPick: zod.string(),
+  matches: zod.array(
+    zod.object({
+      supplierId: zod.number().nullish(),
+      name: zod.string(),
+      country: zod.string(),
+      estimatedCostPrice: zod.number(),
+      shippingDays: zod.number(),
+      rating: zod.number(),
+      matchScore: zod.number(),
+      matchReason: zod.string(),
+      pros: zod.array(zod.string()),
+      isExisting: zod.boolean(),
+      website: zod.string().nullish(),
+      contactEmail: zod.string().nullish(),
+    }),
+  ),
+  sourcingTips: zod.array(zod.string()),
+  createdAt: zod.string(),
+});
+export const ListSupplierFinderHistoryResponse = zod.array(
+  ListSupplierFinderHistoryResponseItem,
+);
 
 /**
  * @summary Delete a finder result
  */
 export const DeleteSupplierFinderResultParams = zod.object({
-  "id": zod.coerce.number()
-})
-
+  id: zod.coerce.number(),
+});
 
 /**
  * @summary AI-analyze a product keyword or URL for market research
  */
 
-
-
 export const AnalyzeProductBody = zod.object({
-  "query": zod.string().min(1).describe('Product keyword or URL to research')
-})
+  query: zod.string().min(1).describe("Product keyword or URL to research"),
+});
 
 export const AnalyzeProductResponse = zod.object({
-  "id": zod.number(),
-  "query": zod.string(),
-  "demandScore": zod.number().describe('0-100 demand score'),
-  "competitionLevel": zod.enum(['low', 'medium', 'high', 'very-high']),
-  "suggestedPrice": zod.number(),
-  "estimatedMargin": zod.number().describe('Estimated margin percentage'),
-  "topNiches": zod.array(zod.object({
-  "name": zod.string(),
-  "score": zod.number()
-})),
-  "pros": zod.array(zod.string()),
-  "cons": zod.array(zod.string()),
-  "verdict": zod.enum(['strong-buy', 'buy', 'hold', 'avoid']),
-  "summary": zod.string().nullish(),
-  "createdAt": zod.string()
-})
-
+  id: zod.number(),
+  query: zod.string(),
+  demandScore: zod.number().describe("0-100 demand score"),
+  competitionLevel: zod.enum(["low", "medium", "high", "very-high"]),
+  suggestedPrice: zod.number(),
+  estimatedMargin: zod.number().describe("Estimated margin percentage"),
+  topNiches: zod.array(
+    zod.object({
+      name: zod.string(),
+      score: zod.number(),
+    }),
+  ),
+  pros: zod.array(zod.string()),
+  cons: zod.array(zod.string()),
+  verdict: zod.enum(["strong-buy", "buy", "hold", "avoid"]),
+  summary: zod.string().nullish(),
+  createdAt: zod.string(),
+});
 
 /**
  * @summary List past research reports
  */
 export const ListResearchHistoryResponseItem = zod.object({
-  "id": zod.number(),
-  "query": zod.string(),
-  "demandScore": zod.number().describe('0-100 demand score'),
-  "competitionLevel": zod.enum(['low', 'medium', 'high', 'very-high']),
-  "suggestedPrice": zod.number(),
-  "estimatedMargin": zod.number().describe('Estimated margin percentage'),
-  "topNiches": zod.array(zod.object({
-  "name": zod.string(),
-  "score": zod.number()
-})),
-  "pros": zod.array(zod.string()),
-  "cons": zod.array(zod.string()),
-  "verdict": zod.enum(['strong-buy', 'buy', 'hold', 'avoid']),
-  "summary": zod.string().nullish(),
-  "createdAt": zod.string()
-})
-export const ListResearchHistoryResponse = zod.array(ListResearchHistoryResponseItem)
-
+  id: zod.number(),
+  query: zod.string(),
+  demandScore: zod.number().describe("0-100 demand score"),
+  competitionLevel: zod.enum(["low", "medium", "high", "very-high"]),
+  suggestedPrice: zod.number(),
+  estimatedMargin: zod.number().describe("Estimated margin percentage"),
+  topNiches: zod.array(
+    zod.object({
+      name: zod.string(),
+      score: zod.number(),
+    }),
+  ),
+  pros: zod.array(zod.string()),
+  cons: zod.array(zod.string()),
+  verdict: zod.enum(["strong-buy", "buy", "hold", "avoid"]),
+  summary: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListResearchHistoryResponse = zod.array(
+  ListResearchHistoryResponseItem,
+);
 
 /**
  * @summary Delete a research report
  */
 export const DeleteResearchReportParams = zod.object({
-  "id": zod.coerce.number()
-})
-
+  id: zod.coerce.number(),
+});
 
 /**
  * @summary Get overall business KPIs
  */
 export const GetDashboardStatsResponse = zod.object({
-  "totalRevenue": zod.number(),
-  "totalProfit": zod.number(),
-  "totalOrders": zod.number(),
-  "totalProducts": zod.number(),
-  "activeSuppliers": zod.number(),
-  "pendingOrders": zod.number(),
-  "conversionRate": zod.number(),
-  "avgMargin": zod.number()
-})
-
+  totalRevenue: zod.number(),
+  totalProfit: zod.number(),
+  totalOrders: zod.number(),
+  totalProducts: zod.number(),
+  activeSuppliers: zod.number(),
+  pendingOrders: zod.number(),
+  conversionRate: zod.number(),
+  avgMargin: zod.number(),
+});
 
 /**
  * @summary Get time-series revenue, profit, and order volume data
@@ -723,153 +724,154 @@ export const GetDashboardStatsResponse = zod.object({
 export const getDashboardAnalyticsQueryPeriodDefault = `weekly`;
 
 export const GetDashboardAnalyticsQueryParams = zod.object({
-  "period": zod.enum(['weekly', 'monthly']).default(getDashboardAnalyticsQueryPeriodDefault)
-})
+  period: zod
+    .enum(["weekly", "monthly"])
+    .default(getDashboardAnalyticsQueryPeriodDefault),
+});
 
 export const GetDashboardAnalyticsResponse = zod.object({
-  "period": zod.string(),
-  "data": zod.array(zod.object({
-  "date": zod.string(),
-  "revenue": zod.number(),
-  "profit": zod.number(),
-  "orderCount": zod.number()
-})),
-  "totalRevenue": zod.number(),
-  "totalProfit": zod.number(),
-  "totalOrders": zod.number(),
-  "revenueChange": zod.number().describe('Percentage change vs previous period'),
-  "profitChange": zod.number(),
-  "ordersChange": zod.number()
-})
-
+  period: zod.string(),
+  data: zod.array(
+    zod.object({
+      date: zod.string(),
+      revenue: zod.number(),
+      profit: zod.number(),
+      orderCount: zod.number(),
+    }),
+  ),
+  totalRevenue: zod.number(),
+  totalProfit: zod.number(),
+  totalOrders: zod.number(),
+  revenueChange: zod.number().describe("Percentage change vs previous period"),
+  profitChange: zod.number(),
+  ordersChange: zod.number(),
+});
 
 /**
  * @summary Get recent orders for activity feed
  */
 export const GetRecentOrdersResponseItem = zod.object({
-  "id": zod.number(),
-  "orderNumber": zod.string(),
-  "productId": zod.number().nullish(),
-  "productName": zod.string().nullish(),
-  "supplierId": zod.number().nullish(),
-  "supplierName": zod.string().nullish(),
-  "customerName": zod.string().optional(),
-  "customerEmail": zod.string().nullish(),
-  "quantity": zod.number().optional(),
-  "costPrice": zod.number().nullish(),
-  "sellPrice": zod.number().nullish(),
-  "profit": zod.number().nullish(),
-  "status": zod.enum(['pending', 'placed', 'shipped', 'delivered', 'cancelled']),
-  "trackingNumber": zod.string().nullish(),
-  "shippingAddress": zod.string().nullish(),
-  "placedAt": zod.string().nullish(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string().optional()
-})
-export const GetRecentOrdersResponse = zod.array(GetRecentOrdersResponseItem)
-
+  id: zod.number(),
+  orderNumber: zod.string(),
+  productId: zod.number().nullish(),
+  productName: zod.string().nullish(),
+  supplierId: zod.number().nullish(),
+  supplierName: zod.string().nullish(),
+  customerName: zod.string().optional(),
+  customerEmail: zod.string().nullish(),
+  quantity: zod.number().optional(),
+  costPrice: zod.number().nullish(),
+  sellPrice: zod.number().nullish(),
+  profit: zod.number().nullish(),
+  status: zod.enum(["pending", "placed", "shipped", "delivered", "cancelled"]),
+  trackingNumber: zod.string().nullish(),
+  shippingAddress: zod.string().nullish(),
+  placedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+export const GetRecentOrdersResponse = zod.array(GetRecentOrdersResponseItem);
 
 /**
  * @summary Generate a Profit & Loss report for a date range
  */
 export const GetPlReportQueryParams = zod.object({
-  "from": zod.coerce.string().describe('ISO date string — start of range (inclusive)'),
-  "to": zod.coerce.string().describe('ISO date string — end of range (inclusive)'),
-  "groupBy": zod.enum(['product', 'supplier', 'status']).optional().describe('Dimension to group rows by (default product)')
-})
+  from: zod.coerce
+    .string()
+    .describe("ISO date string — start of range (inclusive)"),
+  to: zod.coerce
+    .string()
+    .describe("ISO date string — end of range (inclusive)"),
+  groupBy: zod
+    .enum(["product", "supplier", "status"])
+    .optional()
+    .describe("Dimension to group rows by (default product)"),
+});
 
 export const GetPlReportResponse = zod.object({
-  "from": zod.string(),
-  "to": zod.string(),
-  "groupBy": zod.string(),
-  "rows": zod.array(zod.object({
-  "label": zod.string(),
-  "orderCount": zod.number(),
-  "revenue": zod.number(),
-  "cogs": zod.number(),
-  "grossProfit": zod.number(),
-  "margin": zod.number().describe('Gross margin percentage')
-})),
-  "totalRevenue": zod.number(),
-  "totalCogs": zod.number(),
-  "totalGrossProfit": zod.number(),
-  "totalMargin": zod.number(),
-  "totalOrders": zod.number()
-})
-
+  from: zod.string(),
+  to: zod.string(),
+  groupBy: zod.string(),
+  rows: zod.array(
+    zod.object({
+      label: zod.string(),
+      orderCount: zod.number(),
+      revenue: zod.number(),
+      cogs: zod.number(),
+      grossProfit: zod.number(),
+      margin: zod.number().describe("Gross margin percentage"),
+    }),
+  ),
+  totalRevenue: zod.number(),
+  totalCogs: zod.number(),
+  totalGrossProfit: zod.number(),
+  totalMargin: zod.number(),
+  totalOrders: zod.number(),
+});
 
 /**
  * @summary List all tracked competitor products
  */
 export const ListPriceWatchesResponseItem = zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "url": zod.string(),
-  "myPrice": zod.number().nullish(),
-  "notes": zod.string().nullish(),
-  "latestPrice": zod.number().nullish(),
-  "latestRecordedAt": zod.string().nullish(),
-  "snapshotCount": zod.number().optional(),
-  "createdAt": zod.string(),
-  "updatedAt": zod.string()
-})
-export const ListPriceWatchesResponse = zod.array(ListPriceWatchesResponseItem)
-
+  id: zod.number(),
+  name: zod.string(),
+  url: zod.string(),
+  myPrice: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  latestPrice: zod.number().nullish(),
+  latestRecordedAt: zod.string().nullish(),
+  snapshotCount: zod.number().optional(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListPriceWatchesResponse = zod.array(ListPriceWatchesResponseItem);
 
 /**
  * @summary Add a competitor product to watch
  */
 
-
-
-
 export const CreatePriceWatchBody = zod.object({
-  "name": zod.string().min(1),
-  "url": zod.string().min(1),
-  "myPrice": zod.number().nullish(),
-  "notes": zod.string().nullish()
-})
-
+  name: zod.string().min(1),
+  url: zod.string().min(1),
+  myPrice: zod.number().nullish(),
+  notes: zod.string().nullish(),
+});
 
 /**
  * @summary Remove a tracked product
  */
 export const DeletePriceWatchParams = zod.object({
-  "id": zod.coerce.number()
-})
-
+  id: zod.coerce.number(),
+});
 
 /**
  * @summary Get price snapshot history for a tracked product
  */
 export const ListPriceSnapshotsParams = zod.object({
-  "id": zod.coerce.number()
-})
+  id: zod.coerce.number(),
+});
 
 export const ListPriceSnapshotsResponseItem = zod.object({
-  "id": zod.number(),
-  "watchId": zod.number(),
-  "price": zod.number(),
-  "note": zod.string().nullish(),
-  "recordedAt": zod.string()
-})
-export const ListPriceSnapshotsResponse = zod.array(ListPriceSnapshotsResponseItem)
-
+  id: zod.number(),
+  watchId: zod.number(),
+  price: zod.number(),
+  note: zod.string().nullish(),
+  recordedAt: zod.string(),
+});
+export const ListPriceSnapshotsResponse = zod.array(
+  ListPriceSnapshotsResponseItem,
+);
 
 /**
  * @summary Log a new price snapshot for a tracked product
  */
 export const AddPriceSnapshotParams = zod.object({
-  "id": zod.coerce.number()
-})
+  id: zod.coerce.number(),
+});
 
 export const addPriceSnapshotBodyPriceMin = 0;
 
-
-
 export const AddPriceSnapshotBody = zod.object({
-  "price": zod.number().min(addPriceSnapshotBodyPriceMin),
-  "note": zod.string().nullish()
-})
-
-
+  price: zod.number().min(addPriceSnapshotBodyPriceMin),
+  note: zod.string().nullish(),
+});

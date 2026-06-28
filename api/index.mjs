@@ -32,15 +32,13 @@ async function loadApp() {
 
   if (!isDev) {
     // Production: use pre-built app bundle
-    const { default: expressApp } = await import(
-      "../artifacts/api-server/dist/app.mjs"
-    );
+    const { default: expressApp } =
+      await import("../artifacts/api-server/dist/app.mjs");
     return expressApp;
   } else {
     // Development: use source app
-    const { default: expressApp } = await import(
-      "../artifacts/api-server/src/app"
-    );
+    const { default: expressApp } =
+      await import("../artifacts/api-server/src/app");
     return expressApp;
   }
 }

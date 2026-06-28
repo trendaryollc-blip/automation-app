@@ -33,7 +33,8 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
 
   const totalOrders = Number(orderStats?.total ?? 0);
   const delivered = Number(deliveredStats?.total ?? 0);
-  const conversionRate = totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0;
+  const conversionRate =
+    totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0;
 
   const listedProducts = await db
     .select()
@@ -44,7 +45,9 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
   let marginCount = 0;
   for (const p of listedProducts) {
     if (p.costPrice != null && p.sellPrice != null && Number(p.sellPrice) > 0) {
-      totalMargin += ((Number(p.sellPrice) - Number(p.costPrice)) / Number(p.sellPrice)) * 100;
+      totalMargin +=
+        ((Number(p.sellPrice) - Number(p.costPrice)) / Number(p.sellPrice)) *
+        100;
       marginCount++;
     }
   }
@@ -63,12 +66,22 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
 });
 
 router.get("/dashboard/analytics", async (req, res): Promise<void> => {
-  const period = (req.query.period as string) === "monthly" ? "monthly" : "weekly";
+  const period =
+    (req.query.period as string) === "monthly" ? "monthly" : "weekly";
   const now = new Date();
 
-  type Bucket = { date: string; revenue: number; profit: number; orderCount: number };
+  type Bucket = {
+    date: string;
+    revenue: number;
+    profit: number;
+    orderCount: number;
+  };
 
-  function buildBuckets(count: number, labelFn: (d: Date) => string, startFn: (i: number) => Date): Bucket[] {
+  function buildBuckets(
+    count: number,
+    labelFn: (d: Date) => string,
+    startFn: (i: number) => Date,
+  ): Bucket[] {
     return Array.from({ length: count }, (_, i) => ({
       date: labelFn(startFn(i)),
       revenue: 0,
@@ -96,9 +109,13 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
     prevStart = new Date(windowStart.getTime() - 7 * DAY);
     prevEnd = windowStart;
 
-    buckets = buildBuckets(7, (d) => {
-      return d.toLocaleDateString("en-US", { weekday: "short" });
-    }, (i) => new Date(windowStart.getTime() + i * DAY));
+    buckets = buildBuckets(
+      7,
+      (d) => {
+        return d.toLocaleDateString("en-US", { weekday: "short" });
+      },
+      (i) => new Date(windowStart.getTime() + i * DAY),
+    );
 
     bucketOf = (d: Date) => {
       const diff = toMidnight(d).getTime() - windowStart.getTime();
@@ -112,11 +129,19 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
     prevStart = new Date(now.getFullYear() - 2, now.getMonth() + 1, 1);
     prevEnd = windowStart;
 
-    buckets = buildBuckets(12, (d) => {
-      return d.toLocaleDateString("en-US", { month: "short" });
-    }, (i) => {
-      return new Date(windowStart.getFullYear(), windowStart.getMonth() + i, 1);
-    });
+    buckets = buildBuckets(
+      12,
+      (d) => {
+        return d.toLocaleDateString("en-US", { month: "short" });
+      },
+      (i) => {
+        return new Date(
+          windowStart.getFullYear(),
+          windowStart.getMonth() + i,
+          1,
+        );
+      },
+    );
     void endOfMonth;
 
     bucketOf = (d: Date) => {
@@ -162,7 +187,11 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
   const prevOrderCount = Number(prevOrders[0]?.cnt ?? 0);
 
   const pctChange = (curr: number, prev: number) =>
-    prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100);
+    prev === 0
+      ? curr > 0
+        ? 100
+        : 0
+      : Math.round(((curr - prev) / prev) * 100);
 
   res.json({
     period,

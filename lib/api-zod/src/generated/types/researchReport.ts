@@ -5,9 +5,9 @@
  * DropFlow - Dropshipping Automation Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { ResearchNiche } from './researchNiche';
-import type { ResearchReportCompetitionLevel } from './researchReportCompetitionLevel';
-import type { ResearchReportVerdict } from './researchReportVerdict';
+import type { ResearchNiche } from "./researchNiche";
+import type { ResearchReportCompetitionLevel } from "./researchReportCompetitionLevel";
+import type { ResearchReportVerdict } from "./researchReportVerdict";
 
 export interface ResearchReport {
   id: number;

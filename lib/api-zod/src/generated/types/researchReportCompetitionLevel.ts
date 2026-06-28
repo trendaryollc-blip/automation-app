@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ResearchReportCompetitionLevel = typeof ResearchReportCompetitionLevel[keyof typeof ResearchReportCompetitionLevel];
-
+export type ResearchReportCompetitionLevel =
+  (typeof ResearchReportCompetitionLevel)[keyof typeof ResearchReportCompetitionLevel];
 
 export const ResearchReportCompetitionLevel = {
-  low: 'low',
-  medium: 'medium',
-  high: 'high',
-  'very-high': 'very-high',
+  low: "low",
+  medium: "medium",
+  high: "high",
+  "very-high": "very-high",
 } as const;

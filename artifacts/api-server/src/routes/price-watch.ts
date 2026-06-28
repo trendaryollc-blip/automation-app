@@ -5,12 +5,18 @@ import { db, priceWatchTable, priceSnapshotsTable } from "@workspace/db";
 const router: IRouter = Router();
 
 router.get("/price-watch", async (_req, res): Promise<void> => {
-  const watches = await db.select().from(priceWatchTable).orderBy(desc(priceWatchTable.createdAt));
+  const watches = await db
+    .select()
+    .from(priceWatchTable)
+    .orderBy(desc(priceWatchTable.createdAt));
 
   const result = await Promise.all(
     watches.map(async (w) => {
       const [latest] = await db
-        .select({ price: priceSnapshotsTable.price, recordedAt: priceSnapshotsTable.recordedAt })
+        .select({
+          price: priceSnapshotsTable.price,
+          recordedAt: priceSnapshotsTable.recordedAt,
+        })
         .from(priceSnapshotsTable)
         .where(eq(priceSnapshotsTable.watchId, w.id))
         .orderBy(desc(priceSnapshotsTable.recordedAt))
@@ -30,7 +36,7 @@ router.get("/price-watch", async (_req, res): Promise<void> => {
         createdAt: w.createdAt.toISOString(),
         updatedAt: w.updatedAt.toISOString(),
       };
-    })
+    }),
   );
 
   res.json(result);
@@ -72,14 +78,20 @@ router.post("/price-watch", async (req, res): Promise<void> => {
 
 router.delete("/price-watch/:id", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
   await db.delete(priceWatchTable).where(eq(priceWatchTable.id, id));
   res.status(204).send();
 });
 
 router.get("/price-watch/:id/snapshots", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
 
   const snapshots = await db
     .select()
@@ -92,13 +104,16 @@ router.get("/price-watch/:id/snapshots", async (req, res): Promise<void> => {
       ...s,
       price: Number(s.price),
       recordedAt: s.recordedAt.toISOString(),
-    }))
+    })),
   );
 });
 
 router.post("/price-watch/:id/snapshots", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
 
   const { price, note } = req.body as { price: number; note?: string | null };
   if (price == null || isNaN(Number(price))) {

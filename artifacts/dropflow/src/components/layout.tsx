@@ -1,6 +1,35 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Package, Truck, ShoppingCart, FlaskConical, SearchCheck, Calculator, Eye, FileBarChart, ShoppingBag, Bell, Settings, Upload, BarChart2, Users, Zap, Tag, RotateCcw, Wallet, Flame, Rocket, Megaphone, Plug, Brain, ListChecks } from "lucide-react";
-import { useGetStockAlerts, useListPriceWatches } from "@workspace/api-client-react";
+import {
+  LayoutDashboard,
+  Package,
+  Truck,
+  ShoppingCart,
+  FlaskConical,
+  SearchCheck,
+  Calculator,
+  Eye,
+  FileBarChart,
+  ShoppingBag,
+  Bell,
+  Settings,
+  Upload,
+  BarChart2,
+  Users,
+  Zap,
+  Tag,
+  RotateCcw,
+  Wallet,
+  Flame,
+  Rocket,
+  Megaphone,
+  Plug,
+  Brain,
+  ListChecks,
+} from "lucide-react";
+import {
+  useGetStockAlerts,
+  useListPriceWatches,
+} from "@workspace/api-client-react";
 import { loadSettings } from "@/pages/settings";
 
 function useTotalAlerts() {
@@ -12,7 +41,10 @@ function useTotalAlerts() {
     const diffPct = Math.abs((w.myPrice - w.latestPrice) / w.latestPrice) * 100;
     return diffPct >= settings.priceAlertThresholdPct;
   });
-  return (settings.lowStockAlertsEnabled ? stockAlerts.length : 0) + priceAlerts.length;
+  return (
+    (settings.lowStockAlertsEnabled ? stockAlerts.length : 0) +
+    priceAlerts.length
+  );
 }
 
 const NAV_GROUPS = [
@@ -57,9 +89,7 @@ const NAV_GROUPS = [
   },
   {
     label: "Launch",
-    links: [
-      { href: "/launches", label: "Launch Planner", icon: Rocket },
-    ],
+    links: [{ href: "/launches", label: "Launch Planner", icon: Rocket }],
   },
   {
     label: "Integrations",
@@ -71,9 +101,7 @@ const NAV_GROUPS = [
   },
   {
     label: "Tools",
-    links: [
-      { href: "/import", label: "CSV Import", icon: Upload },
-    ],
+    links: [{ href: "/import", label: "CSV Import", icon: Upload }],
   },
 ];
 
@@ -85,16 +113,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen w-full">
       <div className="w-56 border-r border-border bg-card flex flex-col">
         <div className="p-4 pb-3">
-          <h1 className="text-lg font-bold tracking-tight text-primary">DropFlow</h1>
+          <h1 className="text-lg font-bold tracking-tight text-primary">
+            DropFlow
+          </h1>
         </div>
         <nav className="flex-1 px-3 space-y-4 overflow-y-auto pb-2">
           {NAV_GROUPS.map((group) => (
             <div key={group.label}>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 px-2 mb-1">{group.label}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 px-2 mb-1">
+                {group.label}
+              </p>
               <div className="space-y-0.5">
                 {group.links.map((link) => {
                   const Icon = link.icon;
-                  const isActive = location === link.href || (link.href !== "/" && location.startsWith(link.href));
+                  const isActive =
+                    location === link.href ||
+                    (link.href !== "/" && location.startsWith(link.href));
                   return (
                     <Link
                       key={link.href}
@@ -111,7 +145,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
         <div className="px-3 pb-4 border-t border-border pt-3 space-y-0.5">
-          <Link href="/notifications" className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${location === "/notifications" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}>
+          <Link
+            href="/notifications"
+            className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${location === "/notifications" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+          >
             <div className="relative">
               <Bell className="w-3.5 h-3.5" />
               {totalAlerts > 0 && (
@@ -127,16 +164,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </span>
             )}
           </Link>
-          <Link href="/settings" className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${location === "/settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}>
+          <Link
+            href="/settings"
+            className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${location === "/settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+          >
             <Settings className="w-3.5 h-3.5" />
             Settings
           </Link>
         </div>
       </div>
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <main className="flex-1 overflow-auto p-8">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto p-8">{children}</main>
       </div>
     </div>
   );

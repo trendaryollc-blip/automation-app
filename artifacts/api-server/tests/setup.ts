@@ -1,14 +1,14 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock @workspace/db — our in-memory mock
-vi.mock('@workspace/db', async () => {
-  const mod = await import('./__mocks__/@workspace_db');
+vi.mock("@workspace/db", async () => {
+  const mod = await import("./__mocks__/@workspace_db");
   return mod;
 });
 
 // Mock drizzle-orm so route handlers receive the same query helpers as production.
-vi.mock('drizzle-orm', async () => {
-  const mod = await import('./__mocks__/@workspace_db.ts');
+vi.mock("drizzle-orm", async () => {
+  const mod = await import("./__mocks__/@workspace_db.ts");
   return {
     eq: mod.eq,
     desc: mod.desc,
@@ -23,7 +23,7 @@ vi.mock('drizzle-orm', async () => {
 });
 
 // Mock @workspace/db/firestore — used by ai-settings and store-connections
-vi.mock('@workspace/db/firestore', () => ({
+vi.mock("@workspace/db/firestore", () => ({
   isFirestoreMode: () => false,
   aiSettingsRepo: () => ({
     findMany: async () => [],
@@ -35,12 +35,12 @@ vi.mock('@workspace/db/firestore', () => ({
 }));
 
 // Mock external services for ai.ts
-vi.mock('../src/services/ai.js', () => ({
+vi.mock("../src/services/ai.js", () => ({
   getKey: vi.fn().mockResolvedValue(null),
   hasKey: vi.fn().mockResolvedValue(false),
-  tryProviders: vi.fn().mockRejectedValue(new Error('NO_AI_KEYS')),
-  generateDescription: vi.fn().mockRejectedValue(new Error('NO_AI_KEYS')),
-  scoreProduct: vi.fn().mockRejectedValue(new Error('NO_AI_KEYS')),
-  researchProduct: vi.fn().mockRejectedValue(new Error('NO_AI_KEYS')),
-  findSuppliers: vi.fn().mockRejectedValue(new Error('NO_AI_KEYS')),
+  tryProviders: vi.fn().mockRejectedValue(new Error("NO_AI_KEYS")),
+  generateDescription: vi.fn().mockRejectedValue(new Error("NO_AI_KEYS")),
+  scoreProduct: vi.fn().mockRejectedValue(new Error("NO_AI_KEYS")),
+  researchProduct: vi.fn().mockRejectedValue(new Error("NO_AI_KEYS")),
+  findSuppliers: vi.fn().mockRejectedValue(new Error("NO_AI_KEYS")),
 }));

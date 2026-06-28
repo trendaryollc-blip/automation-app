@@ -110,9 +110,7 @@ async function buildAll() {
     logLevel: "info",
     external: externalPackages,
     sourcemap: "linked",
-    plugins: [
-      esbuildPluginPino({ transports: ["pino-pretty"] }),
-    ],
+    plugins: [esbuildPluginPino({ transports: ["pino-pretty"] })],
     banner: { js: commonBanner },
   });
 
@@ -127,9 +125,7 @@ async function buildAll() {
     logLevel: "info",
     external: externalPackages,
     sourcemap: false,
-    plugins: [
-      esbuildPluginPino({ transports: ["pino-pretty"] }),
-    ],
+    plugins: [esbuildPluginPino({ transports: ["pino-pretty"] })],
     banner: { js: commonBanner },
   });
 

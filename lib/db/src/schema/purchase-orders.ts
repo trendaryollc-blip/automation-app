@@ -1,4 +1,11 @@
-import { pgTable, text, serial, timestamp, numeric, integer } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  timestamp,
+  numeric,
+  integer,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -14,8 +21,13 @@ export const purchaseOrdersTable = pgTable("purchase_orders", {
   sentAt: timestamp("sent_at", { withTimezone: true }),
   confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
   receivedAt: timestamp("received_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const purchaseOrderItemsTable = pgTable("purchase_order_items", {
@@ -26,12 +38,20 @@ export const purchaseOrderItemsTable = pgTable("purchase_order_items", {
   quantity: integer("quantity").notNull().default(1),
   unitCost: numeric("unit_cost", { precision: 10, scale: 2 }),
   totalCost: numeric("total_cost", { precision: 10, scale: 2 }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
-export const insertPurchaseOrderSchema = createInsertSchema(purchaseOrdersTable).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertPurchaseOrderItemSchema = createInsertSchema(purchaseOrderItemsTable).omit({ id: true, createdAt: true });
+export const insertPurchaseOrderSchema = createInsertSchema(
+  purchaseOrdersTable,
+).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertPurchaseOrderItemSchema = createInsertSchema(
+  purchaseOrderItemsTable,
+).omit({ id: true, createdAt: true });
 export type InsertPurchaseOrder = z.infer<typeof insertPurchaseOrderSchema>;
-export type InsertPurchaseOrderItem = z.infer<typeof insertPurchaseOrderItemSchema>;
+export type InsertPurchaseOrderItem = z.infer<
+  typeof insertPurchaseOrderItemSchema
+>;
 export type PurchaseOrder = typeof purchaseOrdersTable.$inferSelect;
 export type PurchaseOrderItem = typeof purchaseOrderItemsTable.$inferSelect;

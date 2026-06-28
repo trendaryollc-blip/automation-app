@@ -7,5 +7,5 @@
  */
 
 export type ListSuppliersParams = {
-country?: string;
+  country?: string;
 };

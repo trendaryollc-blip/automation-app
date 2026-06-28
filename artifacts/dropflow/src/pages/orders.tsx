@@ -39,17 +39,61 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Users, ChevronRight, TrendingUp, ShoppingCart, DollarSign, Package, Download, Search, Send, Truck, CheckCircle, X, Zap } from "lucide-react";
+import {
+  Plus,
+  Users,
+  ChevronRight,
+  TrendingUp,
+  ShoppingCart,
+  DollarSign,
+  Package,
+  Download,
+  Search,
+  Send,
+  Truck,
+  CheckCircle,
+  X,
+  Zap,
+} from "lucide-react";
 
 function exportOrdersCsv(orders: Order[]) {
-  const headers = ["orderNumber", "customerName", "customerEmail", "productName", "quantity", "status", "costPrice", "sellPrice", "profit", "supplierName", "trackingNumber", "createdAt"];
+  const headers = [
+    "orderNumber",
+    "customerName",
+    "customerEmail",
+    "productName",
+    "quantity",
+    "status",
+    "costPrice",
+    "sellPrice",
+    "profit",
+    "supplierName",
+    "trackingNumber",
+    "createdAt",
+  ];
   const escape = (v: unknown) => {
     const s = v == null ? "" : String(v);
-    return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
+    return s.includes(",") || s.includes('"') || s.includes("\n")
+      ? `"${s.replace(/"/g, '""')}"`
+      : s;
   };
   const rows = orders.map((o) =>
-    [o.orderNumber, o.customerName, o.customerEmail, o.productName, o.quantity, o.status, o.costPrice, o.sellPrice, o.profit, o.supplierName, o.trackingNumber, o.createdAt ? new Date(o.createdAt).toISOString().slice(0, 10) : ""]
-      .map(escape).join(",")
+    [
+      o.orderNumber,
+      o.customerName,
+      o.customerEmail,
+      o.productName,
+      o.quantity,
+      o.status,
+      o.costPrice,
+      o.sellPrice,
+      o.profit,
+      o.supplierName,
+      o.trackingNumber,
+      o.createdAt ? new Date(o.createdAt).toISOString().slice(0, 10) : "",
+    ]
+      .map(escape)
+      .join(","),
   );
   const csv = [headers.join(","), ...rows].join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
@@ -66,10 +110,14 @@ function fmt(n: number) {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  pending: "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 border-yellow-500/20",
-  placed: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-blue-500/20",
-  shipped: "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 border-purple-500/20",
-  delivered: "bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20",
+  pending:
+    "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 border-yellow-500/20",
+  placed:
+    "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-blue-500/20",
+  shipped:
+    "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 border-purple-500/20",
+  delivered:
+    "bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20",
   cancelled: "bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20",
 };
 
@@ -87,7 +135,7 @@ function CustomerInsightsPanel() {
 
   const selectedCustomer = useMemo(
     () => insights.find((c) => c.customerName === selected) ?? null,
-    [insights, selected]
+    [insights, selected],
   );
 
   if (isLoading) {
@@ -125,8 +173,12 @@ function CustomerInsightsPanel() {
             <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
               <TrendingUp className="w-3.5 h-3.5" /> Top Customer Revenue
             </div>
-            <div className="text-xl font-bold text-primary">{fmt(top.totalRevenue)}</div>
-            <div className="text-xs text-muted-foreground truncate">{top.customerName}</div>
+            <div className="text-xl font-bold text-primary">
+              {fmt(top.totalRevenue)}
+            </div>
+            <div className="text-xs text-muted-foreground truncate">
+              {top.customerName}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -135,7 +187,10 @@ function CustomerInsightsPanel() {
               <DollarSign className="w-3.5 h-3.5" /> Avg Order Value
             </div>
             <div className="text-2xl font-bold">
-              {fmt(insights.reduce((s, c) => s + c.avgOrderValue, 0) / insights.length)}
+              {fmt(
+                insights.reduce((s, c) => s + c.avgOrderValue, 0) /
+                  insights.length,
+              )}
             </div>
           </CardContent>
         </Card>
@@ -148,7 +203,9 @@ function CustomerInsightsPanel() {
           {insights.map((c, i) => (
             <button
               key={c.customerName}
-              onClick={() => setSelected(selected === c.customerName ? null : c.customerName)}
+              onClick={() =>
+                setSelected(selected === c.customerName ? null : c.customerName)
+              }
               className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
                 selected === c.customerName
                   ? "bg-primary/10 border border-primary/20"
@@ -160,23 +217,33 @@ function CustomerInsightsPanel() {
                   i === 0
                     ? "bg-amber-500/20 text-amber-400"
                     : i === 1
-                    ? "bg-slate-500/20 text-slate-300"
-                    : i === 2
-                    ? "bg-orange-700/20 text-orange-500"
-                    : "bg-muted text-muted-foreground"
+                      ? "bg-slate-500/20 text-slate-300"
+                      : i === 2
+                        ? "bg-orange-700/20 text-orange-500"
+                        : "bg-muted text-muted-foreground"
                 }`}
               >
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm truncate">{c.customerName}</div>
-                <div className="text-xs text-muted-foreground">{c.orderCount} order{c.orderCount !== 1 ? "s" : ""}</div>
+                <div className="font-medium text-sm truncate">
+                  {c.customerName}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {c.orderCount} order{c.orderCount !== 1 ? "s" : ""}
+                </div>
               </div>
               <div className="text-right shrink-0">
-                <div className="text-sm font-semibold text-primary">{fmt(c.totalRevenue)}</div>
-                <div className="text-xs text-muted-foreground">{fmt(c.totalProfit)} profit</div>
+                <div className="text-sm font-semibold text-primary">
+                  {fmt(c.totalRevenue)}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {fmt(c.totalProfit)} profit
+                </div>
               </div>
-              <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${selected === c.customerName ? "rotate-90" : ""}`} />
+              <ChevronRight
+                className={`w-4 h-4 text-muted-foreground transition-transform ${selected === c.customerName ? "rotate-90" : ""}`}
+              />
             </button>
           ))}
         </div>
@@ -188,43 +255,73 @@ function CustomerInsightsPanel() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <CardTitle className="text-base">{selectedCustomer.customerName}</CardTitle>
+                    <CardTitle className="text-base">
+                      {selectedCustomer.customerName}
+                    </CardTitle>
                     {selectedCustomer.customerEmail && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{selectedCustomer.customerEmail}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {selectedCustomer.customerEmail}
+                      </p>
                     )}
                   </div>
                   <Badge variant="outline" className="shrink-0 text-xs">
-                    {selectedCustomer.orderCount} order{selectedCustomer.orderCount !== 1 ? "s" : ""}
+                    {selectedCustomer.orderCount} order
+                    {selectedCustomer.orderCount !== 1 ? "s" : ""}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mt-3">
                   <div className="bg-muted/40 rounded-md p-2">
                     <div className="text-xs text-muted-foreground">Revenue</div>
-                    <div className="font-semibold text-sm text-primary">{fmt(selectedCustomer.totalRevenue)}</div>
+                    <div className="font-semibold text-sm text-primary">
+                      {fmt(selectedCustomer.totalRevenue)}
+                    </div>
                   </div>
                   <div className="bg-muted/40 rounded-md p-2">
                     <div className="text-xs text-muted-foreground">Profit</div>
-                    <div className="font-semibold text-sm text-green-400">{fmt(selectedCustomer.totalProfit)}</div>
+                    <div className="font-semibold text-sm text-green-400">
+                      {fmt(selectedCustomer.totalProfit)}
+                    </div>
                   </div>
                   <div className="bg-muted/40 rounded-md p-2">
-                    <div className="text-xs text-muted-foreground">Avg Order</div>
-                    <div className="font-semibold text-sm">{fmt(selectedCustomer.avgOrderValue)}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Avg Order
+                    </div>
+                    <div className="font-semibold text-sm">
+                      {fmt(selectedCustomer.avgOrderValue)}
+                    </div>
                   </div>
                 </div>
                 {selectedCustomer.topProduct && (
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
                     <Package className="w-3.5 h-3.5" />
-                    Top product: <span className="font-medium text-foreground">{selectedCustomer.topProduct}</span>
+                    Top product:{" "}
+                    <span className="font-medium text-foreground">
+                      {selectedCustomer.topProduct}
+                    </span>
                   </div>
                 )}
                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                  <span>First order: {format(new Date(selectedCustomer.firstOrderAt), "MMM d, yyyy")}</span>
+                  <span>
+                    First order:{" "}
+                    {format(
+                      new Date(selectedCustomer.firstOrderAt),
+                      "MMM d, yyyy",
+                    )}
+                  </span>
                   <span>·</span>
-                  <span>Last order: {formatDistanceToNow(new Date(selectedCustomer.lastOrderAt), { addSuffix: true })}</span>
+                  <span>
+                    Last order:{" "}
+                    {formatDistanceToNow(
+                      new Date(selectedCustomer.lastOrderAt),
+                      { addSuffix: true },
+                    )}
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Order History</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                  Order History
+                </p>
                 <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
                   {selectedCustomer.orders.map((o) => (
                     <div
@@ -232,12 +329,18 @@ function CustomerInsightsPanel() {
                       className="flex items-center gap-3 rounded-md bg-muted/30 px-2.5 py-1.5 text-sm"
                     >
                       <Link href={`/orders/${o.id}`}>
-                        <span className="font-mono text-xs text-primary hover:underline">{o.orderNumber}</span>
+                        <span className="font-mono text-xs text-primary hover:underline">
+                          {o.orderNumber}
+                        </span>
                       </Link>
-                      <span className="flex-1 truncate text-xs text-muted-foreground">{o.productName || "—"}</span>
+                      <span className="flex-1 truncate text-xs text-muted-foreground">
+                        {o.productName || "—"}
+                      </span>
                       {getStatusBadge(o.status)}
                       <span className="font-mono text-xs text-right shrink-0">
-                        {o.sellPrice != null ? fmt(o.sellPrice * (o.quantity ?? 1)) : "—"}
+                        {o.sellPrice != null
+                          ? fmt(o.sellPrice * (o.quantity ?? 1))
+                          : "—"}
                       </span>
                     </div>
                   ))}
@@ -247,7 +350,9 @@ function CustomerInsightsPanel() {
           ) : (
             <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center border border-dashed rounded-lg border-border">
               <Users className="w-8 h-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">Select a customer to see their order history</p>
+              <p className="text-sm text-muted-foreground">
+                Select a customer to see their order history
+              </p>
             </div>
           )}
         </div>
@@ -270,7 +375,9 @@ export default function Orders() {
   const [bulkTracking, setBulkTracking] = useState<string>("");
 
   const { data: rawOrders, isLoading } = useListOrders<Order[]>(
-    statusFilter === "all" ? undefined : { status: statusFilter as OrderStatus }
+    statusFilter === "all"
+      ? undefined
+      : { status: statusFilter as OrderStatus },
   );
 
   const orders = useMemo(() => {
@@ -313,7 +420,8 @@ export default function Orders() {
           quantity: Number(formData.get("quantity")),
           costPrice: Number(formData.get("costPrice")) || undefined,
           sellPrice: Number(formData.get("sellPrice")) || undefined,
-          shippingAddress: (formData.get("shippingAddress") as string) || undefined,
+          shippingAddress:
+            (formData.get("shippingAddress") as string) || undefined,
           status: (formData.get("status") as any) || "pending",
         },
       },
@@ -322,7 +430,7 @@ export default function Orders() {
           queryClient.invalidateQueries({ queryKey: getListOrdersQueryKey() });
           setIsSheetOpen(false);
         },
-      }
+      },
     );
   };
 
@@ -345,15 +453,15 @@ export default function Orders() {
           setBulkStatus("");
           setBulkTracking("");
         },
-      }
+      },
     );
   };
 
   const quickSelect = (status: string) => {
     if (!orders) return;
-    const matching = orders.filter(o => o.status === status);
+    const matching = orders.filter((o) => o.status === status);
     if (matching.length === 0) return;
-    setSelectedIds(new Set(matching.map(o => o.id)));
+    setSelectedIds(new Set(matching.map((o) => o.id)));
   };
 
   const toggleAll = (checked: boolean) => {
@@ -368,7 +476,11 @@ export default function Orders() {
     setSelectedIds(next);
   };
 
-  const isAllSelected = !!(orders && orders.length > 0 && selectedIds.size === orders.length);
+  const isAllSelected = !!(
+    orders &&
+    orders.length > 0 &&
+    selectedIds.size === orders.length
+  );
 
   return (
     <div className="space-y-6 flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500 relative pb-20">
@@ -380,7 +492,9 @@ export default function Orders() {
             <button
               onClick={() => setView("orders")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                view === "orders" ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"
+                view === "orders"
+                  ? "bg-card shadow text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <ShoppingCart className="w-3.5 h-3.5" />
@@ -389,7 +503,9 @@ export default function Orders() {
             <button
               onClick={() => setView("customers")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                view === "customers" ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"
+                view === "customers"
+                  ? "bg-card shadow text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Users className="w-3.5 h-3.5" />
@@ -414,65 +530,73 @@ export default function Orders() {
                 <Plus className="w-4 h-4 mr-2" /> New Order
               </Button>
             </SheetTrigger>
-          <SheetContent className="overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Create New Order</SheetTitle>
-            </SheetHeader>
-            <form onSubmit={handleCreateOrder} className="space-y-4 mt-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Customer Name</label>
-                <Input name="customerName" required />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Product Name</label>
-                <Input name="productName" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+            <SheetContent className="overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Create New Order</SheetTitle>
+              </SheetHeader>
+              <form onSubmit={handleCreateOrder} className="space-y-4 mt-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Quantity</label>
-                  <Input name="quantity" type="number" min="1" defaultValue="1" required />
+                  <label className="text-sm font-medium">Customer Name</label>
+                  <Input name="customerName" required />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
-                  <Select name="status" defaultValue="pending">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="placed">Placed</SelectItem>
-                      <SelectItem value="shipped">Shipped</SelectItem>
-                      <SelectItem value="delivered">Delivered</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <label className="text-sm font-medium">Product Name</label>
+                  <Input name="productName" />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Quantity</label>
+                    <Input
+                      name="quantity"
+                      type="number"
+                      min="1"
+                      defaultValue="1"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Status</label>
+                    <Select name="status" defaultValue="pending">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="placed">Placed</SelectItem>
+                        <SelectItem value="shipped">Shipped</SelectItem>
+                        <SelectItem value="delivered">Delivered</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Cost Price</label>
+                    <Input name="costPrice" type="number" step="0.01" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Sell Price</label>
+                    <Input name="sellPrice" type="number" step="0.01" />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Cost Price</label>
-                  <Input name="costPrice" type="number" step="0.01" />
+                  <label className="text-sm font-medium">
+                    Shipping Address
+                  </label>
+                  <Input name="shippingAddress" />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Sell Price</label>
-                  <Input name="sellPrice" type="number" step="0.01" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Shipping Address</label>
-                <Input name="shippingAddress" />
-              </div>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={createOrder.isPending}
-                data-testid="button-submit-order"
-              >
-                {createOrder.isPending ? "Creating..." : "Create Order"}
-              </Button>
-            </form>
-          </SheetContent>
-        </Sheet>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={createOrder.isPending}
+                  data-testid="button-submit-order"
+                >
+                  {createOrder.isPending ? "Creating..." : "Create Order"}
+                </Button>
+              </form>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
@@ -510,7 +634,11 @@ export default function Orders() {
                 />
                 {(search || fromDate || toDate) && (
                   <button
-                    onClick={() => { setSearch(""); setFromDate(""); setToDate(""); }}
+                    onClick={() => {
+                      setSearch("");
+                      setFromDate("");
+                      setToDate("");
+                    }}
                     className="text-xs text-primary hover:underline whitespace-nowrap"
                   >
                     Clear filters
@@ -523,14 +651,30 @@ export default function Orders() {
                 </span>
               )}
             </div>
-            <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full max-w-3xl">
+            <Tabs
+              value={statusFilter}
+              onValueChange={setStatusFilter}
+              className="w-full max-w-3xl"
+            >
               <TabsList className="grid grid-cols-6 w-full">
-                <TabsTrigger value="all" data-testid="tab-all">All</TabsTrigger>
-                <TabsTrigger value="pending" data-testid="tab-pending">Pending</TabsTrigger>
-                <TabsTrigger value="placed" data-testid="tab-placed">Placed</TabsTrigger>
-                <TabsTrigger value="shipped" data-testid="tab-shipped">Shipped</TabsTrigger>
-                <TabsTrigger value="delivered" data-testid="tab-delivered">Delivered</TabsTrigger>
-                <TabsTrigger value="cancelled" data-testid="tab-cancelled">Cancelled</TabsTrigger>
+                <TabsTrigger value="all" data-testid="tab-all">
+                  All
+                </TabsTrigger>
+                <TabsTrigger value="pending" data-testid="tab-pending">
+                  Pending
+                </TabsTrigger>
+                <TabsTrigger value="placed" data-testid="tab-placed">
+                  Placed
+                </TabsTrigger>
+                <TabsTrigger value="shipped" data-testid="tab-shipped">
+                  Shipped
+                </TabsTrigger>
+                <TabsTrigger value="delivered" data-testid="tab-delivered">
+                  Delivered
+                </TabsTrigger>
+                <TabsTrigger value="cancelled" data-testid="tab-cancelled">
+                  Cancelled
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -538,9 +682,12 @@ export default function Orders() {
           {/* Quick-select shortcuts */}
           {orders && orders.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-muted-foreground flex items-center gap-1"><Zap className="w-3 h-3" />Quick select:</span>
-              {(["pending","placed","shipped"] as const).map(s => {
-                const count = orders.filter(o => o.status === s).length;
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Zap className="w-3 h-3" />
+                Quick select:
+              </span>
+              {(["pending", "placed", "shipped"] as const).map((s) => {
+                const count = orders.filter((o) => o.status === s).length;
                 if (!count) return null;
                 return (
                   <button
@@ -553,7 +700,10 @@ export default function Orders() {
                 );
               })}
               {selectedIds.size > 0 && (
-                <button onClick={() => setSelectedIds(new Set())} className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 ml-1">
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 ml-1"
+                >
                   Deselect all
                 </button>
               )}
@@ -593,7 +743,10 @@ export default function Orders() {
                   </TableRow>
                 ) : orders?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                    <TableCell
+                      colSpan={9}
+                      className="text-center py-12 text-muted-foreground"
+                    >
                       No orders found.
                     </TableCell>
                   </TableRow>
@@ -606,7 +759,9 @@ export default function Orders() {
                       <TableCell>
                         <Checkbox
                           checked={selectedIds.has(order.id)}
-                          onCheckedChange={(checked) => toggleOne(order.id, !!checked)}
+                          onCheckedChange={(checked) =>
+                            toggleOne(order.id, !!checked)
+                          }
                           data-testid={`checkbox-order-${order.id}`}
                         />
                       </TableCell>
@@ -626,10 +781,14 @@ export default function Orders() {
                       >
                         {order.productName || "-"}
                       </TableCell>
-                      <TableCell className="text-right">{order.quantity || 1}</TableCell>
+                      <TableCell className="text-right">
+                        {order.quantity || 1}
+                      </TableCell>
                       <TableCell>{getStatusBadge(order.status)}</TableCell>
                       <TableCell className="text-right text-green-500 font-mono text-sm">
-                        {order.profit != null ? `$${order.profit.toFixed(2)}` : "-"}
+                        {order.profit != null
+                          ? `$${order.profit.toFixed(2)}`
+                          : "-"}
                       </TableCell>
                       <TableCell className="font-mono text-sm text-muted-foreground">
                         {order.trackingNumber || "-"}
@@ -657,22 +816,40 @@ export default function Orders() {
                       {selectedIds.size}
                     </div>
                     <span className="font-semibold text-sm">
-                      {selectedIds.size} order{selectedIds.size > 1 ? "s" : ""} selected
+                      {selectedIds.size} order{selectedIds.size > 1 ? "s" : ""}{" "}
+                      selected
                     </span>
                   </div>
                   {/* Status breakdown of selection */}
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    {(["pending","placed","shipped","delivered","cancelled"] as const).map(s => {
-                      const count = orders?.filter(o => selectedIds.has(o.id) && o.status === s).length ?? 0;
+                    {(
+                      [
+                        "pending",
+                        "placed",
+                        "shipped",
+                        "delivered",
+                        "cancelled",
+                      ] as const
+                    ).map((s) => {
+                      const count =
+                        orders?.filter(
+                          (o) => selectedIds.has(o.id) && o.status === s,
+                        ).length ?? 0;
                       if (!count) return null;
                       return (
-                        <span key={s} className={`text-xs px-2 py-0.5 rounded-full border font-medium ${STATUS_STYLES[s]}`}>
+                        <span
+                          key={s}
+                          className={`text-xs px-2 py-0.5 rounded-full border font-medium ${STATUS_STYLES[s]}`}
+                        >
                           {count} {s}
                         </span>
                       );
                     })}
                   </div>
-                  <button onClick={() => setSelectedIds(new Set())} className="text-muted-foreground hover:text-foreground transition-colors ml-2">
+                  <button
+                    onClick={() => setSelectedIds(new Set())}
+                    className="text-muted-foreground hover:text-foreground transition-colors ml-2"
+                  >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -682,16 +859,31 @@ export default function Orders() {
                   <span className="text-xs text-muted-foreground whitespace-nowrap mr-1 flex items-center gap-1">
                     <Zap className="w-3 h-3" /> Quick fulfill:
                   </span>
-                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
-                    onClick={() => handleBulkUpdate("placed")} disabled={bulkUpdateOrders.isPending}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                    onClick={() => handleBulkUpdate("placed")}
+                    disabled={bulkUpdateOrders.isPending}
+                  >
                     <Send className="w-3 h-3" /> Mark Placed
                   </Button>
-                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1 border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
-                    onClick={() => handleBulkUpdate("shipped")} disabled={bulkUpdateOrders.isPending}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1 border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+                    onClick={() => handleBulkUpdate("shipped")}
+                    disabled={bulkUpdateOrders.isPending}
+                  >
                     <Truck className="w-3 h-3" /> Mark Shipped
                   </Button>
-                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1 border-green-500/30 text-green-400 hover:bg-green-500/10"
-                    onClick={() => handleBulkUpdate("delivered")} disabled={bulkUpdateOrders.isPending}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1 border-green-500/30 text-green-400 hover:bg-green-500/10"
+                    onClick={() => handleBulkUpdate("delivered")}
+                    disabled={bulkUpdateOrders.isPending}
+                  >
                     <CheckCircle className="w-3 h-3" /> Mark Delivered
                   </Button>
                 </div>
@@ -706,7 +898,10 @@ export default function Orders() {
                     data-testid="input-bulk-tracking"
                   />
                   <Select value={bulkStatus} onValueChange={setBulkStatus}>
-                    <SelectTrigger className="w-[130px] h-8 text-xs" data-testid="select-bulk-status">
+                    <SelectTrigger
+                      className="w-[130px] h-8 text-xs"
+                      data-testid="select-bulk-status"
+                    >
                       <SelectValue placeholder="Set status…" />
                     </SelectTrigger>
                     <SelectContent>
@@ -721,7 +916,10 @@ export default function Orders() {
                     size="sm"
                     className="h-8 text-xs"
                     onClick={() => handleBulkUpdate()}
-                    disabled={(!bulkStatus && !bulkTracking) || bulkUpdateOrders.isPending}
+                    disabled={
+                      (!bulkStatus && !bulkTracking) ||
+                      bulkUpdateOrders.isPending
+                    }
                     data-testid="button-bulk-apply"
                   >
                     {bulkUpdateOrders.isPending ? "Saving…" : "Apply"}

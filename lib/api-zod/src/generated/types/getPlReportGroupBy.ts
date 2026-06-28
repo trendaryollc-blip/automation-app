@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type GetPlReportGroupBy = typeof GetPlReportGroupBy[keyof typeof GetPlReportGroupBy];
-
+export type GetPlReportGroupBy =
+  (typeof GetPlReportGroupBy)[keyof typeof GetPlReportGroupBy];
 
 export const GetPlReportGroupBy = {
-  product: 'product',
-  supplier: 'supplier',
-  status: 'status',
+  product: "product",
+  supplier: "supplier",
+  status: "status",
 } as const;

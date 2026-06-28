@@ -9,14 +9,13 @@ export interface HealthStatus {
   status: string;
 }
 
-export type ProductStatus = typeof ProductStatus[keyof typeof ProductStatus];
-
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus];
 
 export const ProductStatus = {
-  hunting: 'hunting',
-  researching: 'researching',
-  listed: 'listed',
-  archived: 'archived',
+  hunting: "hunting",
+  researching: "researching",
+  listed: "listed",
+  archived: "archived",
 } as const;
 
 export interface Product {
@@ -53,14 +52,14 @@ export interface Product {
   updatedAt?: string;
 }
 
-export type ProductInputStatus = typeof ProductInputStatus[keyof typeof ProductInputStatus];
-
+export type ProductInputStatus =
+  (typeof ProductInputStatus)[keyof typeof ProductInputStatus];
 
 export const ProductInputStatus = {
-  hunting: 'hunting',
-  researching: 'researching',
-  listed: 'listed',
-  archived: 'archived',
+  hunting: "hunting",
+  researching: "researching",
+  listed: "listed",
+  archived: "archived",
 } as const;
 
 export interface ProductInput {
@@ -80,14 +79,14 @@ export interface ProductInput {
   stockThreshold?: number;
 }
 
-export type ProductUpdateStatus = typeof ProductUpdateStatus[keyof typeof ProductUpdateStatus];
-
+export type ProductUpdateStatus =
+  (typeof ProductUpdateStatus)[keyof typeof ProductUpdateStatus];
 
 export const ProductUpdateStatus = {
-  hunting: 'hunting',
-  researching: 'researching',
-  listed: 'listed',
-  archived: 'archived',
+  hunting: "hunting",
+  researching: "researching",
+  listed: "listed",
+  archived: "archived",
 } as const;
 
 export interface ProductUpdate {
@@ -153,15 +152,14 @@ export interface SupplierUpdate {
   notes?: string;
 }
 
-export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
-
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 
 export const OrderStatus = {
-  pending: 'pending',
-  placed: 'placed',
-  shipped: 'shipped',
-  delivered: 'delivered',
-  cancelled: 'cancelled',
+  pending: "pending",
+  placed: "placed",
+  shipped: "shipped",
+  delivered: "delivered",
+  cancelled: "cancelled",
 } as const;
 
 export interface Order {
@@ -211,15 +209,15 @@ export interface CustomerInsight {
   orders: Order[];
 }
 
-export type OrderInputStatus = typeof OrderInputStatus[keyof typeof OrderInputStatus];
-
+export type OrderInputStatus =
+  (typeof OrderInputStatus)[keyof typeof OrderInputStatus];
 
 export const OrderInputStatus = {
-  pending: 'pending',
-  placed: 'placed',
-  shipped: 'shipped',
-  delivered: 'delivered',
-  cancelled: 'cancelled',
+  pending: "pending",
+  placed: "placed",
+  shipped: "shipped",
+  delivered: "delivered",
+  cancelled: "cancelled",
 } as const;
 
 export interface OrderInput {
@@ -237,15 +235,15 @@ export interface OrderInput {
   trackingNumber?: string;
 }
 
-export type OrderUpdateStatus = typeof OrderUpdateStatus[keyof typeof OrderUpdateStatus];
-
+export type OrderUpdateStatus =
+  (typeof OrderUpdateStatus)[keyof typeof OrderUpdateStatus];
 
 export const OrderUpdateStatus = {
-  pending: 'pending',
-  placed: 'placed',
-  shipped: 'shipped',
-  delivered: 'delivered',
-  cancelled: 'cancelled',
+  pending: "pending",
+  placed: "placed",
+  shipped: "shipped",
+  delivered: "delivered",
+  cancelled: "cancelled",
 } as const;
 
 export interface OrderUpdate {
@@ -281,15 +279,15 @@ export interface DashboardAnalytics {
   ordersChange: number;
 }
 
-export type OrderBulkUpdateStatus = typeof OrderBulkUpdateStatus[keyof typeof OrderBulkUpdateStatus];
-
+export type OrderBulkUpdateStatus =
+  (typeof OrderBulkUpdateStatus)[keyof typeof OrderBulkUpdateStatus];
 
 export const OrderBulkUpdateStatus = {
-  pending: 'pending',
-  placed: 'placed',
-  shipped: 'shipped',
-  delivered: 'delivered',
-  cancelled: 'cancelled',
+  pending: "pending",
+  placed: "placed",
+  shipped: "shipped",
+  delivered: "delivered",
+  cancelled: "cancelled",
 } as const;
 
 export interface OrderBulkUpdate {
@@ -306,9 +304,9 @@ export interface OrderBulkUpdateResult {
 
 export interface SupplierFinderInput {
   /**
-     * Product name to find suppliers for
-     * @minLength 1
-     */
+   * Product name to find suppliers for
+   * @minLength 1
+   */
   productName: string;
   /** Optional target cost price budget */
   targetCostPrice?: number;
@@ -349,9 +347,9 @@ export interface SupplierFinderResult {
 
 export interface ResearchInput {
   /**
-     * Product keyword or URL to research
-     * @minLength 1
-     */
+   * Product keyword or URL to research
+   * @minLength 1
+   */
   query: string;
 }
 
@@ -360,24 +358,24 @@ export interface ResearchNiche {
   score: number;
 }
 
-export type ResearchReportCompetitionLevel = typeof ResearchReportCompetitionLevel[keyof typeof ResearchReportCompetitionLevel];
-
+export type ResearchReportCompetitionLevel =
+  (typeof ResearchReportCompetitionLevel)[keyof typeof ResearchReportCompetitionLevel];
 
 export const ResearchReportCompetitionLevel = {
-  low: 'low',
-  medium: 'medium',
-  high: 'high',
-  'very-high': 'very-high',
+  low: "low",
+  medium: "medium",
+  high: "high",
+  "very-high": "very-high",
 } as const;
 
-export type ResearchReportVerdict = typeof ResearchReportVerdict[keyof typeof ResearchReportVerdict];
-
+export type ResearchReportVerdict =
+  (typeof ResearchReportVerdict)[keyof typeof ResearchReportVerdict];
 
 export const ResearchReportVerdict = {
-  'strong-buy': 'strong-buy',
-  buy: 'buy',
-  hold: 'hold',
-  avoid: 'avoid',
+  "strong-buy": "strong-buy",
+  buy: "buy",
+  hold: "hold",
+  avoid: "avoid",
 } as const;
 
 export interface ResearchReport {
@@ -486,51 +484,50 @@ export interface DashboardStats {
 }
 
 export type ListProductsParams = {
-status?: string;
-category?: string;
+  status?: string;
+  category?: string;
 };
 
 export type ListSuppliersParams = {
-country?: string;
+  country?: string;
 };
 
 export type ListOrdersParams = {
-status?: string;
+  status?: string;
 };
 
 export type GetDashboardAnalyticsParams = {
-period?: GetDashboardAnalyticsPeriod;
+  period?: GetDashboardAnalyticsPeriod;
 };
 
-export type GetDashboardAnalyticsPeriod = typeof GetDashboardAnalyticsPeriod[keyof typeof GetDashboardAnalyticsPeriod];
-
+export type GetDashboardAnalyticsPeriod =
+  (typeof GetDashboardAnalyticsPeriod)[keyof typeof GetDashboardAnalyticsPeriod];
 
 export const GetDashboardAnalyticsPeriod = {
-  weekly: 'weekly',
-  monthly: 'monthly',
+  weekly: "weekly",
+  monthly: "monthly",
 } as const;
 
 export type GetPlReportParams = {
-/**
- * ISO date string — start of range (inclusive)
- */
-from: string;
-/**
- * ISO date string — end of range (inclusive)
- */
-to: string;
-/**
- * Dimension to group rows by (default product)
- */
-groupBy?: GetPlReportGroupBy;
+  /**
+   * ISO date string — start of range (inclusive)
+   */
+  from: string;
+  /**
+   * ISO date string — end of range (inclusive)
+   */
+  to: string;
+  /**
+   * Dimension to group rows by (default product)
+   */
+  groupBy?: GetPlReportGroupBy;
 };
 
-export type GetPlReportGroupBy = typeof GetPlReportGroupBy[keyof typeof GetPlReportGroupBy];
-
+export type GetPlReportGroupBy =
+  (typeof GetPlReportGroupBy)[keyof typeof GetPlReportGroupBy];
 
 export const GetPlReportGroupBy = {
-  product: 'product',
-  supplier: 'supplier',
-  status: 'status',
+  product: "product",
+  supplier: "supplier",
+  status: "status",
 } as const;
-

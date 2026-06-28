@@ -1,6 +1,6 @@
 /**
  * Firestore seed script.
- * 
+ *
  * Run: pnpm --filter @workspace/db run seed:firestore
  */
 

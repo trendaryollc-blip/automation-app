@@ -9,9 +9,13 @@ export const orderTimelineTable = pgTable("order_timeline", {
   fromStatus: text("from_status"),
   toStatus: text("to_status"),
   note: text("note"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
-export const insertOrderTimelineSchema = createInsertSchema(orderTimelineTable).omit({ id: true, createdAt: true });
+export const insertOrderTimelineSchema = createInsertSchema(
+  orderTimelineTable,
+).omit({ id: true, createdAt: true });
 export type InsertOrderTimeline = z.infer<typeof insertOrderTimelineSchema>;
 export type OrderTimeline = typeof orderTimelineTable.$inferSelect;

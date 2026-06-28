@@ -1,11 +1,26 @@
 import { useParams } from "wouter";
-import { useGetSupplier, getGetSupplierQueryKey, useGetSupplierProducts, getGetSupplierProductsQueryKey } from "@workspace/api-client-react";
+import {
+  useGetSupplier,
+  getGetSupplierQueryKey,
+  useGetSupplierProducts,
+  getGetSupplierProductsQueryKey,
+} from "@workspace/api-client-react";
 
 export default function SupplierDetail() {
   const { id } = useParams();
   const supplierId = parseInt(id || "0");
-  const { data: supplier, isLoading } = useGetSupplier(supplierId, { query: { enabled: !!supplierId, queryKey: getGetSupplierQueryKey(supplierId) }});
-  const { data: products } = useGetSupplierProducts(supplierId, { query: { enabled: !!supplierId, queryKey: getGetSupplierProductsQueryKey(supplierId) }});
+  const { data: supplier, isLoading } = useGetSupplier(supplierId, {
+    query: {
+      enabled: !!supplierId,
+      queryKey: getGetSupplierQueryKey(supplierId),
+    },
+  });
+  const { data: products } = useGetSupplierProducts(supplierId, {
+    query: {
+      enabled: !!supplierId,
+      queryKey: getGetSupplierProductsQueryKey(supplierId),
+    },
+  });
 
   if (isLoading) return <div>Loading...</div>;
   if (!supplier) return <div>Not found</div>;

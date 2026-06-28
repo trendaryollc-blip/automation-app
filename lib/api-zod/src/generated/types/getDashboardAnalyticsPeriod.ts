@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type GetDashboardAnalyticsPeriod = typeof GetDashboardAnalyticsPeriod[keyof typeof GetDashboardAnalyticsPeriod];
-
+export type GetDashboardAnalyticsPeriod =
+  (typeof GetDashboardAnalyticsPeriod)[keyof typeof GetDashboardAnalyticsPeriod];
 
 export const GetDashboardAnalyticsPeriod = {
-  weekly: 'weekly',
-  monthly: 'monthly',
+  weekly: "weekly",
+  monthly: "monthly",
 } as const;

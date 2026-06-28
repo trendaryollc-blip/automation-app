@@ -15,29 +15,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Sparkles, Trash2, Save, Package, AlertTriangle, Tag, X, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  Sparkles,
+  Trash2,
+  Save,
+  Package,
+  AlertTriangle,
+  Tag,
+  X,
+  Plus,
+} from "lucide-react";
 import { Link } from "wouter";
 const API = "/api";
 
-interface ProductTag { id: number; name: string; color: string | null; }
+interface ProductTag {
+  id: number;
+  name: string;
+  color: string | null;
+}
 
 function TagsSection({ productId }: { productId: number }) {
   const { toast } = useToast();
   const [newTag, setNewTag] = useState("");
   const [adding, setAdding] = useState(false);
 
-  const { data: assignedTags = [], refetch: refetchAssigned } = useQuery<ProductTag[]>({
+  const { data: assignedTags = [], refetch: refetchAssigned } = useQuery<
+    ProductTag[]
+  >({
     queryKey: ["product-tags", productId],
-    queryFn: () => fetch(`${API}/products/${productId}/tags`).then(r => r.json()),
+    queryFn: () =>
+      fetch(`${API}/products/${productId}/tags`).then((r) => r.json()),
     enabled: !!productId,
   });
   const { data: allTags = [] } = useQuery<ProductTag[]>({
     queryKey: ["all-product-tags"],
-    queryFn: () => fetch(`${API}/product-tags`).then(r => r.json()),
+    queryFn: () => fetch(`${API}/product-tags`).then((r) => r.json()),
   });
 
-  const assignedIds = new Set(assignedTags.map(t => t.id));
-  const available = allTags.filter(t => !assignedIds.has(t.id));
+  const assignedIds = new Set(assignedTags.map((t) => t.id));
+  const available = allTags.filter((t) => !assignedIds.has(t.id));
 
   const addTag = async (tagId: number) => {
     await fetch(`${API}/products/${productId}/tags`, {
@@ -49,7 +66,9 @@ function TagsSection({ productId }: { productId: number }) {
   };
 
   const removeTag = async (tagId: number) => {
-    await fetch(`${API}/products/${productId}/tags/${tagId}`, { method: "DELETE" });
+    await fetch(`${API}/products/${productId}/tags/${tagId}`, {
+      method: "DELETE",
+    });
     refetchAssigned();
   };
 
@@ -77,45 +96,84 @@ function TagsSection({ productId }: { productId: number }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-          <Tag className="w-3.5 h-3.5" />Tags
+          <Tag className="w-3.5 h-3.5" />
+          Tags
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap gap-1.5 min-h-[28px]">
-          {assignedTags.length === 0 && <span className="text-xs text-muted-foreground">No tags yet</span>}
-          {assignedTags.map(tag => (
-            <span key={tag.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+          {assignedTags.length === 0 && (
+            <span className="text-xs text-muted-foreground">No tags yet</span>
+          )}
+          {assignedTags.map((tag) => (
+            <span
+              key={tag.id}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20"
+            >
               {tag.name}
-              <button onClick={() => removeTag(tag.id)} className="hover:text-red-400 transition-colors"><X className="w-3 h-3" /></button>
+              <button
+                onClick={() => removeTag(tag.id)}
+                className="hover:text-red-400 transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </span>
           ))}
         </div>
         {available.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {available.map(tag => (
-              <button key={tag.id} onClick={() => addTag(tag.id)} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-                <Plus className="w-2.5 h-2.5" />{tag.name}
+            {available.map((tag) => (
+              <button
+                key={tag.id}
+                onClick={() => addTag(tag.id)}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              >
+                <Plus className="w-2.5 h-2.5" />
+                {tag.name}
               </button>
             ))}
           </div>
         )}
         <div className="flex gap-1.5 pt-1 border-t border-border">
-          <Input value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => e.key === "Enter" && createAndAdd()} placeholder="New tag..." className="h-7 text-xs" />
-          <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={createAndAdd} disabled={adding || !newTag.trim()}>Add</Button>
+          <Input
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && createAndAdd()}
+            placeholder="New tag..."
+            className="h-7 text-xs"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 px-2 text-xs"
+            onClick={createAndAdd}
+            disabled={adding || !newTag.trim()}
+          >
+            Add
+          </Button>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-const STATUS_OPTIONS = ["hunting", "researching", "listed", "archived"] as const;
+const STATUS_OPTIONS = [
+  "hunting",
+  "researching",
+  "listed",
+  "archived",
+] as const;
 
 function statusColor(s: string) {
   switch (s) {
-    case "listed": return "bg-green-500/10 text-green-400 border-green-500/20";
-    case "researching": return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-    case "hunting": return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
-    default: return "bg-muted text-muted-foreground";
+    case "listed":
+      return "bg-green-500/10 text-green-400 border-green-500/20";
+    case "researching":
+      return "bg-blue-500/10 text-blue-400 border-blue-500/20";
+    case "hunting":
+      return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+    default:
+      return "bg-muted text-muted-foreground";
   }
 }
 
@@ -138,7 +196,7 @@ export default function ProductDetail() {
     name: "",
     category: "",
     niche: "",
-    status: "hunting" as typeof STATUS_OPTIONS[number],
+    status: "hunting" as (typeof STATUS_OPTIONS)[number],
     costPrice: "",
     sellPrice: "",
     description: "",
@@ -157,24 +215,37 @@ export default function ProductDetail() {
         name: product.name ?? "",
         category: product.category ?? "",
         niche: product.niche ?? "",
-        status: (product.status as typeof STATUS_OPTIONS[number]) ?? "hunting",
+        status:
+          (product.status as (typeof STATUS_OPTIONS)[number]) ?? "hunting",
         costPrice: product.costPrice != null ? String(product.costPrice) : "",
         sellPrice: product.sellPrice != null ? String(product.sellPrice) : "",
         description: product.description ?? "",
         sourceUrl: product.sourceUrl ?? "",
         notes: product.notes ?? "",
-        supplierId: product.supplierId != null ? String(product.supplierId) : "",
-        stockQuantity: product.stockQuantity != null ? String(product.stockQuantity) : "",
-        stockThreshold: product.stockThreshold != null ? String(product.stockThreshold) : "",
+        supplierId:
+          product.supplierId != null ? String(product.supplierId) : "",
+        stockQuantity:
+          product.stockQuantity != null ? String(product.stockQuantity) : "",
+        stockThreshold:
+          product.stockThreshold != null ? String(product.stockThreshold) : "",
       });
     }
   }, [product]);
 
-  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((f) => ({ ...f, [key]: e.target.value }));
+  const set =
+    (key: keyof typeof form) =>
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >,
+    ) =>
+      setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleSave = async () => {
-    if (!form.name.trim()) { toast({ title: "Product name is required", variant: "destructive" }); return; }
+    if (!form.name.trim()) {
+      toast({ title: "Product name is required", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
       await updateProduct.mutateAsync({
@@ -190,11 +261,19 @@ export default function ProductDetail() {
           sourceUrl: form.sourceUrl || undefined,
           notes: form.notes || undefined,
           supplierId: form.supplierId ? parseInt(form.supplierId) : undefined,
-          stockQuantity: form.stockQuantity !== "" ? parseInt(form.stockQuantity) : undefined,
-          stockThreshold: form.stockThreshold !== "" ? parseInt(form.stockThreshold) : undefined,
+          stockQuantity:
+            form.stockQuantity !== ""
+              ? parseInt(form.stockQuantity)
+              : undefined,
+          stockThreshold:
+            form.stockThreshold !== ""
+              ? parseInt(form.stockThreshold)
+              : undefined,
         },
       });
-      queryClient.invalidateQueries({ queryKey: getGetProductQueryKey(productId) });
+      queryClient.invalidateQueries({
+        queryKey: getGetProductQueryKey(productId),
+      });
       toast({ title: "Product saved" });
     } catch {
       toast({ title: "Failed to save", variant: "destructive" });
@@ -219,28 +298,40 @@ export default function ProductDetail() {
   const handleGenerate = async () => {
     try {
       await generateDesc.mutateAsync({ id: productId });
-      queryClient.invalidateQueries({ queryKey: getGetProductQueryKey(productId) });
+      queryClient.invalidateQueries({
+        queryKey: getGetProductQueryKey(productId),
+      });
       toast({ title: "AI description generated" });
     } catch {
-      toast({ title: "Failed to generate description", variant: "destructive" });
+      toast({
+        title: "Failed to generate description",
+        variant: "destructive",
+      });
     }
   };
 
   const margin =
     form.costPrice && form.sellPrice && parseFloat(form.sellPrice) > 0
-      ? ((parseFloat(form.sellPrice) - parseFloat(form.costPrice)) / parseFloat(form.sellPrice)) * 100
+      ? ((parseFloat(form.sellPrice) - parseFloat(form.costPrice)) /
+          parseFloat(form.sellPrice)) *
+        100
       : null;
 
-  const stockQty = form.stockQuantity !== "" ? parseInt(form.stockQuantity) : null;
-  const stockThresh = form.stockThreshold !== "" ? parseInt(form.stockThreshold) : null;
-  const isLowStock = stockQty != null && stockThresh != null && stockQty < stockThresh;
+  const stockQty =
+    form.stockQuantity !== "" ? parseInt(form.stockQuantity) : null;
+  const stockThresh =
+    form.stockThreshold !== "" ? parseInt(form.stockThreshold) : null;
+  const isLowStock =
+    stockQty != null && stockThresh != null && stockQty < stockThresh;
 
-  if (isLoading) return (
-    <div className="flex items-center justify-center h-full">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-    </div>
-  );
-  if (!product) return <div className="p-6 text-muted-foreground">Product not found.</div>;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  if (!product)
+    return <div className="p-6 text-muted-foreground">Product not found.</div>;
 
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
@@ -257,11 +348,19 @@ export default function ProductDetail() {
               <Package className="w-5 h-5 text-primary" />
               {product.name}
             </h1>
-            <p className="text-xs text-muted-foreground">ID #{product.id} · Added {new Date(product.createdAt).toLocaleDateString()}</p>
+            <p className="text-xs text-muted-foreground">
+              ID #{product.id} · Added{" "}
+              {new Date(product.createdAt).toLocaleDateString()}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleDelete}
+            disabled={deleting}
+          >
             <Trash2 className="w-4 h-4 mr-1.5" />
             {deleting ? "Deleting..." : "Delete"}
           </Button>
@@ -277,7 +376,9 @@ export default function ProductDetail() {
         <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>
-            <strong>Low stock:</strong> {stockQty} unit{stockQty !== 1 ? "s" : ""} remaining — {stockThresh! - stockQty!} below threshold of {stockThresh}.
+            <strong>Low stock:</strong> {stockQty} unit
+            {stockQty !== 1 ? "s" : ""} remaining — {stockThresh! - stockQty!}{" "}
+            below threshold of {stockThresh}.
           </span>
         </div>
       )}
@@ -287,7 +388,9 @@ export default function ProductDetail() {
         <div className="lg:col-span-2 space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Basic Info</CardTitle>
+              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Basic Info
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
@@ -297,11 +400,19 @@ export default function ProductDetail() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>Category</Label>
-                  <Input placeholder="e.g. Electronics" value={form.category} onChange={set("category")} />
+                  <Input
+                    placeholder="e.g. Electronics"
+                    value={form.category}
+                    onChange={set("category")}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Niche</Label>
-                  <Input placeholder="e.g. Home office" value={form.niche} onChange={set("niche")} />
+                  <Input
+                    placeholder="e.g. Home office"
+                    value={form.niche}
+                    onChange={set("niche")}
+                  />
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -324,7 +435,11 @@ export default function ProductDetail() {
               </div>
               <div className="space-y-1.5">
                 <Label>Source URL</Label>
-                <Input placeholder="https://..." value={form.sourceUrl} onChange={set("sourceUrl")} />
+                <Input
+                  placeholder="https://..."
+                  value={form.sourceUrl}
+                  onChange={set("sourceUrl")}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Notes</Label>
@@ -340,7 +455,9 @@ export default function ProductDetail() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Description</CardTitle>
+              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Description
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
@@ -354,15 +471,27 @@ export default function ProductDetail() {
               </div>
               {product.aiDescription && (
                 <div className="space-y-1.5">
-                  <Label className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-primary" /> AI Description</Label>
+                  <Label className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" /> AI
+                    Description
+                  </Label>
                   <div className="rounded-md border border-border/50 bg-muted/30 px-3 py-2 text-sm text-muted-foreground leading-relaxed">
                     {product.aiDescription}
                   </div>
                 </div>
               )}
-              <Button variant="outline" size="sm" onClick={handleGenerate} disabled={generateDesc.isPending}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerate}
+                disabled={generateDesc.isPending}
+              >
                 <Sparkles className="w-4 h-4 mr-1.5" />
-                {generateDesc.isPending ? "Generating..." : product.aiDescription ? "Regenerate AI Description" : "Generate AI Description"}
+                {generateDesc.isPending
+                  ? "Generating..."
+                  : product.aiDescription
+                    ? "Regenerate AI Description"
+                    : "Generate AI Description"}
               </Button>
             </CardContent>
           </Card>
@@ -372,21 +501,43 @@ export default function ProductDetail() {
         <div className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Pricing</CardTitle>
+              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Pricing
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
                 <Label>Cost Price</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-                  <Input className="pl-7" type="number" min="0" step="0.01" placeholder="0.00" value={form.costPrice} onChange={set("costPrice")} />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                    $
+                  </span>
+                  <Input
+                    className="pl-7"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.costPrice}
+                    onChange={set("costPrice")}
+                  />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label>Sell Price</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-                  <Input className="pl-7" type="number" min="0" step="0.01" placeholder="0.00" value={form.sellPrice} onChange={set("sellPrice")} />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                    $
+                  </span>
+                  <Input
+                    className="pl-7"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.sellPrice}
+                    onChange={set("sellPrice")}
+                  />
                 </div>
               </div>
               {margin != null && (
@@ -395,9 +546,11 @@ export default function ProductDetail() {
                   <Badge
                     variant="outline"
                     className={`text-xs font-semibold ${
-                      margin >= 40 ? "border-green-500/30 text-green-400 bg-green-500/10"
-                      : margin >= 20 ? "border-yellow-500/30 text-yellow-400 bg-yellow-500/10"
-                      : "border-red-500/30 text-red-400 bg-red-500/10"
+                      margin >= 40
+                        ? "border-green-500/30 text-green-400 bg-green-500/10"
+                        : margin >= 20
+                          ? "border-yellow-500/30 text-yellow-400 bg-yellow-500/10"
+                          : "border-red-500/30 text-red-400 bg-red-500/10"
                     }`}
                   >
                     {margin.toFixed(1)}%
@@ -409,22 +562,42 @@ export default function ProductDetail() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Stock</CardTitle>
+              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Stock
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
                 <Label>Current Stock</Label>
-                <Input type="number" min="0" step="1" placeholder="Units on hand" value={form.stockQuantity} onChange={set("stockQuantity")} />
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Units on hand"
+                  value={form.stockQuantity}
+                  onChange={set("stockQuantity")}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Alert Threshold</Label>
-                <Input type="number" min="0" step="1" placeholder="Alert when below..." value={form.stockThreshold} onChange={set("stockThreshold")} />
-                <p className="text-xs text-muted-foreground">An alert will appear on the dashboard when stock falls below this number.</p>
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Alert when below..."
+                  value={form.stockThreshold}
+                  onChange={set("stockThreshold")}
+                />
+                <p className="text-xs text-muted-foreground">
+                  An alert will appear on the dashboard when stock falls below
+                  this number.
+                </p>
               </div>
               {isLowStock && (
                 <div className="flex items-center gap-2 text-orange-400 text-xs font-medium">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  Low stock — {stockThresh! - stockQty!} unit{stockThresh! - stockQty! !== 1 ? "s" : ""} below threshold
+                  Low stock — {stockThresh! - stockQty!} unit
+                  {stockThresh! - stockQty! !== 1 ? "s" : ""} below threshold
                 </div>
               )}
             </CardContent>
@@ -432,7 +605,9 @@ export default function ProductDetail() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Supplier</CardTitle>
+              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Supplier
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <select
@@ -442,7 +617,9 @@ export default function ProductDetail() {
               >
                 <option value="">No supplier assigned</option>
                 {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
                 ))}
               </select>
             </CardContent>
