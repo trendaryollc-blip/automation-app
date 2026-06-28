@@ -13,6 +13,7 @@ export default defineConfig({
     resolve: {
       alias: {
         '@workspace/db': path.resolve(__dirname, 'tests/__mocks__/@workspace_db.ts'),
+        '@workspace/db/': path.resolve(__dirname, 'tests/__mocks__/@workspace_db.ts'),
       },
     },
     coverage: {

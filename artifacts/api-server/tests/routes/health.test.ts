@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import healthRouter from '../../src/routes/health';
+import { resetDb } from '@workspace/db';
 
 function createApp() {
   const app = express();
@@ -12,7 +13,6 @@ function createApp() {
 
 describe('Health Route', () => {
   beforeEach(() => {
-    const { resetDb } = require('@workspace/db');
     resetDb();
   });
 

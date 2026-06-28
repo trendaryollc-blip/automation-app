@@ -16,10 +16,13 @@ class QueryBuilder {
   $dynamic() { return this; }
 
   where(condition: any) {
-    if (condition && condition._field && condition._value !== undefined)
-      this._where[condition._field] = condition._value;
-    else if (condition && condition._field && condition._values)
+    if (condition && condition._and) {
+      this._where._and = condition._and;
+    } else if (condition && condition._field && condition._value !== undefined) {
       this._where[condition._field] = condition;
+    } else if (condition && condition._field && condition._values) {
+      this._where[condition._field] = condition;
+    }
     return this;
   }
 
@@ -33,9 +36,35 @@ class QueryBuilder {
 
   private _getData(): any[] {
     let data = Object.values(inMemoryData[this._table] || {});
-    for (const [field, value] of Object.entries(this._where))
-      data = data.filter(item => value && typeof value === 'object' && value._values
-        ? value._values.includes(item[field]) : item[field] === value);
+
+    const matchesCondition = (item: any, condition: any): boolean => {
+      if (!condition) return true;
+      if (condition._and) {
+        return condition._and.every((cond: any) => matchesCondition(item, cond));
+      }
+      const field = condition._field;
+      const value = condition._value;
+      const values = condition._values;
+      switch (condition.operator) {
+        case 'gte':
+          return item[field] >= value;
+        case 'lte':
+          return item[field] <= value;
+        case 'lt':
+          return item[field] < value;
+        case 'in':
+          return Array.isArray(values) && values.includes(item[field]);
+        case 'count':
+          return true;
+        default:
+          return item[field] === value;
+      }
+    };
+
+    for (const value of Object.values(this._where)) {
+      data = data.filter((item) => matchesCondition(item, value));
+    }
+
     for (const { field, dir } of this._orderBy)
       data.sort((a, b) => {
         const av = a[field] instanceof Date ? a[field].getTime() : a[field];
@@ -75,6 +104,9 @@ function mockInArray(field: string | { name?: string }, values: any[]) {
 }
 function mockGte(field: string | { name?: string }, value: any) {
   return { _field: toField(field), _value: value, operator: 'gte' };
+}
+function mockLte(field: string | { name?: string }, value: any) {
+  return { _field: toField(field), _value: value, operator: 'lte' };
 }
 function mockLt(field: string | { name?: string }, value: any) {
   return { _field: toField(field), _value: value, operator: 'lt' };
@@ -155,9 +187,10 @@ const db = {
   }),
   update: (table: any) => ({
     set: (data: any) => ({
-      where: (_condition: any) => ({
+      where: (condition: any) => ({
         returning: () => {
-          const items = Object.values(inMemoryData[table._table] || {});
+          const matchingIds = resolveMatchingIds(table._table, condition);
+          const items = matchingIds.map((id: number) => inMemoryData[table._table]?.[id]).filter(Boolean);
           for (const item of items) Object.assign(item, data);
           return items.map(normalizeRow);
         },
@@ -167,10 +200,16 @@ const db = {
   delete: (table: any) => ({
     where: (condition: any) => ({
       returning: () => {
-        const id = Number(condition?._value);
-        const found = inMemoryData[table._table]?.[id];
-        delete inMemoryData[table._table]?.[id];
-        return found ? [normalizeRow(found)] : [];
+        const matchingIds = resolveMatchingIds(table._table, condition);
+        const deleted: any[] = [];
+        for (const id of matchingIds) {
+          const found = inMemoryData[table._table]?.[id];
+          if (found) {
+            deleted.push(normalizeRow(found));
+            delete inMemoryData[table._table]?.[id];
+          }
+        }
+        return deleted;
       },
     }),
   }),
@@ -184,18 +223,78 @@ export {
   launchesTable, adCampaignsTable, storeConnectionsTable, syncLogsTable, aiSettingsTable, fulfillmentQueueTable,
 };
 
-// Named re-exports for drizzle-orm � just the mock functions
 const eq = mockEq;
 const desc = mockDesc;
 const asc = mockAsc;
 const count = mockCount;
 const inArray = mockInArray;
 const gte = mockGte;
+const lte = mockLte;
 const lt = mockLt;
 const and = mockAnd;
 const sql = mockSql;
 
-export { eq, desc, asc, count, inArray, gte, lt, and, sql };
+const mockModule = {
+  db,
+  productsTable,
+  suppliersTable,
+  ordersTable,
+  researchTable,
+  supplierFinderTable,
+  priceWatchTable,
+  priceSnapshotsTable,
+  purchaseOrdersTable,
+  purchaseOrderItemsTable,
+  returnsTable,
+  orderTimelineTable,
+  promotionsTable,
+  productTagsTable,
+  productTagLinksTable,
+  launchesTable,
+  adCampaignsTable,
+  storeConnectionsTable,
+  syncLogsTable,
+  aiSettingsTable,
+  fulfillmentQueueTable,
+  eq,
+  desc,
+  asc,
+  count,
+  inArray,
+  gte,
+  lte,
+  lt,
+  and,
+  sql,
+  resetDb,
+  seedTable,
+  getTableData,
+};
+
+export default mockModule;
+export { eq, desc, asc, count, inArray, gte, lte, lt, and, sql };
+
+function resolveMatchingIds(tableName: string, condition: any): number[] {
+  if (!condition) return Object.keys(inMemoryData[tableName] || {}).map(Number);
+  if (condition._and) {
+    return condition._and.reduce((ids: number[] | null, cond: any) => {
+      const matched = resolveMatchingIds(tableName, cond);
+      return ids === null ? matched : ids.filter((id) => matched.includes(id));
+    }, null as number[] | null) ?? [];
+  }
+  const value = condition._value;
+  const values = condition._values;
+  return Object.entries(inMemoryData[tableName] || {})
+    .filter(([, item]) => {
+      const fieldValue = item[condition._field];
+      if (values) return values.includes(fieldValue);
+      if (condition.operator === 'gte') return fieldValue >= value;
+      if (condition.operator === 'lte') return fieldValue <= value;
+      if (condition.operator === 'lt') return fieldValue < value;
+      return fieldValue === value;
+    })
+    .map(([id]) => Number(id));
+}
 
 // Helpers for assertions in tests
 export function resetDb() { Object.keys(inMemoryData).forEach(k => inMemoryData[k] = {}); idCounter = 1; }

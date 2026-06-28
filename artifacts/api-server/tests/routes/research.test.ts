@@ -4,16 +4,18 @@ import express from 'express';
 import researchRouter from '../../src/routes/research';
 import { resetDb, seedTable } from '@workspace/db';
 
+const app = express().use(express.json()).use(researchRouter);
+
 describe('Research', () => {
   beforeEach(() => resetDb());
 
   it('POST /research/analyze rejects missing query', async () => {
-    const res = await request(express().use(researchRouter)).post('/research/analyze').send({});
+    const res = await request(app).post('/research/analyze').send({});
     expect(res.status).toBe(400);
   });
 
   it('POST /research/analyze returns fallback', async () => {
-    const res = await request(express().use(researchRouter)).post('/research/analyze')
+    const res = await request(app).post('/research/analyze')
       .send({ query: 'wireless earbuds' });
     expect(res.body).toHaveProperty('demandScore');
     expect(res.body).toHaveProperty('verdict');

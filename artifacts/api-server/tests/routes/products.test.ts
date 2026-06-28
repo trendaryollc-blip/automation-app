@@ -4,11 +4,13 @@ import express from 'express';
 import productsRouter from '../../src/routes/products';
 import { resetDb, seedTable } from '@workspace/db';
 
+const app = express().use(express.json()).use(productsRouter);
+
 describe('Products', () => {
   beforeEach(() => resetDb());
 
   it('GET /products returns empty', async () => {
-    const res = await request(express().use(productsRouter)).get('/products');
+    const res = await request(app).get('/products');
     expect(res.body).toEqual([]);
   });
 
@@ -20,7 +22,7 @@ describe('Products', () => {
   });
 
   it('POST /products creates', async () => {
-    const res = await request(express().use(productsRouter)).post('/products')
+    const res = await request(app).post('/products')
       .send({ name: 'New', costPrice: 10, sellPrice: 25 });
     expect(res.status).toBe(201);
   });

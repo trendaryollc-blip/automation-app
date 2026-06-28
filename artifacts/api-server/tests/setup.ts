@@ -6,18 +6,21 @@ vi.mock('@workspace/db', async () => {
   return mod;
 });
 
-// Mock drizzle-orm to prevent pg (postgres) from loading
-vi.mock('drizzle-orm', () => ({
-  eq: () => ({ _field: '', _value: '', operator: 'eq' }),
-  desc: () => ({ _field: '', _dir: 'desc' }),
-  asc: () => ({ _field: '', _dir: 'asc' }),
-  count: () => ({ _field: 'count', operator: 'count' }),
-  inArray: () => ({ _field: '', _values: [], operator: 'in' }),
-  gte: () => ({ _field: '', _value: '', operator: 'gte' }),
-  lt: () => ({ _field: '', _value: '', operator: 'lt' }),
-  and: () => ({ _and: [], operator: 'and' }),
-  sql: () => ({ _sql: '', _values: [] }),
-}));
+// Mock drizzle-orm so route handlers receive the same query helpers as production.
+vi.mock('drizzle-orm', async () => {
+  const mod = await import('./__mocks__/@workspace_db.ts');
+  return {
+    eq: mod.eq,
+    desc: mod.desc,
+    asc: mod.asc,
+    count: mod.count,
+    inArray: mod.inArray,
+    gte: mod.gte,
+    lt: mod.lt,
+    and: mod.and,
+    sql: mod.sql,
+  };
+});
 
 // Mock @workspace/db/firestore — used by ai-settings and store-connections
 vi.mock('@workspace/db/firestore', () => ({

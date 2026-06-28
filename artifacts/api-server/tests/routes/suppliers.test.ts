@@ -4,6 +4,8 @@ import express from 'express';
 import suppliersRouter from '../../src/routes/suppliers';
 import { resetDb, seedTable } from '@workspace/db';
 
+const app = express().use(express.json()).use(suppliersRouter);
+
 describe('Suppliers', () => {
   beforeEach(() => resetDb());
 
@@ -19,7 +21,7 @@ describe('Suppliers', () => {
   });
 
   it('POST /suppliers creates', async () => {
-    const res = await request(express().use(suppliersRouter)).post('/suppliers')
+    const res = await request(app).post('/suppliers')
       .send({ name: 'New Sup', country: 'Germany' });
     expect(res.status).toBe(201);
   });

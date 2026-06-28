@@ -10,22 +10,22 @@
 
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import * as schema from "./schema";
+import * as schema from "./schema/index.ts";
 
 const { Pool } = pg;
 
 // Determine which database mode to use
 const dbMode = (process.env["DB_MODE"] || "postgres").toLowerCase();
+const isVitest = typeof process !== "undefined" && !!process.env.VITEST;
 
 if (dbMode === "firestore") {
   console.info("[DB] Using Firestore database mode");
-} else {
+} else if (!process.env.DATABASE_URL && !isVitest) {
   // PostgreSQL mode (default)
-  if (!process.env.DATABASE_URL) {
-    throw new Error(
-      "DATABASE_URL must be set. Did you forget to provision a database?",
-    );
-  }
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?",
+  );
+} else {
   console.info("[DB] Using PostgreSQL database mode");
 }
 
@@ -33,15 +33,15 @@ if (dbMode === "firestore") {
 let _pool: pg.Pool | null = null;
 let _db: ReturnType<typeof drizzle> | null = null;
 
-if (dbMode === "postgres") {
-  _pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+if (dbMode === "postgres" && (process.env.DATABASE_URL || isVitest)) {
+  _pool = new Pool({ connectionString: process.env.DATABASE_URL || "postgresql://localhost:5432/dropflow" });
   _db = drizzle(_pool, { schema });
 }
 
 export const pool = _pool!;
 export const db = _db!;
 
-export * from "./schema";
+export * from "./schema/index.ts";
 
 /**
  * Returns the Firestore database instance.

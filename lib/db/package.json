@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
+    "./schema/index.ts": "./src/schema/index.ts",
     "./firestore": "./src/firestore/index.ts"
   },
   "scripts": {
