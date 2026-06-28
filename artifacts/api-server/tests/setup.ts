@@ -16,6 +16,7 @@ vi.mock("drizzle-orm", async () => {
     count: mod.count,
     inArray: mod.inArray,
     gte: mod.gte,
+    lte: mod.lte,
     lt: mod.lt,
     and: mod.and,
     sql: mod.sql,
