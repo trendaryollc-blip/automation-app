@@ -1,0 +1,42 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm run test
+      - name: Run E2E tests (Playwright)
+        run: |
+          pnpm install --frozen-lockfile
+          # start servers in background with explicit ports
+          PORT=8080 pnpm --filter @workspace/api-server run dev > /tmp/api-server.log 2>&1 &
+          VITE_API_URL=http://localhost:8080 pnpm --filter @workspace/dropflow run dev > /tmp/dropflow.log 2>&1 &
+
+          echo "Waiting for API server to be available..."
+          for i in $(seq 1 20); do
+            if curl --silent --fail http://localhost:8080/api/healthz; then
+              break
+            fi
+            sleep 1
+          done
+
+          curl --silent --fail http://localhost:8080/api/healthz || (echo "API server did not start in time"; cat /tmp/api-server.log; exit 1)
+          pnpm run test:e2e
+      - name: Enforce coverage thresholds
+        run: |
+          node scripts/check-coverage.cjs

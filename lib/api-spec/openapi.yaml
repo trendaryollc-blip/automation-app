@@ -1,0 +1,1378 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: DropFlow - Dropshipping Automation Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: products
+    description: Product hunting and management
+  - name: suppliers
+    description: Supplier management
+  - name: orders
+    description: Order fulfillment
+  - name: dashboard
+    description: Dashboard stats and activity
+  - name: research
+    description: AI product research
+  - name: finder
+    description: Automated supplier finder
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ---------- PRODUCTS ----------
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List all products
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Add a hunted product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/stock-alerts:
+    get:
+      operationId: getStockAlerts
+      tags: [products]
+      summary: Get products below their stock threshold
+      responses:
+        "200":
+          description: List of products with low stock
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockAlert"
+
+  /products/trending:
+    get:
+      operationId: getTrendingProducts
+      tags: [products]
+      summary: Get top trending products by profit margin
+      responses:
+        "200":
+          description: Trending products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      summary: Get a product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProduct
+      tags: [products]
+      summary: Update a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdate"
+      responses:
+        "200":
+          description: Updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      summary: Delete a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /products/{id}/generate-description:
+    post:
+      operationId: generateProductDescription
+      tags: [products]
+      summary: AI-generate a product description
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Generated description
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+
+  # ---------- SUPPLIERS ----------
+  /suppliers:
+    get:
+      operationId: listSuppliers
+      tags: [suppliers]
+      summary: List all suppliers
+      parameters:
+        - name: country
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of suppliers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Supplier"
+    post:
+      operationId: createSupplier
+      tags: [suppliers]
+      summary: Add a supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupplierInput"
+      responses:
+        "201":
+          description: Supplier created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+
+  /suppliers/{id}:
+    get:
+      operationId: getSupplier
+      tags: [suppliers]
+      summary: Get a supplier by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Supplier detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSupplier
+      tags: [suppliers]
+      summary: Update a supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupplierUpdate"
+      responses:
+        "200":
+          description: Updated supplier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteSupplier
+      tags: [suppliers]
+      summary: Delete a supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /suppliers/{id}/products:
+    get:
+      operationId: getSupplierProducts
+      tags: [suppliers]
+      summary: List products linked to a supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Products for supplier
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  # ---------- ORDERS ----------
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List all orders
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /orders/customer-insights:
+    get:
+      operationId: getCustomerInsights
+      tags: [orders]
+      summary: Get top customers ranked by revenue with order history
+      responses:
+        "200":
+          description: List of customer insights
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerInsight"
+
+  /orders/bulk-update:
+    post:
+      operationId: bulkUpdateOrders
+      tags: [orders]
+      summary: Bulk update status and/or tracking number on multiple orders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderBulkUpdate"
+      responses:
+        "200":
+          description: Bulk update result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderBulkUpdateResult"
+
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      summary: Get an order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateOrder
+      tags: [orders]
+      summary: Update order (status, tracking, etc.)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderUpdate"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteOrder
+      tags: [orders]
+      summary: Delete an order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ---------- SUPPLIER FINDER ----------
+  /suppliers/find:
+    post:
+      operationId: findSuppliers
+      tags: [finder]
+      summary: Find and rank suppliers for a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupplierFinderInput"
+      responses:
+        "200":
+          description: Supplier finder result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupplierFinderResult"
+
+  /suppliers/find/history:
+    get:
+      operationId: listSupplierFinderHistory
+      tags: [finder]
+      summary: List past supplier finder searches
+      responses:
+        "200":
+          description: Finder history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SupplierFinderResult"
+
+  /suppliers/find/history/{id}:
+    delete:
+      operationId: deleteSupplierFinderResult
+      tags: [finder]
+      summary: Delete a finder result
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ---------- RESEARCH ----------
+  /research/analyze:
+    post:
+      operationId: analyzeProduct
+      tags: [research]
+      summary: AI-analyze a product keyword or URL for market research
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchInput"
+      responses:
+        "200":
+          description: Research report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchReport"
+
+  /research/history:
+    get:
+      operationId: listResearchHistory
+      tags: [research]
+      summary: List past research reports
+      responses:
+        "200":
+          description: Research history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResearchReport"
+
+  /research/history/{id}:
+    delete:
+      operationId: deleteResearchReport
+      tags: [research]
+      summary: Delete a research report
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ---------- DASHBOARD ----------
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get overall business KPIs
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/analytics:
+    get:
+      operationId: getDashboardAnalytics
+      tags: [dashboard]
+      summary: Get time-series revenue, profit, and order volume data
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [weekly, monthly]
+            default: weekly
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardAnalytics"
+
+  /dashboard/recent-orders:
+    get:
+      operationId: getRecentOrders
+      tags: [dashboard]
+      summary: Get recent orders for activity feed
+      responses:
+        "200":
+          description: Recent orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  # ---------- P&L REPORT ----------
+  /reports/pl:
+    get:
+      operationId: getPlReport
+      tags: [reports]
+      summary: Generate a Profit & Loss report for a date range
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ISO date string — start of range (inclusive)
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ISO date string — end of range (inclusive)
+        - name: groupBy
+          in: query
+          schema:
+            type: string
+            enum: [product, supplier, status]
+          description: Dimension to group rows by (default product)
+      responses:
+        "200":
+          description: P&L report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlReport"
+
+  # ---------- PRICE WATCH ----------
+  /price-watch:
+    get:
+      operationId: listPriceWatches
+      tags: [price-watch]
+      summary: List all tracked competitor products
+      responses:
+        "200":
+          description: List of price watches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PriceWatch"
+    post:
+      operationId: createPriceWatch
+      tags: [price-watch]
+      summary: Add a competitor product to watch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PriceWatchInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceWatch"
+
+  /price-watch/{id}:
+    delete:
+      operationId: deletePriceWatch
+      tags: [price-watch]
+      summary: Remove a tracked product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /price-watch/{id}/snapshots:
+    get:
+      operationId: listPriceSnapshots
+      tags: [price-watch]
+      summary: Get price snapshot history for a tracked product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Snapshot history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PriceSnapshot"
+    post:
+      operationId: addPriceSnapshot
+      tags: [price-watch]
+      summary: Log a new price snapshot for a tracked product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PriceSnapshotInput"
+      responses:
+        "201":
+          description: Snapshot recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceSnapshot"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    # ---- Product ----
+    Product:
+      type: object
+      required: [id, name, status, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: ["string", "null"]
+        niche:
+          type: ["string", "null"]
+        costPrice:
+          type: ["number", "null"]
+        sellPrice:
+          type: ["number", "null"]
+        margin:
+          type: ["number", "null"]
+        status:
+          type: string
+          enum: [hunting, researching, listed, archived]
+        description:
+          type: ["string", "null"]
+        aiDescription:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        sourceUrl:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        supplierId:
+          type: ["integer", "null"]
+        stockQuantity:
+          type: ["integer", "null"]
+        stockThreshold:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ProductInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        category:
+          type: string
+        niche:
+          type: string
+        costPrice:
+          type: number
+        sellPrice:
+          type: number
+        status:
+          type: string
+          enum: [hunting, researching, listed, archived]
+        description:
+          type: string
+        imageUrl:
+          type: string
+        sourceUrl:
+          type: string
+        notes:
+          type: string
+        supplierId:
+          type: integer
+        stockQuantity:
+          type: integer
+        stockThreshold:
+          type: integer
+
+    ProductUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        category:
+          type: string
+        niche:
+          type: string
+        costPrice:
+          type: number
+        sellPrice:
+          type: number
+        status:
+          type: string
+          enum: [hunting, researching, listed, archived]
+        description:
+          type: string
+        aiDescription:
+          type: string
+        imageUrl:
+          type: string
+        sourceUrl:
+          type: string
+        notes:
+          type: string
+        supplierId:
+          type: integer
+        stockQuantity:
+          type: integer
+        stockThreshold:
+          type: integer
+
+    # ---- Supplier ----
+    Supplier:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        country:
+          type: ["string", "null"]
+        rating:
+          type: ["number", "null"]
+        minOrder:
+          type: ["integer", "null"]
+        shippingDays:
+          type: ["integer", "null"]
+        website:
+          type: ["string", "null"]
+        contactEmail:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    SupplierInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        country:
+          type: string
+        rating:
+          type: number
+        minOrder:
+          type: integer
+        shippingDays:
+          type: integer
+        website:
+          type: string
+        contactEmail:
+          type: string
+        notes:
+          type: string
+
+    SupplierUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        country:
+          type: string
+        rating:
+          type: number
+        minOrder:
+          type: integer
+        shippingDays:
+          type: integer
+        website:
+          type: string
+        contactEmail:
+          type: string
+        notes:
+          type: string
+
+    # ---- Customer Insights ----
+    CustomerInsight:
+      type: object
+      required: [customerName, orderCount, totalRevenue, totalProfit, avgOrderValue, firstOrderAt, lastOrderAt, orders]
+      properties:
+        customerName:
+          type: string
+        customerEmail:
+          type: ["string", "null"]
+        orderCount:
+          type: integer
+        totalRevenue:
+          type: number
+        totalProfit:
+          type: number
+        avgOrderValue:
+          type: number
+        firstOrderAt:
+          type: string
+        lastOrderAt:
+          type: string
+        topProduct:
+          type: ["string", "null"]
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+
+    # ---- Order ----
+    Order:
+      type: object
+      required: [id, orderNumber, status, createdAt]
+      properties:
+        id:
+          type: integer
+        orderNumber:
+          type: string
+        productId:
+          type: ["integer", "null"]
+        productName:
+          type: ["string", "null"]
+        supplierId:
+          type: ["integer", "null"]
+        supplierName:
+          type: ["string", "null"]
+        customerName:
+          type: string
+        customerEmail:
+          type: ["string", "null"]
+        quantity:
+          type: integer
+        costPrice:
+          type: ["number", "null"]
+        sellPrice:
+          type: ["number", "null"]
+        profit:
+          type: ["number", "null"]
+        status:
+          type: string
+          enum: [pending, placed, shipped, delivered, cancelled]
+        trackingNumber:
+          type: ["string", "null"]
+        shippingAddress:
+          type: ["string", "null"]
+        placedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    OrderInput:
+      type: object
+      required: [customerName, quantity]
+      properties:
+        orderNumber:
+          type: string
+        productId:
+          type: integer
+        supplierId:
+          type: integer
+        customerName:
+          type: string
+          minLength: 1
+        customerEmail:
+          type: string
+        quantity:
+          type: integer
+        costPrice:
+          type: number
+        sellPrice:
+          type: number
+        status:
+          type: string
+          enum: [pending, placed, shipped, delivered, cancelled]
+        shippingAddress:
+          type: string
+        trackingNumber:
+          type: string
+
+    OrderUpdate:
+      type: object
+      properties:
+        productId:
+          type: integer
+        supplierId:
+          type: integer
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        quantity:
+          type: integer
+        costPrice:
+          type: number
+        sellPrice:
+          type: number
+        status:
+          type: string
+          enum: [pending, placed, shipped, delivered, cancelled]
+        trackingNumber:
+          type: string
+        shippingAddress:
+          type: string
+        placedAt:
+          type: string
+
+    # ---- Dashboard Analytics ----
+    AnalyticsDataPoint:
+      type: object
+      required: [date, revenue, profit, orderCount]
+      properties:
+        date:
+          type: string
+        revenue:
+          type: number
+        profit:
+          type: number
+        orderCount:
+          type: integer
+
+    DashboardAnalytics:
+      type: object
+      required: [period, data, totalRevenue, totalProfit, totalOrders, revenueChange, profitChange, ordersChange]
+      properties:
+        period:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalyticsDataPoint"
+        totalRevenue:
+          type: number
+        totalProfit:
+          type: number
+        totalOrders:
+          type: integer
+        revenueChange:
+          type: number
+          description: Percentage change vs previous period
+        profitChange:
+          type: number
+        ordersChange:
+          type: number
+
+    # ---- Order Bulk Update ----
+    OrderBulkUpdate:
+      type: object
+      required: [orderIds]
+      properties:
+        orderIds:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        status:
+          type: string
+          enum: [pending, placed, shipped, delivered, cancelled]
+        trackingNumber:
+          type: string
+
+    OrderBulkUpdateResult:
+      type: object
+      required: [updatedCount, orders]
+      properties:
+        updatedCount:
+          type: integer
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+
+    # ---- Supplier Finder ----
+    SupplierFinderInput:
+      type: object
+      required: [productName]
+      properties:
+        productName:
+          type: string
+          minLength: 1
+          description: Product name to find suppliers for
+        targetCostPrice:
+          type: number
+          description: Optional target cost price budget
+        preferredCountry:
+          type: string
+          description: Optional preferred supplier country
+
+    SupplierMatch:
+      type: object
+      required: [name, country, estimatedCostPrice, shippingDays, rating, matchScore, matchReason, pros, isExisting]
+      properties:
+        supplierId:
+          type: ["integer", "null"]
+        name:
+          type: string
+        country:
+          type: string
+        estimatedCostPrice:
+          type: number
+        shippingDays:
+          type: integer
+        rating:
+          type: number
+        matchScore:
+          type: integer
+        matchReason:
+          type: string
+        pros:
+          type: array
+          items:
+            type: string
+        isExisting:
+          type: boolean
+        website:
+          type: ["string", "null"]
+        contactEmail:
+          type: ["string", "null"]
+
+    SupplierFinderResult:
+      type: object
+      required: [id, productName, topPick, matches, sourcingTips, createdAt]
+      properties:
+        id:
+          type: integer
+        productName:
+          type: string
+        targetCostPrice:
+          type: ["number", "null"]
+        preferredCountry:
+          type: ["string", "null"]
+        topPick:
+          type: string
+        matches:
+          type: array
+          items:
+            $ref: "#/components/schemas/SupplierMatch"
+        sourcingTips:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+
+    # ---- Research ----
+    ResearchInput:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+          minLength: 1
+          description: Product keyword or URL to research
+
+    ResearchNiche:
+      type: object
+      required: [name, score]
+      properties:
+        name:
+          type: string
+        score:
+          type: integer
+
+    ResearchReport:
+      type: object
+      required: [id, query, demandScore, competitionLevel, suggestedPrice, estimatedMargin, topNiches, pros, cons, verdict, createdAt]
+      properties:
+        id:
+          type: integer
+        query:
+          type: string
+        demandScore:
+          type: integer
+          description: 0-100 demand score
+        competitionLevel:
+          type: string
+          enum: [low, medium, high, very-high]
+        suggestedPrice:
+          type: number
+        estimatedMargin:
+          type: integer
+          description: Estimated margin percentage
+        topNiches:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResearchNiche"
+        pros:
+          type: array
+          items:
+            type: string
+        cons:
+          type: array
+          items:
+            type: string
+        verdict:
+          type: string
+          enum: [strong-buy, buy, hold, avoid]
+        summary:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    # ---- Stock Alert ----
+    StockAlert:
+      type: object
+      required: [id, name, stockQuantity, stockThreshold, status]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        stockQuantity:
+          type: integer
+        stockThreshold:
+          type: integer
+        deficit:
+          type: integer
+          description: How many units below threshold
+
+    # ---- P&L Report ----
+    PlReportRow:
+      type: object
+      required: [label, orderCount, revenue, cogs, grossProfit, margin]
+      properties:
+        label:
+          type: string
+        orderCount:
+          type: integer
+        revenue:
+          type: number
+        cogs:
+          type: number
+        grossProfit:
+          type: number
+        margin:
+          type: number
+          description: Gross margin percentage
+
+    PlReport:
+      type: object
+      required: [from, to, groupBy, rows, totalRevenue, totalCogs, totalGrossProfit, totalMargin, totalOrders]
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        groupBy:
+          type: string
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlReportRow"
+        totalRevenue:
+          type: number
+        totalCogs:
+          type: number
+        totalGrossProfit:
+          type: number
+        totalMargin:
+          type: number
+        totalOrders:
+          type: integer
+
+    # ---- Price Watch ----
+    PriceWatchInput:
+      type: object
+      required: [name, url]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        url:
+          type: string
+          minLength: 1
+        myPrice:
+          type: ["number", "null"]
+        notes:
+          type: ["string", "null"]
+
+    PriceWatch:
+      type: object
+      required: [id, name, url, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        url:
+          type: string
+        myPrice:
+          type: ["number", "null"]
+        notes:
+          type: ["string", "null"]
+        latestPrice:
+          type: ["number", "null"]
+        latestRecordedAt:
+          type: ["string", "null"]
+        snapshotCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    PriceSnapshotInput:
+      type: object
+      required: [price]
+      properties:
+        price:
+          type: number
+          minimum: 0
+        note:
+          type: ["string", "null"]
+
+    PriceSnapshot:
+      type: object
+      required: [id, watchId, price, recordedAt]
+      properties:
+        id:
+          type: integer
+        watchId:
+          type: integer
+        price:
+          type: number
+        note:
+          type: ["string", "null"]
+        recordedAt:
+          type: string
+
+    # ---- Dashboard ----
+    DashboardStats:
+      type: object
+      required: [totalRevenue, totalProfit, totalOrders, totalProducts, activeSuppliers, pendingOrders, conversionRate, avgMargin]
+      properties:
+        totalRevenue:
+          type: number
+        totalProfit:
+          type: number
+        totalOrders:
+          type: integer
+        totalProducts:
+          type: integer
+        activeSuppliers:
+          type: integer
+        pendingOrders:
+          type: integer
+        conversionRate:
+          type: number
+        avgMargin:
+          type: number

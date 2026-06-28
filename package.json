@@ -1,0 +1,39 @@
+{
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "pnpm run dev:all",
+    "dev:all": "node -e \"const { spawn } = require('child_process'); spawn('pnpm', ['--filter', '@workspace/api-server', 'run', 'dev'], { stdio: 'inherit', shell: true }); spawn('pnpm', ['--filter', '@workspace/dropflow', 'run', 'dev'], { stdio: 'inherit', shell: true });\"",
+    "dev:server": "pnpm --filter @workspace/api-server run dev",
+    "dev:client": "pnpm --filter @workspace/dropflow run dev",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "db:push": "pnpm --filter @workspace/db run push",
+    "db:seed": "pnpm --filter @workspace/db run seed",
+    "setup": "pnpm install && pnpm db:push",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "test": "pnpm run test:unit && pnpm run test:integration",
+    "test:unit": "pnpm --filter @workspace/dropflow exec vitest run --coverage",
+    "test:integration": "pnpm --filter @workspace/api-server exec vitest run --coverage",
+    "test:e2e": "playwright test --config=e2e/playwright.config.ts",
+    "test:all": "pnpm run test && pnpm run test:e2e"
+  },
+  "private": true,
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/supertest": "^7.2.0",
+    "jsdom": "^29.1.1",
+    "msw": "^2.14.6",
+    "prettier": "^3.8.3",
+    "supertest": "^7.2.2",
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.9"
+    ,
+    "@playwright/test": "^1.39.2"
+  }
+}
