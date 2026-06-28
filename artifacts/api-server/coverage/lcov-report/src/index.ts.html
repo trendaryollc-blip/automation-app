@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>0/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>0/10</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>0/15</span>
             </div>
         
             
@@ -88,7 +88,23 @@
 <a name='L23'></a><a href='#L23'>23</a>
 <a name='L24'></a><a href='#L24'>24</a>
 <a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -97,19 +113,17 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -117,6 +131,7 @@
 import { logger } from "./lib/logger";
 &nbsp;
 const rawPort = <span class="cstat-no" title="statement not covered" >process.env["PORT"];</span>
+const host = <span class="cstat-no" title="statement not covered" >process.env["HOST"];</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >if (!rawPort) {</span>
 <span class="cstat-no" title="statement not covered" >  throw new Error(</span>
@@ -130,14 +145,20 @@ const port = <span class="cstat-no" title="statement not covered" >Number(rawPor
 <span class="cstat-no" title="statement not covered" >  throw new Error(`Invalid PORT value: "${rawPort}"`);</span>
 }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >app.listen(port, <span class="fstat-no" title="function not covered" >(e</span>rr) =&gt; {</span>
+const listenCallback = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>rr: unknown) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  if (err) {</span>
 <span class="cstat-no" title="statement not covered" >    logger.error({ err }, "Error listening on port");</span>
 <span class="cstat-no" title="statement not covered" >    process.exit(1);</span>
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  logger.info({ port }, "Server listening");</span>
-});
+<span class="cstat-no" title="statement not covered" >  logger.info({ port, host }, "Server listening");</span>
+};
+&nbsp;
+<span class="cstat-no" title="statement not covered" >if (host) {</span>
+<span class="cstat-no" title="statement not covered" >  app.listen(port, host, listenCallback);</span>
+} else {
+<span class="cstat-no" title="statement not covered" >  app.listen(port, listenCallback);</span>
+}
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -145,7 +166,7 @@ const port = <span class="cstat-no" title="statement not covered" >Number(rawPor
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-28T15:55:08.873Z
+                at 2026-06-28T17:13:39.882Z
             </div>
         <script src="../prettify.js"></script>
         <script>
