@@ -19,7 +19,7 @@ describe("AI service unit tests", () => {
   it("tryProviders throws when no keys available", async () => {
     const real = await vi.importActual("../src/services/ai.ts");
     await expect(real.tryProviders("hi", "sys", [])).rejects.toThrow(
-      "NO_AI_KEYS",
+      "No AI API keys configured",
     );
   });
 

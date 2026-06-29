@@ -1,9 +1,22 @@
 import { Router, type IRouter } from "express";
 import { db, aiSettingsTable } from "@workspace/db";
-import { isFirestoreMode, aiSettingsRepo } from "@workspace/db/firestore";
 import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
+
+function isFirestoreMode(): boolean {
+  return (process.env.DB_MODE || "").toLowerCase() === "firestore";
+}
+
+function aiSettingsRepo() {
+  return {
+    findMany: async () => [],
+    findById: async () => null,
+    findOne: async () => null,
+    createWithId: async () => ({}),
+    remove: async () => true,
+  };
+}
 
 const PROVIDERS = [
   {

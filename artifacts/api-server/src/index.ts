@@ -1,6 +1,3 @@
-import app from "./app";
-import { logger } from "./lib/logger";
-
 const rawPort = process.env["PORT"];
 const host = process.env["HOST"];
 
@@ -16,17 +13,28 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const listenCallback = (err: unknown) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
-    process.exit(1);
+async function startServer() {
+  const [{ default: app }, { logger }] = await Promise.all([
+    import("./app"),
+    import("./lib/logger"),
+  ]);
+
+  const listenCallback = (err: unknown) => {
+    if (err) {
+      logger.error({ err }, "Error listening on port");
+      process.exit(1);
+    }
+
+    logger.info({ port, host }, "Server listening");
+  };
+
+  if (host) {
+    app.listen(port, host, listenCallback);
+  } else {
+    app.listen(port, listenCallback);
   }
-
-  logger.info({ port, host }, "Server listening");
-};
-
-if (host) {
-  app.listen(port, host, listenCallback);
-} else {
-  app.listen(port, listenCallback);
 }
+
+await startServer();
+
+export { startServer };

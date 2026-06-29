@@ -204,7 +204,7 @@ router.post("/research/analyze", async (req, res): Promise<void> => {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "";
     reportData = buildFallback(query);
-    if (msg !== "NO_AI_KEYS")
+    if (msg !== "No AI API keys configured")
       (reportData as Record<string, unknown>).aiError = msg;
   }
 

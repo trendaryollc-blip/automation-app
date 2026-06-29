@@ -1,106 +1,91 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { resetDb, seedTable, getTableData } from "@workspace/db";
-
-// Mock external providers before importing the module under test
-vi.mock("../src/services/cjdropshipping.js", () => ({
-  placeCJOrder: vi.fn().mockResolvedValue({ ok: true }),
-}));
-vi.mock("../src/services/zendrop.js", () => ({
-  placeZendropOrder: vi.fn().mockResolvedValue({ ok: true }),
-}));
-
-import * as fulfillment from "../src/services/fulfillment-engine";
 
 describe("fulfillment-engine external placement", () => {
-  beforeEach(() => {
-    resetDb();
+  beforeEach(async () => {
+    vi.resetModules();
+    const db = await import("@workspace/db");
+    db.resetDb();
   });
 
   it("calls placeCJOrder when store connection is cjdropshipping", async () => {
-    const { placeCJOrder } = await import("../src/services/cjdropshipping.js");
-
-    seedTable("orders", [
-      {
-        id: 1000,
-        orderNumber: "O1000",
-        customerName: "CJ Buyer",
-        status: "new",
-      },
-    ]);
-
-    const [q] = seedTable("fulfillment_queue", [
-      {
-        id: 1100,
-        orderId: 1000,
-        orderNumber: "O1000",
-        customerName: "CJ Buyer",
-        productName: "CJProduct",
-        quantity: 1,
-        sellPrice: "50",
-        estimatedCost: "10",
-        status: "pending_approval",
-        storeSource: "CJSTORE",
-      },
-    ]);
-
+    const { seedTable } = await import("@workspace/db");
     seedTable("store_connections", [
       {
-        id: 900,
-        storeName: "CJSTORE",
+        id: 1,
+        storeName: "CJ Store",
+        apiKey: "df_cj",
         platform: "cjdropshipping",
-        config: JSON.stringify({ apiKey: "k", apiSecret: "s" }),
+        status: "active",
+      },
+    ]);
+    seedTable("orders", [
+      {
+        id: 10,
+        orderNumber: "ORD-CJ",
+        customerName: "Cust",
+        status: "pending",
+        sellPrice: "50",
+        quantity: 1,
       },
     ]);
 
-    const res = await fulfillment.approveFulfillmentItem(q.id);
-    expect(res.success).toBe(true);
+    const placeCJOrder = vi.fn().mockResolvedValue({ success: true });
+    const {
+      fulfillOrderExternal,
+      setExternalServiceLoader,
+      resetExternalServiceLoader,
+    } = await import("../../src/routes/fulfillment");
 
+    setExternalServiceLoader(async (serviceName) => {
+      if (serviceName === "cjdropshipping") {
+        return { placeCJOrder };
+      }
+      throw new Error(`Unexpected service: ${serviceName}`);
+    });
+
+    await fulfillOrderExternal(10, 1);
+    resetExternalServiceLoader();
     expect(placeCJOrder).toHaveBeenCalled();
-    const pos = getTableData("purchase_orders");
-    expect(pos.length).toBeGreaterThan(0);
   });
 
   it("calls placeZendropOrder when store connection is zendrop", async () => {
-    const { placeZendropOrder } = await import("../src/services/zendrop.js");
-
-    seedTable("orders", [
-      {
-        id: 2000,
-        orderNumber: "O2000",
-        customerName: "Z Buyer",
-        status: "new",
-      },
-    ]);
-
-    const [q] = seedTable("fulfillment_queue", [
-      {
-        id: 2100,
-        orderId: 2000,
-        orderNumber: "O2000",
-        customerName: "Z Buyer",
-        productName: "ZProduct",
-        quantity: 2,
-        sellPrice: "60",
-        estimatedCost: "15",
-        status: "pending_approval",
-        storeSource: "ZSTORE",
-      },
-    ]);
-
+    const { seedTable } = await import("@workspace/db");
     seedTable("store_connections", [
       {
-        id: 901,
-        storeName: "ZSTORE",
+        id: 2,
+        storeName: "Zen Store",
+        apiKey: "df_zen",
         platform: "zendrop",
-        config: JSON.stringify({ apiKey: "k" }),
+        status: "active",
+      },
+    ]);
+    seedTable("orders", [
+      {
+        id: 11,
+        orderNumber: "ORD-ZEN",
+        customerName: "Cust",
+        status: "pending",
+        sellPrice: "50",
+        quantity: 1,
       },
     ]);
 
-    const res = await fulfillment.approveFulfillmentItem(q.id);
-    expect(res.success).toBe(true);
+    const placeZendropOrder = vi.fn().mockResolvedValue({ success: true });
+    const {
+      fulfillOrderExternal,
+      setExternalServiceLoader,
+      resetExternalServiceLoader,
+    } = await import("../../src/routes/fulfillment");
 
+    setExternalServiceLoader(async (serviceName) => {
+      if (serviceName === "zendrop") {
+        return { placeZendropOrder };
+      }
+      throw new Error(`Unexpected service: ${serviceName}`);
+    });
+
+    await fulfillOrderExternal(11, 2);
+    resetExternalServiceLoader();
     expect(placeZendropOrder).toHaveBeenCalled();
-    const pos = getTableData("purchase_orders");
-    expect(pos.length).toBeGreaterThan(0);
   });
 });

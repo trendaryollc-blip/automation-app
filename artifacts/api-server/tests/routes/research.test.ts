@@ -17,15 +17,14 @@ describe("Research", () => {
   it("POST /research/analyze returns fallback", async () => {
     const res = await request(app)
       .post("/research/analyze")
-      .send({ query: "wireless earbuds" });
-    expect(res.body).toHaveProperty("demandScore");
-    expect(res.body).toHaveProperty("verdict");
+      .send({ query: "test product" });
+    expect(res.status).toBe(200);
+    expect(res.body.summary).toBeTruthy();
   });
 
   it("GET /research/history returns empty", async () => {
-    const res = await request(express().use(researchRouter)).get(
-      "/research/history",
-    );
+    const res = await request(app).get("/research/history");
+    expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
 });

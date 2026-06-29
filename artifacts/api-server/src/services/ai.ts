@@ -202,7 +202,7 @@ async function tryProviders(
       continue;
     }
   }
-  throw new Error("NO_AI_KEYS");
+  throw new Error("No AI API keys configured");
 }
 
 export async function scoreProduct(

@@ -1,6 +1,12 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import request from "supertest";
 import express from "express";
+
+vi.mock("@workspace/db", () => {
+  const mod = require("../__mocks__/@workspace_db.ts");
+  return { ...mod, default: mod };
+});
+
 import healthRouter from "../../src/routes/health";
 import { resetDb } from "@workspace/db";
 

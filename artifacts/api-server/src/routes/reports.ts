@@ -112,6 +112,7 @@ router.get("/reports/pl", async (req, res): Promise<void> => {
       to: toDate.toISOString(),
       groupBy,
       rows,
+      revenue: Math.round(totalRevenue * 100) / 100,
       totalRevenue: Math.round(totalRevenue * 100) / 100,
       totalCogs: Math.round(totalCogs * 100) / 100,
       totalGrossProfit: Math.round(totalGrossProfit * 100) / 100,

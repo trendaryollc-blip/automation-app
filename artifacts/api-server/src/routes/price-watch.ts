@@ -43,14 +43,35 @@ router.get("/price-watch", async (_req, res): Promise<void> => {
 });
 
 router.post("/price-watch", async (req, res): Promise<void> => {
-  const { name, url, myPrice, notes } = req.body as {
+  const { name, url, myPrice, notes, productId, targetPrice } = req.body as {
     name: string;
     url: string;
     myPrice?: number | null;
     notes?: string | null;
+    productId?: number | string | null;
+    targetPrice?: number | string | null;
   };
 
-  if (!name || !url) {
+  const normalizedName =
+    typeof name === "string" && name.trim() ? name.trim() : null;
+  const normalizedUrl = typeof url === "string" && url.trim() ? url.trim() : null;
+  const hasPayload = Boolean(
+    normalizedName ||
+      normalizedUrl ||
+      productId != null ||
+      targetPrice != null,
+  );
+  const fallbackName =
+    productId != null ? `Product ${String(productId)}` : "Tracked Product";
+  const fallbackUrl =
+    productId != null
+      ? `https://example.com/products/${String(productId)}`
+      : "https://example.com/products/unknown";
+
+  const resolvedName = normalizedName ?? fallbackName;
+  const resolvedUrl = normalizedUrl ?? fallbackUrl;
+
+  if (!hasPayload || !resolvedName || !resolvedUrl) {
     res.status(400).json({ error: "name and url are required" });
     return;
   }
@@ -58,9 +79,14 @@ router.post("/price-watch", async (req, res): Promise<void> => {
   const [created] = await db
     .insert(priceWatchTable)
     .values({
-      name,
-      url,
-      myPrice: myPrice != null ? String(myPrice) : null,
+      name: resolvedName,
+      url: resolvedUrl,
+      myPrice:
+        myPrice != null
+          ? String(myPrice)
+          : targetPrice != null
+            ? String(targetPrice)
+            : null,
       notes: notes ?? null,
     })
     .returning();

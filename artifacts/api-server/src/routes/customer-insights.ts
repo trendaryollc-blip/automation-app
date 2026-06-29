@@ -91,7 +91,10 @@ router.get("/orders/customer-insights", async (_req, res): Promise<void> => {
     })
     .sort((a, b) => b.totalRevenue - a.totalRevenue);
 
-  res.json(insights);
+  res.json({
+    totalCustomers: insights.length,
+    customers: insights,
+  });
 });
 
 export default router;

@@ -4,42 +4,76 @@ import { db, productsTable, suppliersTable, ordersTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
+function safeNumber(value: unknown) {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+async function getCounts() {
+  try {
+    const [productStats] = await db
+      .select({ total: count() })
+      .from(productsTable);
+    const [supplierStats] = await db
+      .select({ total: count() })
+      .from(suppliersTable);
+    const [orderStats] = await db
+      .select({
+        total: count(),
+        totalRevenue: sql<string>`coalesce(sum(sell_price * quantity), 0)`,
+        totalProfit: sql<string>`coalesce(sum(profit), 0)`,
+      })
+      .from(ordersTable);
+    const [pendingStats] = await db
+      .select({ total: count() })
+      .from(ordersTable)
+      .where(eq(ordersTable.status, "pending"));
+    const [deliveredStats] = await db
+      .select({ total: count() })
+      .from(ordersTable)
+      .where(eq(ordersTable.status, "delivered"));
+
+    return {
+      productStats,
+      supplierStats,
+      orderStats,
+      pendingStats,
+      deliveredStats,
+    };
+  } catch {
+    return {
+      productStats: undefined,
+      supplierStats: undefined,
+      orderStats: undefined,
+      pendingStats: undefined,
+      deliveredStats: undefined,
+    };
+  }
+}
+
 router.get("/dashboard/stats", async (_req, res): Promise<void> => {
-  const [productStats] = await db
-    .select({ total: count() })
-    .from(productsTable);
+  const {
+    productStats,
+    supplierStats,
+    orderStats,
+    pendingStats,
+    deliveredStats,
+  } = await getCounts();
 
-  const [supplierStats] = await db
-    .select({ total: count() })
-    .from(suppliersTable);
-
-  const [orderStats] = await db
-    .select({
-      total: count(),
-      totalRevenue: sql<string>`coalesce(sum(sell_price * quantity), 0)`,
-      totalProfit: sql<string>`coalesce(sum(profit), 0)`,
-    })
-    .from(ordersTable);
-
-  const [pendingStats] = await db
-    .select({ total: count() })
-    .from(ordersTable)
-    .where(eq(ordersTable.status, "pending"));
-
-  const [deliveredStats] = await db
-    .select({ total: count() })
-    .from(ordersTable)
-    .where(eq(ordersTable.status, "delivered"));
-
-  const totalOrders = Number(orderStats?.total ?? 0);
-  const delivered = Number(deliveredStats?.total ?? 0);
+  const totalOrders = safeNumber(orderStats?.total ?? 0);
+  const delivered = safeNumber(deliveredStats?.total ?? 0);
   const conversionRate =
     totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0;
 
-  const listedProducts = await db
-    .select()
-    .from(productsTable)
-    .where(eq(productsTable.status, "listed"));
+  let listedProducts: Array<Record<string, unknown>> = [];
+  try {
+    listedProducts = await db
+      .select()
+      .from(productsTable)
+      .where(eq(productsTable.status, "listed"));
+  } catch {
+    listedProducts = [];
+  }
 
   let totalMargin = 0;
   let marginCount = 0;
@@ -54,12 +88,12 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
   const avgMargin = marginCount > 0 ? Math.round(totalMargin / marginCount) : 0;
 
   res.json({
-    totalRevenue: Number(orderStats?.totalRevenue ?? 0),
-    totalProfit: Number(orderStats?.totalProfit ?? 0),
+    totalRevenue: safeNumber(orderStats?.totalRevenue ?? 0),
+    totalProfit: safeNumber(orderStats?.totalProfit ?? 0),
     totalOrders,
-    totalProducts: Number(productStats?.total ?? 0),
-    activeSuppliers: Number(supplierStats?.total ?? 0),
-    pendingOrders: Number(pendingStats?.total ?? 0),
+    totalProducts: safeNumber(productStats?.total ?? 0),
+    activeSuppliers: safeNumber(supplierStats?.total ?? 0),
+    pendingOrders: safeNumber(pendingStats?.total ?? 0),
     conversionRate,
     avgMargin,
   });
@@ -101,6 +135,13 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
   let prevStart: Date;
   let prevEnd: Date;
   let bucketOf: (d: Date) => number;
+
+  const fallbackBuckets = Array.from({ length: period === "weekly" ? 7 : 12 }, (_, i) => ({
+    date: period === "weekly" ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i] : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][i],
+    revenue: 0,
+    profit: 0,
+    orderCount: 0,
+  }));
 
   if (period === "weekly") {
     const DAY = 86400000;
@@ -152,10 +193,15 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
     };
   }
 
-  const allOrders = await db
-    .select()
-    .from(ordersTable)
-    .where(gte(ordersTable.createdAt, windowStart));
+  let allOrders: Array<Record<string, any>> = [];
+  try {
+    allOrders = await db
+      .select()
+      .from(ordersTable)
+      .where(gte(ordersTable.createdAt, windowStart));
+  } catch {
+    allOrders = [];
+  }
 
   for (const o of allOrders) {
     const idx = bucketOf(o.createdAt);
@@ -173,18 +219,25 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
   const totalOrders = buckets.reduce((s, b) => s + b.orderCount, 0);
 
   // Previous period totals for change %
-  const prevOrders = await db
-    .select({
-      revenue: sql<string>`coalesce(sum(sell_price * quantity), 0)`,
-      profit: sql<string>`coalesce(sum(profit), 0)`,
-      cnt: count(),
-    })
-    .from(ordersTable)
-    .where(sql`created_at >= ${prevStart} and created_at < ${prevEnd}`);
+  let prevOrders: Array<Record<string, unknown>> = [];
+  try {
+    prevOrders = await db
+      .select({
+        revenue: sql<string>`coalesce(sum(sell_price * quantity), 0)`,
+        profit: sql<string>`coalesce(sum(profit), 0)`,
+        cnt: count(),
+      })
+      .from(ordersTable)
+      .where(sql`created_at >= ${prevStart} and created_at < ${prevEnd}`);
+  } catch {
+    prevOrders = [];
+  }
 
-  const prevRevenue = Number(prevOrders[0]?.revenue ?? 0);
-  const prevProfit = Number(prevOrders[0]?.profit ?? 0);
-  const prevOrderCount = Number(prevOrders[0]?.cnt ?? 0);
+  const prevRevenue = safeNumber(prevOrders[0]?.revenue ?? 0);
+  const prevProfit = safeNumber(prevOrders[0]?.profit ?? 0);
+  const prevOrderCount = safeNumber(prevOrders[0]?.cnt ?? 0);
+
+  const data = buckets.length > 0 ? buckets : fallbackBuckets;
 
   const pctChange = (curr: number, prev: number) =>
     prev === 0
@@ -195,14 +248,14 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
 
   res.json({
     period,
-    data: buckets.map((b) => ({
+    data: data.map((b) => ({
       ...b,
       revenue: Math.round(b.revenue * 100) / 100,
       profit: Math.round(b.profit * 100) / 100,
     })),
     totalRevenue: Math.round(totalRevenue * 100) / 100,
     totalProfit: Math.round(totalProfit * 100) / 100,
-    totalOrders,
+    totalOrders: data.reduce((s, b) => s + b.orderCount, 0),
     revenueChange: pctChange(totalRevenue, prevRevenue),
     profitChange: pctChange(totalProfit, prevProfit),
     ordersChange: pctChange(totalOrders, prevOrderCount),

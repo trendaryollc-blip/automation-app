@@ -199,7 +199,7 @@ router.post("/products/score", async (req, res) => {
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "";
-    if (msg === "NO_AI_KEYS") {
+    if (msg === "No AI API keys configured") {
       res.json(fallbackScore(name, inputCategory, costPrice, sellPrice));
     } else {
       res.json({

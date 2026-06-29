@@ -4,15 +4,41 @@ import {
   fulfillmentQueueTable,
   ordersTable,
   suppliersTable,
+  storeConnectionsTable,
 } from "@workspace/db";
 import { desc, eq, and } from "drizzle-orm";
-import {
-  autoFulfillOrder,
-  approveFulfillmentItem,
-  rejectFulfillmentItem,
-} from "../services/fulfillment-engine.js";
 
 const router: IRouter = Router();
+
+async function loadFulfillmentEngine() {
+  return import("../services/fulfillment-engine.js");
+}
+
+const defaultServiceLoaderMap: Record<string, () => Promise<any>> = {
+  cjdropshipping: () => import("../services/cjdropshipping"),
+  zendrop: () => import("../services/zendrop"),
+};
+
+const defaultExternalServiceLoader = async (moduleName: string) => {
+  const loader = defaultServiceLoaderMap[moduleName];
+  if (!loader) {
+    throw new Error(`Unsupported fulfillment service: ${moduleName}`);
+  }
+  return loader();
+};
+
+let externalServiceLoader: (moduleName: string) => Promise<any> =
+  defaultExternalServiceLoader;
+
+export function setExternalServiceLoader(
+  loader: (moduleName: string) => Promise<any>,
+) {
+  externalServiceLoader = loader;
+}
+
+export function resetExternalServiceLoader() {
+  externalServiceLoader = defaultExternalServiceLoader;
+}
 
 router.get("/fulfillment/queue", async (_req, res) => {
   const items = await db
@@ -56,6 +82,7 @@ router.get("/fulfillment/stats", async (_req, res) => {
 
 router.post("/fulfillment/approve/:id", async (req, res) => {
   const id = parseInt(req.params.id);
+  const { approveFulfillmentItem } = await loadFulfillmentEngine();
   const result = await approveFulfillmentItem(id);
   if (!result.success) {
     res.status(400).json(result);
@@ -67,6 +94,7 @@ router.post("/fulfillment/approve/:id", async (req, res) => {
 router.post("/fulfillment/reject/:id", async (req, res) => {
   const id = parseInt(req.params.id);
   const { reason } = req.body as { reason?: string };
+  const { rejectFulfillmentItem } = await loadFulfillmentEngine();
   const result = await rejectFulfillmentItem(id, reason);
   if (!result.success) {
     res.status(400).json(result);
@@ -76,6 +104,7 @@ router.post("/fulfillment/reject/:id", async (req, res) => {
 });
 
 router.post("/fulfillment/approve-all", async (_req, res) => {
+  const { approveFulfillmentItem } = await loadFulfillmentEngine();
   const pending = await db
     .select()
     .from(fulfillmentQueueTable)
@@ -117,6 +146,7 @@ router.post("/fulfillment/manual", async (req, res) => {
     return;
   }
 
+  const { autoFulfillOrder } = await loadFulfillmentEngine();
   await autoFulfillOrder({
     id: order.id,
     orderNumber: order.orderNumber,
@@ -162,3 +192,70 @@ router.patch("/fulfillment/queue/:id", async (req, res) => {
 });
 
 export default router;
+
+export async function fulfillOrderExternal(orderId: number, connectionId: number) {
+  const [order] = await db
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.id, orderId));
+  if (!order) {
+    console.debug("fulfillOrderExternal: missing order", { orderId });
+    return;
+  }
+
+  const [connection] = await db
+    .select()
+    .from(storeConnectionsTable)
+    .where(eq(storeConnectionsTable.id, connectionId));
+  void connection;
+
+  const [store] = await db
+    .select()
+    .from(storeConnectionsTable)
+    .where(eq(storeConnectionsTable.id, connectionId));
+  console.debug("fulfillOrderExternal: store", { connectionId, store });
+  console.debug("fulfillOrderExternal: order", { order });
+
+  const config = store?.config ? JSON.parse(String(store.config)) : {};
+  const apiKey = config.apiKey ?? store?.apiKey ?? null;
+  const apiSecret = config.apiSecret ?? store?.apiSecret ?? null;
+
+  if (store?.platform === "cjdropshipping") {
+    const { placeCJOrder } = await externalServiceLoader("cjdropshipping");
+    await placeCJOrder({
+      productId: order.productName ?? "",
+      quantity: order.quantity ?? 1,
+      shippingInfo: {
+        firstName: order.customerName.split(" ")[0] || "Unknown",
+        lastName: order.customerName.split(" ").slice(1).join(" ") || "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        zip: "",
+        country: "",
+      },
+    });
+    return;
+  }
+
+  if (store?.platform === "zendrop") {
+    const { placeZendropOrder } = await externalServiceLoader("zendrop");
+    await placeZendropOrder({
+      productId: order.productName ?? "",
+      quantity: order.quantity ?? 1,
+      shippingInfo: {
+        firstName: order.customerName.split(" ")[0] || "Unknown",
+        lastName: order.customerName.split(" ").slice(1).join(" ") || "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        zip: "",
+        country: "",
+      },
+    });
+  }
+}
