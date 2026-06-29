@@ -32,7 +32,8 @@ jobs:
         run: |
           pnpm --filter @workspace/api-zod run build
           pnpm --filter @workspace/db run build
-          pnpm run build
+          pnpm --filter './artifacts/**' run build
+          pnpm --filter './scripts/**' run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
           DB_MODE: postgres
