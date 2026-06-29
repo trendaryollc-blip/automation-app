@@ -10,11 +10,11 @@ function isFirestoreMode(): boolean {
 
 function aiSettingsRepo() {
   return {
-    findMany: async () => [],
-    findById: async () => null,
-    findOne: async () => null,
-    createWithId: async () => ({}),
-    remove: async () => true,
+    findMany: async () => [] as any[],
+    findById: async (_id: string) => null as any,
+    findOne: async (_filters: any) => null as any,
+    createWithId: async (_id: string, _data: any) => ({}),
+    remove: async (_id: string) => true,
   };
 }
 

@@ -218,7 +218,7 @@ export async function fulfillOrderExternal(orderId: number, connectionId: number
 
   const config = store?.config ? JSON.parse(String(store.config)) : {};
   const apiKey = config.apiKey ?? store?.apiKey ?? null;
-  const apiSecret = config.apiSecret ?? store?.apiSecret ?? null;
+  const apiSecret = config.apiSecret ?? null;
 
   if (store?.platform === "cjdropshipping") {
     const { placeCJOrder } = await externalServiceLoader("cjdropshipping");
