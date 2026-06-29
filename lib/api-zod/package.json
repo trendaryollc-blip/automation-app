@@ -7,6 +7,9 @@
     ".": "./src/index.ts",
     "./src/index.ts": "./src/index.ts"
   },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
   "dependencies": {
     "zod": "catalog:"
   }
