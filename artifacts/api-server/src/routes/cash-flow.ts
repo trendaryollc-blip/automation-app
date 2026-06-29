@@ -20,35 +20,35 @@ router.get("/cash-flow/forecast", async (_req, res) => {
   ]);
 
   const totalRevenue = allOrders
-    .filter((o) => o.status !== "cancelled")
+    .filter((o: any) => o.status !== "cancelled")
     .reduce(
-      (s, o) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
+      (s: number, o: any) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
       0,
     );
 
   const totalCogs = allOrders
-    .filter((o) => o.status !== "cancelled")
+    .filter((o: any) => o.status !== "cancelled")
     .reduce(
-      (s, o) => s + Number(o.costPrice ?? 0) * Number(o.quantity ?? 1),
+      (s: number, o: any) => s + Number(o.costPrice ?? 0) * Number(o.quantity ?? 1),
       0,
     );
 
   const pendingRevenue = allOrders
-    .filter((o) =>
+    .filter((o: any) =>
       ["pending", "processing", "shipped"].includes(o.status ?? ""),
     )
     .reduce(
-      (s, o) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
+      (s: number, o: any) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
       0,
     );
 
   const pendingCosts = allPOs
-    .filter((p) => ["draft", "sent", "confirmed"].includes(p.status ?? ""))
-    .reduce((s, p) => s + Number(p.totalCost ?? 0), 0);
+    .filter((p: any) => ["draft", "sent", "confirmed"].includes(p.status ?? ""))
+    .reduce((s: number, p: any) => s + Number(p.totalCost ?? 0), 0);
 
   const activeAdSpend = allCampaigns
-    .filter((c) => c.status === "active")
-    .reduce((s, c) => s + Number(c.spend ?? 0), 0);
+    .filter((c: any) => c.status === "active")
+    .reduce((s: number, c: any) => s + Number(c.spend ?? 0), 0);
 
   const totalProfit = totalRevenue - totalCogs;
   const netCashPosition = totalRevenue - totalCogs - activeAdSpend;
@@ -93,7 +93,7 @@ router.get("/cash-flow/forecast", async (_req, res) => {
   }));
 
   const platformBreakdown = allCampaigns.reduce(
-    (acc: Record<string, { spend: number; revenue: number }>, c) => {
+    (acc: Record<string, { spend: number; revenue: number }>, c: any) => {
       const p = c.platform ?? "other";
       if (!acc[p]) acc[p] = { spend: 0, revenue: 0 };
       acc[p].spend += Number(c.spend ?? 0);

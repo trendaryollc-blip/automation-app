@@ -43,17 +43,17 @@ router.delete("/ad-campaigns/:id", async (req, res) => {
 
 router.get("/ad-campaigns/stats", async (_req, res) => {
   const all = await db.select().from(adCampaignsTable);
-  const totalSpend = all.reduce((s, c) => s + Number(c.spend ?? 0), 0);
-  const totalRevenue = all.reduce((s, c) => s + Number(c.revenue ?? 0), 0);
-  const totalImpressions = all.reduce((s, c) => s + (c.impressions ?? 0), 0);
-  const totalClicks = all.reduce((s, c) => s + (c.clicks ?? 0), 0);
-  const totalConversions = all.reduce((s, c) => s + (c.conversions ?? 0), 0);
+  const totalSpend = all.reduce((s: number, c: any) => s + Number(c.spend ?? 0), 0);
+  const totalRevenue = all.reduce((s: number, c: any) => s + Number(c.revenue ?? 0), 0);
+  const totalImpressions = all.reduce((s: number, c: any) => s + (c.impressions ?? 0), 0);
+  const totalClicks = all.reduce((s: number, c: any) => s + (c.clicks ?? 0), 0);
+  const totalConversions = all.reduce((s: number, c: any) => s + (c.conversions ?? 0), 0);
   const roas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
   const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
   const cpc = totalClicks > 0 ? totalSpend / totalClicks : 0;
   const cpa = totalConversions > 0 ? totalSpend / totalConversions : 0;
 
-  const byPlatform = all.reduce((acc: Record<string, any>, c) => {
+  const byPlatform = all.reduce((acc: Record<string, any>, c: any) => {
     const p = c.platform ?? "other";
     if (!acc[p])
       acc[p] = {

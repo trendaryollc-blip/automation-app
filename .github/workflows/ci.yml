@@ -28,6 +28,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace dependencies
+        run: pnpm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
+          DB_MODE: postgres
+          NODE_ENV: production
+
       - name: Type check
         run: pnpm run typecheck
         env:
