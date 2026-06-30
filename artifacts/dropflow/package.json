@@ -74,6 +74,7 @@
     "@vitest/coverage-v8": "4.1.9",
     "jsdom": "^26.0.0",
     "tailwindcss": "catalog:",
+    "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "4.1.9"
   }
