@@ -50,7 +50,9 @@ describe("Launches routes", () => {
 
   it("PATCH /launches/:id returns 404 for nonexistent", async () => {
     const api = request(app);
-    const res = await api.patch("/api/launches/9999").send({ productName: "X" });
+    const res = await api
+      .patch("/api/launches/9999")
+      .send({ productName: "X" });
     expect(res.status).toBe(404);
     expect(res.body.error).toBe("Not found");
   });

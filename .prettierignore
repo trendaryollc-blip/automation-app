@@ -5,3 +5,7 @@ dist
 test-results
 **/test-results/**
 artifacts/mockup-sandbox/src/.generated/**
+pnpm-lock.yaml
+**/pnpm-lock.yaml
+api/index.mjs
+**/artifacts/api-server/pnpm-lock.yaml

@@ -80,7 +80,9 @@ test("Customers page can switch to RFM view and show segment cards", async () =>
   render(<CustomersPage />);
 
   const user = userEvent.setup();
-  const rfmButton = await screen.findByRole("button", { name: /RFM Segments/i });
+  const rfmButton = await screen.findByRole("button", {
+    name: /RFM Segments/i,
+  });
   await user.click(rfmButton);
 
   const championsBadges = await screen.findAllByText(/Champions/i);

@@ -208,11 +208,7 @@ async function seed() {
   ];
 
   type OrderStatus =
-    | "pending"
-    | "placed"
-    | "shipped"
-    | "delivered"
-    | "cancelled";
+    "pending" | "placed" | "shipped" | "delivered" | "cancelled";
   const orderRows: {
     orderNumber: string;
     productId: number;

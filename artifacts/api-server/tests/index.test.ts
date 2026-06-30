@@ -37,9 +37,7 @@ describe("index.ts server startup", () => {
   it("throws when PORT is invalid", async () => {
     vi.stubEnv("PORT", "abc");
     vi.resetModules();
-    await expect(import("../src/index")).rejects.toThrow(
-      "Invalid PORT value",
-    );
+    await expect(import("../src/index")).rejects.toThrow("Invalid PORT value");
   });
 
   it("starts server on port without host", async () => {

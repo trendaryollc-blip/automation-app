@@ -11,7 +11,9 @@ vi.mock("@/hooks/use-toast", () => ({
 import SettingsPage from "../../src/pages/settings";
 
 beforeEach(() => {
-  try { localStorage.removeItem("dropflow:settings"); } catch {}
+  try {
+    localStorage.removeItem("dropflow:settings");
+  } catch {}
   toastMock.mockClear();
 });
 

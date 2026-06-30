@@ -20,9 +20,11 @@ beforeEach(() => {
       const obj: any = {
         matches: window.innerWidth < 768,
         media: query,
-        addEventListener: (ev: string, cb: (e: any) => void) => callbacks.push(cb),
+        addEventListener: (ev: string, cb: (e: any) => void) =>
+          callbacks.push(cb),
         removeEventListener: (ev: string, cb: (e: any) => void) => {
-          for (let i = callbacks.length - 1; i >= 0; i--) if (callbacks[i] === cb) callbacks.splice(i, 1);
+          for (let i = callbacks.length - 1; i >= 0; i--)
+            if (callbacks[i] === cb) callbacks.splice(i, 1);
         },
         // helper for tests
         dispatchChange: () => {

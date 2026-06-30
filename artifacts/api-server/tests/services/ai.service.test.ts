@@ -23,11 +23,12 @@ test("hasKey returns false when no key present", async () => {
 
 test("tryProviders throws when no keys available", async () => {
   await expect(
-    tryProviders(
-      "test",
-      "system",
-      ["groq", "deepseek", "mistral", "openrouter"],
-    ),
+    tryProviders("test", "system", [
+      "groq",
+      "deepseek",
+      "mistral",
+      "openrouter",
+    ]),
   ).rejects.toThrow("No AI API keys configured");
 });
 
@@ -46,11 +47,9 @@ test("tryProviders uses groq when groq key exists", async () => {
     }),
   );
 
-  const res = await tryProviders(
-    "analyze this product",
-    "You are an expert.",
-    ["groq"],
-  );
+  const res = await tryProviders("analyze this product", "You are an expert.", [
+    "groq",
+  ]);
   expect(res).toBe("AI response");
   expect(fetch).toHaveBeenCalledTimes(1);
 });

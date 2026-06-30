@@ -42,7 +42,9 @@ describe("Returns routes", () => {
   });
 
   it("PATCH /returns/:id returns 404 for nonexistent", async () => {
-    const res = await request(app).patch("/returns/9999").send({ status: "approved" });
+    const res = await request(app)
+      .patch("/returns/9999")
+      .send({ status: "approved" });
     expect(res.status).toBe(404);
     expect(res.body.error).toBe("Not found");
   });

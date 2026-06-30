@@ -70,6 +70,8 @@ describe("Product Scorer routes", () => {
       sellPrice: 25,
     });
     expect(res1.body.viralityScore).toBe(res2.body.viralityScore);
-    expect(res1.body.platformScores.tiktok).toBe(res2.body.platformScores.tiktok);
+    expect(res1.body.platformScores.tiktok).toBe(
+      res2.body.platformScores.tiktok,
+    );
   });
 });

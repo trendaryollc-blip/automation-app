@@ -5,12 +5,28 @@ import { vi } from "vitest";
 // Mock URL.createObjectURL/revoke
 const createObjectURL = vi.fn(() => "blob:fake");
 const revokeObjectURL = vi.fn();
-;(global as any).URL = { createObjectURL, revokeObjectURL } as any;
+(global as any).URL = { createObjectURL, revokeObjectURL } as any;
 
 vi.mock("@workspace/api-client-react", () => ({
-  useListProducts: () => ({ data: [
-    { id: "p1", name: "Widget", category: "Gadgets", status: "listed", costPrice: 10, sellPrice: 20, margin: 50, stockQuantity: 5, stockThreshold: 2, description: "", sourceUrl: "", notes: "" }
-  ], isLoading: false }),
+  useListProducts: () => ({
+    data: [
+      {
+        id: "p1",
+        name: "Widget",
+        category: "Gadgets",
+        status: "listed",
+        costPrice: 10,
+        sellPrice: 20,
+        margin: 50,
+        stockQuantity: 5,
+        stockThreshold: 2,
+        description: "",
+        sourceUrl: "",
+        notes: "",
+      },
+    ],
+    isLoading: false,
+  }),
   useCreateProduct: () => ({ mutate: vi.fn(), isPending: false }),
   getListProductsQueryKey: () => ["products"],
 }));

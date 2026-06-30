@@ -1,5 +1,9 @@
 import { test, expect, vi, beforeEach, afterEach } from "vitest";
-import { testZendrop, placeZendropOrder, getZendropInventory } from "../../src/services/zendrop";
+import {
+  testZendrop,
+  placeZendropOrder,
+  getZendropInventory,
+} from "../../src/services/zendrop";
 
 beforeEach(() => {
   vi.restoreAllMocks();

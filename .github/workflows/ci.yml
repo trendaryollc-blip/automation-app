@@ -30,10 +30,10 @@ jobs:
 
       - name: Build workspace dependencies
         run: |
-          pnpm --filter @workspace/api-zod run build
-          pnpm --filter @workspace/db run build
-          pnpm --filter './artifacts/**' run build
-          pnpm --filter './scripts/**' run build
+          pnpm --filter @workspace/api-zod run --if-present build
+          pnpm --filter @workspace/db run --if-present build
+          pnpm --filter './artifacts/**' run --if-present build
+          pnpm --filter './scripts/**' run --if-present build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
           DB_MODE: postgres

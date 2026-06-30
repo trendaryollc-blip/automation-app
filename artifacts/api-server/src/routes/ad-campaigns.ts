@@ -43,11 +43,23 @@ router.delete("/ad-campaigns/:id", async (req, res) => {
 
 router.get("/ad-campaigns/stats", async (_req, res) => {
   const all = await db.select().from(adCampaignsTable);
-  const totalSpend = all.reduce((s: number, c: any) => s + Number(c.spend ?? 0), 0);
-  const totalRevenue = all.reduce((s: number, c: any) => s + Number(c.revenue ?? 0), 0);
-  const totalImpressions = all.reduce((s: number, c: any) => s + (c.impressions ?? 0), 0);
+  const totalSpend = all.reduce(
+    (s: number, c: any) => s + Number(c.spend ?? 0),
+    0,
+  );
+  const totalRevenue = all.reduce(
+    (s: number, c: any) => s + Number(c.revenue ?? 0),
+    0,
+  );
+  const totalImpressions = all.reduce(
+    (s: number, c: any) => s + (c.impressions ?? 0),
+    0,
+  );
   const totalClicks = all.reduce((s: number, c: any) => s + (c.clicks ?? 0), 0);
-  const totalConversions = all.reduce((s: number, c: any) => s + (c.conversions ?? 0), 0);
+  const totalConversions = all.reduce(
+    (s: number, c: any) => s + (c.conversions ?? 0),
+    0,
+  );
   const roas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
   const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
   const cpc = totalClicks > 0 ? totalSpend / totalClicks : 0;

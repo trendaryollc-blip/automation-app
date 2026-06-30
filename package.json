@@ -1,19 +1,22 @@
 {
-	"scripts": {
-		"typecheck": "pnpm -r run typecheck",
-		"test": "pnpm -r run test",
-		"build": "pnpm -r run build",
-		"test:e2e": "pnpm --filter @workspace/api-server run build && pnpm exec playwright test --config e2e/playwright.config.ts"
-	},
-	"devDependencies": {
-		"@playwright/test": "^1.61.1",
-		"@testing-library/jest-dom": "^6.9.1",
-		"@testing-library/react": "^16.3.2",
-		"@testing-library/user-event": "^14.6.1",
-		"@types/supertest": "^7.2.0",
-		"jsdom": "^29.1.1",
-		"msw": "^2.14.6",
-		"supertest": "^7.2.2",
-		"vitest": "^4.1.9"
-	}
+  "scripts": {
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test",
+    "build": "pnpm -r run build",
+    "lint": "pnpm exec prettier --check .",
+    "format": "pnpm exec prettier --write .",
+    "test:e2e": "pnpm --filter @workspace/api-server run build && pnpm exec playwright test --config e2e/playwright.config.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/supertest": "^7.2.0",
+    "jsdom": "^29.1.1",
+    "msw": "^2.14.6",
+    "prettier": "^3.9.1",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.9"
+  }
 }

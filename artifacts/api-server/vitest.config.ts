@@ -16,14 +16,8 @@ export default defineConfig({
         __dirname,
         "tests/__mocks__/@workspace_db.ts",
       ),
-      "drizzle-orm": path.resolve(
-        __dirname,
-        "tests/__mocks__/drizzle-orm.ts",
-      ),
-      "drizzle-orm/": path.resolve(
-        __dirname,
-        "tests/__mocks__/drizzle-orm.ts",
-      ),
+      "drizzle-orm": path.resolve(__dirname, "tests/__mocks__/drizzle-orm.ts"),
+      "drizzle-orm/": path.resolve(__dirname, "tests/__mocks__/drizzle-orm.ts"),
     },
   },
   test: {

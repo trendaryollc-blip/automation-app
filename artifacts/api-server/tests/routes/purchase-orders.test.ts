@@ -81,7 +81,9 @@ describe("Purchase Orders routes", () => {
 
   it("PATCH /purchase-orders/:id returns 404 for nonexistent", async () => {
     const api = request(app);
-    const res = await api.patch("/api/purchase-orders/999").send({ status: "sent" });
+    const res = await api
+      .patch("/api/purchase-orders/999")
+      .send({ status: "sent" });
     expect(res.status).toBe(404);
     expect(res.body.error).toBe("Not found");
   });

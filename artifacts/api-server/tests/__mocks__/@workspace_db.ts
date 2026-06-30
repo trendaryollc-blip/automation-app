@@ -19,7 +19,9 @@ class QueryBuilder {
     this._projection = projection;
   }
 
-  $dynamic() { return this; }
+  $dynamic() {
+    return this;
+  }
 
   where(condition: any) {
     if (condition) this._where.push(condition);
@@ -29,7 +31,10 @@ class QueryBuilder {
   orderBy(...args: any[]) {
     for (const arg of args) {
       if (arg && typeof arg === "object" && arg._field) {
-        this._orderBy.push({ field: String(arg._field), dir: arg._dir || "asc" });
+        this._orderBy.push({
+          field: String(arg._field),
+          dir: arg._dir || "asc",
+        });
       }
     }
     return this;
@@ -68,7 +73,12 @@ class QueryBuilder {
   private _applyProjection(rows: any[]) {
     if (!this._projection) return rows;
     const entries = Object.entries(this._projection);
-    const hasAggregation = entries.some(([, expr]) => expr && typeof expr === "object" && (expr.operator === "count" || expr._sql));
+    const hasAggregation = entries.some(
+      ([, expr]) =>
+        expr &&
+        typeof expr === "object" &&
+        (expr.operator === "count" || expr._sql),
+    );
     if (hasAggregation) {
       const projection: Record<string, any> = {};
       for (const [alias, expr] of entries) {
@@ -140,7 +150,9 @@ function mockDesc(field: string | { name?: string }) {
 function mockAsc(field: string | { name?: string }) {
   return { _field: toField(field), _dir: "asc" as const };
 }
-function mockCount() { return { _field: "count(*)", operator: "count" }; }
+function mockCount() {
+  return { _field: "count(*)", operator: "count" };
+}
 function mockInArray(field: string | { name?: string }, values: any[]) {
   return { _field: toField(field), _values: values, operator: "in" };
 }
@@ -153,7 +165,9 @@ function mockLte(field: string | { name?: string }, value: any) {
 function mockLt(field: string | { name?: string }, value: any) {
   return { _field: toField(field), _value: value, operator: "lt" };
 }
-function mockAnd(...conditions: any[]) { return { _and: conditions, operator: "and" }; }
+function mockAnd(...conditions: any[]) {
+  return { _and: conditions, operator: "and" };
+}
 function mockSql(strings: TemplateStringsArray, ..._values: any[]) {
   return { _sql: strings.join("?"), _values: _values };
 }
@@ -196,7 +210,16 @@ const fulfillmentQueueTable = makeTable("fulfillment_queue");
 function normalizeRow(r: any) {
   if (!r) return r;
   const o = { ...r };
-  for (const k of ["costPrice", "sellPrice", "profit", "totalCost", "rating", "estimatedCost", "estimatedMargin", "myPrice"]) {
+  for (const k of [
+    "costPrice",
+    "sellPrice",
+    "profit",
+    "totalCost",
+    "rating",
+    "estimatedCost",
+    "estimatedMargin",
+    "myPrice",
+  ]) {
     if (typeof o[k] === "string") o[k] = Number(o[k]);
   }
   return o;
@@ -205,10 +228,17 @@ function normalizeRow(r: any) {
 function resolveMatchingIds(tableName: string, condition: any): number[] {
   if (!condition) return Object.keys(inMemoryData[tableName] || {}).map(Number);
   if (condition._and) {
-    return (condition._and.reduce((ids: number[] | null, cond: any) => {
-      const matched = resolveMatchingIds(tableName, cond);
-      return ids === null ? matched : ids.filter((id) => matched.includes(id));
-    }, null as number[] | null) ?? []);
+    return (
+      condition._and.reduce(
+        (ids: number[] | null, cond: any) => {
+          const matched = resolveMatchingIds(tableName, cond);
+          return ids === null
+            ? matched
+            : ids.filter((id) => matched.includes(id));
+        },
+        null as number[] | null,
+      ) ?? []
+    );
   }
   const value = condition._value;
   const values = condition._values;
@@ -255,7 +285,9 @@ const db = {
     set: (data: any) => ({
       where: (condition: any) => {
         const matchingIds = resolveMatchingIds(table._table, condition);
-        const items = matchingIds.map((id: number) => inMemoryData[table._table]?.[id]).filter(Boolean);
+        const items = matchingIds
+          .map((id: number) => inMemoryData[table._table]?.[id])
+          .filter(Boolean);
         for (const item of items) Object.assign(item, data);
         const result = items.map(normalizeRow);
         const promise = Promise.resolve(result);

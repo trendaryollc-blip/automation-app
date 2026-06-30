@@ -54,12 +54,10 @@ router.post("/price-watch", async (req, res): Promise<void> => {
 
   const normalizedName =
     typeof name === "string" && name.trim() ? name.trim() : null;
-  const normalizedUrl = typeof url === "string" && url.trim() ? url.trim() : null;
+  const normalizedUrl =
+    typeof url === "string" && url.trim() ? url.trim() : null;
   const hasPayload = Boolean(
-    normalizedName ||
-      normalizedUrl ||
-      productId != null ||
-      targetPrice != null,
+    normalizedName || normalizedUrl || productId != null || targetPrice != null,
   );
   const fallbackName =
     productId != null ? `Product ${String(productId)}` : "Tracked Product";

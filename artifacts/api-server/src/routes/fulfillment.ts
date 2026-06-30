@@ -193,7 +193,10 @@ router.patch("/fulfillment/queue/:id", async (req, res) => {
 
 export default router;
 
-export async function fulfillOrderExternal(orderId: number, connectionId: number) {
+export async function fulfillOrderExternal(
+  orderId: number,
+  connectionId: number,
+) {
   const [order] = await db
     .select()
     .from(ordersTable)

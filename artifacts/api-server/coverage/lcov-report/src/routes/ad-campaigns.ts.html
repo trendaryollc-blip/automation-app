@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">95.23% </span>
+                <span class="strong">95.65% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>40/42</span>
+                <span class='fraction'>44/46</span>
             </div>
         
             
@@ -156,14 +156,26 @@
 <a name='L91'></a><a href='#L91'>91</a>
 <a name='L92'></a><a href='#L92'>92</a>
 <a name='L93'></a><a href='#L93'>93</a>
-<a name='L94'></a><a href='#L94'>94</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -171,7 +183,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -179,7 +191,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -193,19 +205,31 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -294,17 +318,29 @@ router.delete("/ad-campaigns/:id", async (req, res) =&gt; {
 &nbsp;
 router.get("/ad-campaigns/stats", async (_req, res) =&gt; {
   const all = await db.select().from(adCampaignsTable);
-  const totalSpend = all.reduce((s, c) =&gt; s + Number(c.spend ?? <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>, 0);
-  const totalRevenue = all.reduce((s, c) =&gt; s + Number(c.revenue ?? <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>, 0);
-  const totalImpressions = all.reduce((s, c) =&gt; s + (c.impressions ?? 0), 0);
-  const totalClicks = all.reduce((s, c) =&gt; s + (c.clicks ?? 0), 0);
-  const totalConversions = all.reduce((s, c) =&gt; s + (c.conversions ?? 0), 0);
+  const totalSpend = all.reduce(
+    (s: number, c: any) =&gt; s + Number(c.spend ?? <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>,
+    0,
+  );
+  const totalRevenue = all.reduce(
+    (s: number, c: any) =&gt; s + Number(c.revenue ?? <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>,
+    0,
+  );
+  const totalImpressions = all.reduce(
+    (s: number, c: any) =&gt; s + (c.impressions ?? 0),
+    0,
+  );
+  const totalClicks = all.reduce((s: number, c: any) =&gt; s + (c.clicks ?? 0), 0);
+  const totalConversions = all.reduce(
+    (s: number, c: any) =&gt; s + (c.conversions ?? 0),
+    0,
+  );
   const roas = totalSpend &gt; 0 ? totalRevenue / totalSpend : <span class="branch-1 cbranch-no" title="branch not covered" >0;</span>
   const ctr = totalImpressions &gt; 0 ? (totalClicks / totalImpressions) * 100 : <span class="branch-1 cbranch-no" title="branch not covered" >0;</span>
   const cpc = totalClicks &gt; 0 ? totalSpend / totalClicks : <span class="branch-1 cbranch-no" title="branch not covered" >0;</span>
   const cpa = totalConversions &gt; 0 ? totalSpend / totalConversions : <span class="branch-1 cbranch-no" title="branch not covered" >0;</span>
 &nbsp;
-  const byPlatform = all.reduce((acc: Record&lt;string, any&gt;, c) =&gt; {
+  const byPlatform = all.reduce((acc: Record&lt;string, any&gt;, c: any) =&gt; {
     const p = c.platform ?? <span class="branch-1 cbranch-no" title="branch not covered" >"other";</span>
     <span class="missing-if-branch" title="else path not taken" >E</span>if (!acc[p])
       acc[p] = {
@@ -349,7 +385,7 @@ export default router;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-28T19:41:46.375Z
+                at 2026-06-30T12:33:22.535Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -35,7 +35,9 @@ describe("Store Connections routes", () => {
 
   it("POST /store-connections returns 400 when storeName missing", async () => {
     const api = request(app);
-    const res = await api.post("/api/store-connections").send({ platform: "custom" });
+    const res = await api
+      .post("/api/store-connections")
+      .send({ platform: "custom" });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe("storeName is required");
   });
@@ -55,13 +57,17 @@ describe("Store Connections routes", () => {
 
   it("PATCH /store-connections/:id returns 404 for nonexistent", async () => {
     const api = request(app);
-    const res = await api.patch("/api/store-connections/9999").send({ storeName: "X" });
+    const res = await api
+      .patch("/api/store-connections/9999")
+      .send({ storeName: "X" });
     expect(res.status).toBe(404);
     expect(res.body.error).toBe("Not found");
   });
 
   it("DELETE /store-connections/:id removes a connection", async () => {
-    seedTable("store_connections", [{ id: 20, storeName: "To Delete", apiKey: "df_test" }]);
+    seedTable("store_connections", [
+      { id: 20, storeName: "To Delete", apiKey: "df_test" },
+    ]);
 
     const api = request(app);
     const res = await api.delete("/api/store-connections/20");
@@ -71,10 +77,22 @@ describe("Store Connections routes", () => {
   });
 
   it("GET /store-connections/:id/logs returns logs", async () => {
-    seedTable("store_connections", [{ id: 30, storeName: "Logged", apiKey: "df_test" }]);
+    seedTable("store_connections", [
+      { id: 30, storeName: "Logged", apiKey: "df_test" },
+    ]);
     seedTable("sync_logs", [
-      { id: 1, storeConnectionId: 30, event: "order.created", status: "success" },
-      { id: 2, storeConnectionId: 30, event: "order.updated", status: "success" },
+      {
+        id: 1,
+        storeConnectionId: 30,
+        event: "order.created",
+        status: "success",
+      },
+      {
+        id: 2,
+        storeConnectionId: 30,
+        event: "order.updated",
+        status: "success",
+      },
     ]);
 
     const api = request(app);
@@ -122,7 +140,9 @@ describe("Store Connections routes", () => {
 
   it("POST /webhooks/store returns 401 with missing header", async () => {
     const api = request(app);
-    const res = await api.post("/api/webhooks/store").send({ event: "order.created" });
+    const res = await api
+      .post("/api/webhooks/store")
+      .send({ event: "order.created" });
     expect(res.status).toBe(401);
     expect(res.body.error).toBe("Missing X-DropFlow-Key header");
   });
@@ -139,7 +159,12 @@ describe("Store Connections routes", () => {
 
   it("POST /webhooks/store returns 403 for inactive connection", async () => {
     seedTable("store_connections", [
-      { id: 60, storeName: "Disabled Store", apiKey: "df_disabled", status: "disabled" },
+      {
+        id: 60,
+        storeName: "Disabled Store",
+        apiKey: "df_disabled",
+        status: "disabled",
+      },
     ]);
 
     const api = request(app);

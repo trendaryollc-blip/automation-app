@@ -10,10 +10,13 @@ class ResizeObserverMock {
   unobserve() {}
   disconnect() {}
 }
-;(global as any).ResizeObserver = ResizeObserverMock;
+(global as any).ResizeObserver = ResizeObserverMock;
 
 // Polyfill minimal localStorage for the test environment
-if (typeof (global as any).localStorage === "undefined" || typeof (global as any).localStorage.getItem !== "function") {
+if (
+  typeof (global as any).localStorage === "undefined" ||
+  typeof (global as any).localStorage.getItem !== "function"
+) {
   (global as any).localStorage = (() => {
     let _store: Record<string, string> = {};
     return {
@@ -34,7 +37,10 @@ if (typeof (global as any).localStorage === "undefined" || typeof (global as any
 }
 
 // Polyfill URL blob helpers for export tests
-if (typeof (global as any).URL === "undefined" || typeof (global as any).URL.createObjectURL !== "function") {
+if (
+  typeof (global as any).URL === "undefined" ||
+  typeof (global as any).URL.createObjectURL !== "function"
+) {
   (global as any).URL = {
     createObjectURL: () => "blob:fake",
     revokeObjectURL: () => {},
@@ -48,6 +54,35 @@ afterEach(() => {
 const server = setupServer(
   http.get("/api/healthz", () => {
     return HttpResponse.json({ status: "ok" });
+  }),
+  http.get("/api/dashboard/stats", () => {
+    return HttpResponse.json({
+      totalRevenue: 0,
+      totalProfit: 0,
+      pendingOrders: 0,
+      totalOrders: 0,
+      avgMargin: 0,
+    });
+  }),
+  http.get("/api/dashboard/analytics", () => {
+    return HttpResponse.json({
+      data: [],
+      totalRevenue: 0,
+      totalProfit: 0,
+      totalOrders: 0,
+      revenueChange: 0,
+      profitChange: 0,
+      ordersChange: 0,
+    });
+  }),
+  http.get("/api/dashboard/recent-orders", () => {
+    return HttpResponse.json([]);
+  }),
+  http.get("/api/products/trending", () => {
+    return HttpResponse.json([]);
+  }),
+  http.get("/api/products/stock-alerts", () => {
+    return HttpResponse.json([]);
   }),
 );
 

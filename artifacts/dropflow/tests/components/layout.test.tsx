@@ -9,7 +9,10 @@ vi.mock("@workspace/api-client-react", () => ({
 }));
 
 vi.mock("@/pages/settings", () => ({
-  loadSettings: () => ({ lowStockAlertsEnabled: true, priceAlertThresholdPct: 10 }),
+  loadSettings: () => ({
+    lowStockAlertsEnabled: true,
+    priceAlertThresholdPct: 10,
+  }),
 }));
 
 vi.mock("wouter", () => ({

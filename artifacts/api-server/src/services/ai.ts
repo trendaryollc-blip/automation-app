@@ -2,12 +2,7 @@ import { db, aiSettingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 type Provider =
-  | "groq"
-  | "openrouter"
-  | "mistral"
-  | "deepseek"
-  | "cohere"
-  | "serpapi";
+  "groq" | "openrouter" | "mistral" | "deepseek" | "cohere" | "serpapi";
 
 async function getKey(provider: Provider): Promise<string | null> {
   const [row] = await db

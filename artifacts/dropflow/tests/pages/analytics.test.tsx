@@ -6,8 +6,24 @@ import { vi } from "vitest";
 vi.mock("@workspace/api-client-react", () => ({
   useListOrders: () => ({
     data: [
-      { id: 1, productId: 1, productName: "Product A", quantity: 2, sellPrice: 100, costPrice: 60, status: "placed" },
-      { id: 2, productId: 2, productName: "Product B", quantity: 1, sellPrice: 80, costPrice: 40, status: "delivered" },
+      {
+        id: 1,
+        productId: 1,
+        productName: "Product A",
+        quantity: 2,
+        sellPrice: 100,
+        costPrice: 60,
+        status: "placed",
+      },
+      {
+        id: 2,
+        productId: 2,
+        productName: "Product B",
+        quantity: 1,
+        sellPrice: 80,
+        costPrice: 40,
+        status: "delivered",
+      },
     ],
     isLoading: false,
   }),

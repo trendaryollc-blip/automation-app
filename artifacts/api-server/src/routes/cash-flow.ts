@@ -22,14 +22,16 @@ router.get("/cash-flow/forecast", async (_req, res) => {
   const totalRevenue = allOrders
     .filter((o: any) => o.status !== "cancelled")
     .reduce(
-      (s: number, o: any) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
+      (s: number, o: any) =>
+        s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
       0,
     );
 
   const totalCogs = allOrders
     .filter((o: any) => o.status !== "cancelled")
     .reduce(
-      (s: number, o: any) => s + Number(o.costPrice ?? 0) * Number(o.quantity ?? 1),
+      (s: number, o: any) =>
+        s + Number(o.costPrice ?? 0) * Number(o.quantity ?? 1),
       0,
     );
 
@@ -38,7 +40,8 @@ router.get("/cash-flow/forecast", async (_req, res) => {
       ["pending", "processing", "shipped"].includes(o.status ?? ""),
     )
     .reduce(
-      (s: number, o: any) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
+      (s: number, o: any) =>
+        s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
       0,
     );
 

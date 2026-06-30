@@ -295,12 +295,7 @@ function ScoreRing({
 
 // ── Main ───────────────────────────────────────────────────────────────────
 type SortKey =
-  | "score"
-  | "revenue"
-  | "orders"
-  | "delivered"
-  | "profit"
-  | "margin";
+  "score" | "revenue" | "orders" | "delivered" | "profit" | "margin";
 
 export default function Suppliers() {
   const { data: suppliers = [], isLoading: loadingSuppliers } =

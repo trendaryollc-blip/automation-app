@@ -136,12 +136,31 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
   let prevEnd: Date;
   let bucketOf: (d: Date) => number;
 
-  const fallbackBuckets = Array.from({ length: period === "weekly" ? 7 : 12 }, (_, i) => ({
-    date: period === "weekly" ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i] : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][i],
-    revenue: 0,
-    profit: 0,
-    orderCount: 0,
-  }));
+  const fallbackBuckets = Array.from(
+    { length: period === "weekly" ? 7 : 12 },
+    (_, i) => ({
+      date:
+        period === "weekly"
+          ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i]
+          : [
+              "Jan",
+              "Feb",
+              "Mar",
+              "Apr",
+              "May",
+              "Jun",
+              "Jul",
+              "Aug",
+              "Sep",
+              "Oct",
+              "Nov",
+              "Dec",
+            ][i],
+      revenue: 0,
+      profit: 0,
+      orderCount: 0,
+    }),
+  );
 
   if (period === "weekly") {
     const DAY = 86400000;

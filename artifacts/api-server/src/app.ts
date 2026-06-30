@@ -31,14 +31,21 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
-app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err);
-  if (res.headersSent) return;
-  if (err instanceof Error) {
-    res.status(500).json({ error: err.message });
-  } else {
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+app.use(
+  (
+    err: unknown,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    console.error(err);
+    if (res.headersSent) return;
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
 
 export default app;

@@ -50,9 +50,7 @@ vi.mock("@workspace/api-client-react", () => ({
     isLoading: false,
   }),
   useListProducts: () => ({
-    data: [
-      { id: 1, supplierId: 1, name: "Widget" },
-    ],
+    data: [{ id: 1, supplierId: 1, name: "Widget" }],
     isLoading: false,
   }),
 }));
@@ -69,9 +67,17 @@ import SuppliersPage from "../../src/pages/suppliers";
 test("Suppliers page renders supplier summary and scorecard", async () => {
   render(<SuppliersPage />);
 
-  expect(await screen.findByText(/Supplier Performance Scorecard/i)).toBeTruthy();
-  expect(screen.getByText(/Composite rankings across fulfillment, margins, volume, and reliability/i)).toBeTruthy();
-  const supplierLinks = await screen.findAllByRole("link", { name: /Supplier A/i });
+  expect(
+    await screen.findByText(/Supplier Performance Scorecard/i),
+  ).toBeTruthy();
+  expect(
+    screen.getByText(
+      /Composite rankings across fulfillment, margins, volume, and reliability/i,
+    ),
+  ).toBeTruthy();
+  const supplierLinks = await screen.findAllByRole("link", {
+    name: /Supplier A/i,
+  });
   expect(supplierLinks.length).toBeGreaterThan(0);
 });
 
@@ -79,7 +85,9 @@ test("Suppliers page allows switching metric chart options", async () => {
   render(<SuppliersPage />);
 
   const user = userEvent.setup();
-  const profitButtons = await screen.findAllByRole("button", { name: "Profit" });
+  const profitButtons = await screen.findAllByRole("button", {
+    name: "Profit",
+  });
   expect(profitButtons.length).toBeGreaterThan(0);
   await user.click(profitButtons[0]);
   expect(profitButtons[0]).toBeTruthy();

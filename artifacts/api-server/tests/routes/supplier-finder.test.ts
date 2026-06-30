@@ -10,7 +10,9 @@ describe("Supplier Finder routes", () => {
 
   it("POST /suppliers/find returns 400 when productName missing", async () => {
     const api = request(app);
-    const res = await api.post("/api/suppliers/find").send({ targetCostPrice: 10 });
+    const res = await api
+      .post("/api/suppliers/find")
+      .send({ targetCostPrice: 10 });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe("productName is required");
   });
@@ -105,7 +107,14 @@ describe("Supplier Finder routes", () => {
 
   it("DELETE /suppliers/find/history/:id deletes a record", async () => {
     seedTable("supplier_finder", [
-      { id: 100, productName: "To Delete", topPick: "X", matches: [], sourcingTips: [], createdAt: new Date() },
+      {
+        id: 100,
+        productName: "To Delete",
+        topPick: "X",
+        matches: [],
+        sourcingTips: [],
+        createdAt: new Date(),
+      },
     ]);
 
     const api = request(app);

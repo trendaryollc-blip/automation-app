@@ -35,7 +35,9 @@ describe("Promotions routes", () => {
   });
 
   it("PATCH /promotions/:id returns 404 for nonexistent", async () => {
-    const res = await request(app).patch("/promotions/9999").send({ name: "X" });
+    const res = await request(app)
+      .patch("/promotions/9999")
+      .send({ name: "X" });
     expect(res.status).toBe(404);
   });
 

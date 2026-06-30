@@ -15,8 +15,12 @@ describe("Reports", () => {
   });
 
   it("GET /reports/pl returns P&L data", async () => {
-    seedTable("orders", [{ status: "paid", sellPrice: "100", costPrice: "40" }]);
-    const res = await request(app).get("/reports/pl?from=2020-01-01&to=2030-01-01");
+    seedTable("orders", [
+      { status: "paid", sellPrice: "100", costPrice: "40" },
+    ]);
+    const res = await request(app).get(
+      "/reports/pl?from=2020-01-01&to=2030-01-01",
+    );
     expect(res.status).toBe(200);
     expect(res.body.revenue).toBeGreaterThan(0);
   });

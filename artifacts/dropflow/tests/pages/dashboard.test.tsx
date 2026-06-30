@@ -52,18 +52,33 @@ vi.mock("@workspace/api-client-react", () => ({
   }),
   useGetRecentOrders: () => ({
     data: [
-      { id: "o1", orderNumber: "ORD-001", customerName: "Jane", productName: "Sneakers", status: "delivered", profit: 45.5 },
+      {
+        id: "o1",
+        orderNumber: "ORD-001",
+        customerName: "Jane",
+        productName: "Sneakers",
+        status: "delivered",
+        profit: 45.5,
+      },
     ],
     isLoading: false,
   }),
   useGetTrendingProducts: () => ({
     data: [
-      { id: "p1", name: "Top Gadget", category: "Electronics", margin: 31.5, status: "listed" },
+      {
+        id: "p1",
+        name: "Top Gadget",
+        category: "Electronics",
+        margin: 31.5,
+        status: "listed",
+      },
     ],
     isLoading: false,
   }),
   useHealthCheck: () => ({ data: { status: "ok" } }),
-  useGetStockAlerts: () => ({ data: [{ id: "a1", name: "Widget", stockQuantity: 1, stockThreshold: 2 }] }),
+  useGetStockAlerts: () => ({
+    data: [{ id: "a1", name: "Widget", stockQuantity: 1, stockThreshold: 2 }],
+  }),
 }));
 
 import Dashboard from "../../src/pages/dashboard";

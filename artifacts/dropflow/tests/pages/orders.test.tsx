@@ -24,9 +24,26 @@ vi.mock("@workspace/api-client-react", () => ({
     isLoading: false,
   }),
   getListOrdersQueryKey: () => ["orders"],
-  useCreateOrder: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined), isPending: false }),
-  useBulkUpdateOrders: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined), isPending: false }),
-  useGetCustomerInsights: () => ({ data: [{ customerName: "Alice", totalRevenue: 120, totalProfit: 70, avgOrderValue: 120, orderCount: 1 }], isLoading: false }),
+  useCreateOrder: () => ({
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    isPending: false,
+  }),
+  useBulkUpdateOrders: () => ({
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    isPending: false,
+  }),
+  useGetCustomerInsights: () => ({
+    data: [
+      {
+        customerName: "Alice",
+        totalRevenue: 120,
+        totalProfit: 70,
+        avgOrderValue: 120,
+        orderCount: 1,
+      },
+    ],
+    isLoading: false,
+  }),
 }));
 
 vi.mock("wouter", () => ({
@@ -61,5 +78,7 @@ test("Orders page renders order row and export button", async () => {
 
 test("Orders page search input is present", async () => {
   render(<OrdersPage />);
-  expect(await screen.findByPlaceholderText("Search orders, customers, products…")).toBeTruthy();
+  expect(
+    await screen.findByPlaceholderText("Search orders, customers, products…"),
+  ).toBeTruthy();
 });
