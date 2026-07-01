@@ -33,14 +33,12 @@ describe("Price Watch", () => {
   });
 
   it("POST /price-watch creates", async () => {
-    const res = await authedRequest(app)
-      .post("/api/price-watch")
-      .send({
-        name: "Test Watch",
-        url: "https://example.com/product",
-        productId: 1,
-        targetPrice: 20,
-      });
+    const res = await authedRequest(app).post("/api/price-watch").send({
+      name: "Test Watch",
+      url: "https://example.com/product",
+      productId: 1,
+      targetPrice: 20,
+    });
     expect(res.status).toBe(201);
   });
 

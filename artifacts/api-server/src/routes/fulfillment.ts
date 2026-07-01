@@ -26,9 +26,7 @@ type ExternalService = {
   placeZendropOrder?: (params: any) => Promise<any>;
 };
 
-type ExternalServiceLoader = (
-  serviceName: string,
-) => Promise<ExternalService>;
+type ExternalServiceLoader = (serviceName: string) => Promise<ExternalService>;
 
 let _externalServiceLoader: ExternalServiceLoader | null = null;
 
@@ -106,8 +104,13 @@ const RejectBodySchema = z.object({
   reason: z.string().max(2000).optional(),
 });
 
-function friendlyZodError(error: unknown, fieldMessages?: Record<string, string>): string {
-  const issues = (error as { issues?: { path?: unknown[]; message?: string }[] })?.issues ?? [];
+function friendlyZodError(
+  error: unknown,
+  fieldMessages?: Record<string, string>,
+): string {
+  const issues =
+    (error as { issues?: { path?: unknown[]; message?: string }[] })?.issues ??
+    [];
   const first = issues[0];
   if (first && fieldMessages) {
     const fieldName = String(first.path?.[0] ?? "");
@@ -117,7 +120,7 @@ function friendlyZodError(error: unknown, fieldMessages?: Record<string, string>
     const fieldName = String(first.path?.[0] ?? "");
     return fieldName
       ? `${fieldName} ${first.message ?? "is invalid"}`
-      : first.message ?? "Validation failed";
+      : (first.message ?? "Validation failed");
   }
   return "Validation failed";
 }
@@ -269,7 +272,9 @@ router.post("/fulfillment/approve-all", async (req, res): Promise<void> => {
 router.post("/fulfillment/manual", async (req, res): Promise<void> => {
   const parsed = ManualBodySchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: friendlyZodError(parsed.error, { orderId: "orderId required" }) });
+    res.status(400).json({
+      error: friendlyZodError(parsed.error, { orderId: "orderId required" }),
+    });
     return;
   }
   const user = currentUser(req);

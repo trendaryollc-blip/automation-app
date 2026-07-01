@@ -16,8 +16,13 @@ function generateApiKey(): string {
   return "df_" + crypto.randomBytes(24).toString("hex");
 }
 
-function friendlyZodError(error: unknown, fieldMessages?: Record<string, string>): string {
-  const issues = (error as { issues?: { path?: unknown[]; message?: string }[] })?.issues ?? [];
+function friendlyZodError(
+  error: unknown,
+  fieldMessages?: Record<string, string>,
+): string {
+  const issues =
+    (error as { issues?: { path?: unknown[]; message?: string }[] })?.issues ??
+    [];
   const first = issues[0];
   if (first && fieldMessages) {
     const fieldName = String(first.path?.[0] ?? "");
@@ -27,7 +32,7 @@ function friendlyZodError(error: unknown, fieldMessages?: Record<string, string>
     const fieldName = String(first.path?.[0] ?? "");
     return fieldName
       ? `${fieldName} ${first.message ?? "is invalid"}`
-      : first.message ?? "Validation failed";
+      : (first.message ?? "Validation failed");
   }
   return "Validation failed";
 }
@@ -69,7 +74,11 @@ router.get("/store-connections", async (req, res): Promise<void> => {
 router.post("/store-connections", async (req, res): Promise<void> => {
   const parsed = CreateConnectionBodySchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: friendlyZodError(parsed.error, { storeName: "storeName is required" }) });
+    res.status(400).json({
+      error: friendlyZodError(parsed.error, {
+        storeName: "storeName is required",
+      }),
+    });
     return;
   }
   const user = currentUser(req);

@@ -12,8 +12,13 @@ const FindSuppliersBodySchema = z.object({
   preferredCountry: z.string().max(80).nullish(),
 });
 
-function friendlyZodError(error: unknown, fieldMessages?: Record<string, string>): string {
-  const issues = (error as { issues?: { path?: unknown[]; message?: string }[] })?.issues ?? [];
+function friendlyZodError(
+  error: unknown,
+  fieldMessages?: Record<string, string>,
+): string {
+  const issues =
+    (error as { issues?: { path?: unknown[]; message?: string }[] })?.issues ??
+    [];
   const first = issues[0];
   if (first && fieldMessages) {
     const fieldName = String(first.path?.[0] ?? "");
@@ -23,7 +28,7 @@ function friendlyZodError(error: unknown, fieldMessages?: Record<string, string>
     const fieldName = String(first.path?.[0] ?? "");
     return fieldName
       ? `${fieldName} ${first.message ?? "is invalid"}`
-      : first.message ?? "Validation failed";
+      : (first.message ?? "Validation failed");
   }
   return "Validation failed";
 }
@@ -118,7 +123,11 @@ function seededRandom(seed: string) {
 router.post("/suppliers/find", async (req, res): Promise<void> => {
   const parsed = FindSuppliersBodySchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: friendlyZodError(parsed.error, { productName: "productName is required" }) });
+    res.status(400).json({
+      error: friendlyZodError(parsed.error, {
+        productName: "productName is required",
+      }),
+    });
     return;
   }
   const user = currentUser(req);

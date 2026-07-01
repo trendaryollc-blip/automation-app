@@ -13,10 +13,7 @@ export default defineConfig({
     alias: [
       {
         find: /^@workspace\/db\/test-utils$/,
-        replacement: path.resolve(
-          _dirname,
-          "tests/__mocks__/@workspace_db.ts",
-        ),
+        replacement: path.resolve(_dirname, "tests/__mocks__/@workspace_db.ts"),
       },
       {
         find: /^@workspace\/db\/firestore$/,
@@ -27,17 +24,11 @@ export default defineConfig({
       },
       {
         find: /^@workspace\/db$/,
-        replacement: path.resolve(
-          _dirname,
-          "tests/__mocks__/@workspace_db.ts",
-        ),
+        replacement: path.resolve(_dirname, "tests/__mocks__/@workspace_db.ts"),
       },
       {
         find: /^@workspace\/db\//,
-        replacement: path.resolve(
-          _dirname,
-          "tests/__mocks__/@workspace_db.ts",
-        ),
+        replacement: path.resolve(_dirname, "tests/__mocks__/@workspace_db.ts"),
       },
       {
         find: /^drizzle-orm$/,
