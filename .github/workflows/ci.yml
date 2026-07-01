@@ -43,7 +43,10 @@ jobs:
           CORS_ORIGIN: ${{ secrets.CORS_ORIGIN || '*' }}
 
       - name: Type check
-        run: pnpm run typecheck
+        run: |
+          pnpm --filter @workspace/db run build --if-present
+          pnpm --filter @workspace/api-zod run build --if-present
+          pnpm run typecheck
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
           DB_MODE: postgres
@@ -51,6 +54,18 @@ jobs:
 
       - name: Lint
         run: pnpm run lint
+
+      - name: Unit & integration tests
+        # Tests are a required check for merge.  We run them in the
+        # same job as typecheck/lint so a single status check covers
+        # the three.  Coverage threshold is enforced by the test.yml
+        # workflow; we don't fail the build on coverage here so that
+        # a flake in coverage tooling can't block an otherwise green PR.
+        run: pnpm run test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
+          DB_MODE: postgres
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-jwt-secret-must-be-32-chars-long-please' }}
 
   build:
     name: Build
