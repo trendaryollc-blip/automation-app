@@ -53,15 +53,13 @@ describe("Orders Route", () => {
 
   describe("POST /orders", () => {
     it("creates an order with valid data", async () => {
-      const res = await authedRequest(app)
-        .post("/api/orders")
-        .send({
-          productName: "Widget",
-          customerName: "Bob",
-          sellPrice: 50,
-          costPrice: 20,
-          quantity: 2,
-        });
+      const res = await authedRequest(app).post("/api/orders").send({
+        productName: "Widget",
+        customerName: "Bob",
+        sellPrice: 50,
+        costPrice: 20,
+        quantity: 2,
+      });
       expect(res.status).toBe(201);
       expect(res.body.customerName).toBe("Bob");
     });
