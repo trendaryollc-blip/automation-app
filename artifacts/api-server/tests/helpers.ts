@@ -24,7 +24,7 @@ import {
   resetDb,
   seedTable,
   type FakeUser,
-} from "../../lib/db/src/test-utils";
+} from "@workspace/db/test-utils";
 
 /**
  * A supertest `Test` chain that has the auth cookie pre-set.  Every

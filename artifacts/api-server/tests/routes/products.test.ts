@@ -9,7 +9,7 @@ vi.mock("@workspace/db", () => {
 });
 
 import productsRouter from "../../src/routes/products";
-import { resetDb, seedTable } from "@workspace/db";
+import { resetDb, seedTable } from "@workspace/db/test-utils";
 
 const app = express().use(express.json()).use(productsRouter);
 

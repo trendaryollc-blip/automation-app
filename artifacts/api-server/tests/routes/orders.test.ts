@@ -9,7 +9,7 @@ vi.mock("@workspace/db", () => {
 });
 
 import ordersRouter from "../../src/routes/orders";
-import { resetDb, seedTable } from "@workspace/db";
+import { resetDb, seedTable } from "@workspace/db/test-utils";
 
 function createApp() {
   const app = express();

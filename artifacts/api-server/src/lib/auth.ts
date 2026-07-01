@@ -129,6 +129,20 @@ export function readTokenFromRequest(req: Request): string | null {
   if (cookies && typeof cookies[AUTH_COOKIE_NAME] === "string") {
     return cookies[AUTH_COOKIE_NAME];
   }
+  // 1b) Fall back to parsing the raw `Cookie` header directly so the
+  // helper works in tests where `cookie-parser` middleware is not
+  // wired up.  JWTs are URL-safe (base64url) so no URL decoding is
+  // required; cookie-parser does not decode the value either.
+  const cookieHeader = req.headers.cookie;
+  if (typeof cookieHeader === "string" && cookieHeader.length > 0) {
+    for (const part of cookieHeader.split(";")) {
+      const [rawName, ...rest] = part.split("=");
+      if (rawName && rawName.trim() === AUTH_COOKIE_NAME) {
+        const value = rest.join("=").trim();
+        if (value) return value;
+      }
+    }
+  }
   // 2) Authorization: Bearer <token>
   const auth = req.headers.authorization;
   if (auth && auth.startsWith("Bearer ")) {

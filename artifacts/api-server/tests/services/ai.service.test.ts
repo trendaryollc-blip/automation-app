@@ -1,6 +1,6 @@
 import { test, expect, vi, beforeEach } from "vitest";
 import { hasKey, tryProviders } from "../../src/services/ai";
-import { resetDb, seedTable } from "@workspace/db";
+import { resetDb, seedTable } from "@workspace/db/test-utils";
 
 beforeEach(() => {
   vi.restoreAllMocks();

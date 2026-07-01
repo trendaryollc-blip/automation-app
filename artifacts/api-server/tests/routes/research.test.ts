@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import { authedRequest } from "../helpers";
 import express from "express";
 import researchRouter from "../../src/routes/research";
-import { resetDb, seedTable } from "@workspace/db";
+import { resetDb, seedTable } from "@workspace/db/test-utils";
 
 // Use the in-memory mock DB so auth can find a seeded user.
 vi.mock("@workspace/db", () => {

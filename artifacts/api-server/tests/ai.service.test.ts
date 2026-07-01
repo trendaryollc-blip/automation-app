@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { resetDb, seedTable } from "@workspace/db";
+import { resetDb, seedTable } from "@workspace/db/test-utils";
 // We'll import the real module at runtime using vi.importActual to avoid the test setup mock
 
 describe("AI service unit tests", () => {

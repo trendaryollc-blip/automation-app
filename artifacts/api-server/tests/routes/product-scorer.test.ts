@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import request from "supertest";
 import { authedRequest } from "../helpers";
 import app from "../../src/app";
-import { resetDb } from "@workspace/db";
+import { resetDbseedTable } from "@workspace/db/test-utils";
 
 // Use the in-memory mock DB so auth can find a seeded user.
 vi.mock("@workspace/db", () => {

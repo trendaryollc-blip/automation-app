@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import request from "supertest";
 import app from "../src/app";
-import { resetDb, seedTable } from "@workspace/db";
+import { resetDb, seedTable } from "@workspace/db/test-utils";
 import { makeAuthToken, makeFakeUser } from "@workspace/db/test-utils";
 import { asOwned, authedRequest } from "./helpers";
 
