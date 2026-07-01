@@ -44,8 +44,8 @@ jobs:
 
       - name: Type check
         run: |
-          pnpm --filter @workspace/db run build --if-present
-          pnpm --filter @workspace/api-zod run build --if-present
+          pnpm --filter @workspace/db run --if-present build
+          pnpm --filter @workspace/api-zod run --if-present build
           pnpm run typecheck
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
