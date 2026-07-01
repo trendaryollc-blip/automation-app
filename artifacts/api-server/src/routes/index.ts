@@ -1,5 +1,8 @@
 import { Router, type IRouter } from "express";
+import rateLimit from "express-rate-limit";
 import healthRouter from "./health";
+import authRouter from "./auth";
+import storeWebhooksRouter from "./store-webhooks";
 import productsRouter from "./products";
 import suppliersRouter from "./suppliers";
 import ordersRouter from "./orders";
@@ -22,10 +25,40 @@ import adCampaignsRouter from "./ad-campaigns";
 import storeConnectionsRouter from "./store-connections";
 import aiSettingsRouter from "./ai-settings";
 import fulfillmentRouter from "./fulfillment";
+import { requireAuth } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
+// ---------------------------------------------------------------------------
+// Public endpoints (no auth required).
+// ---------------------------------------------------------------------------
+
+// /healthz is for load balancers and uptime monitors.
 router.use(healthRouter);
+
+// Public webhook receivers authenticate via the X-DropFlow-Key header
+// (api-key), not a user session.  Mounted BEFORE requireAuth so the
+// cookie/session check is bypassed.
+router.use(storeWebhooksRouter);
+
+// /auth/* is the signup/login/logout/me surface.  These are
+// intentionally public; subsequent calls in the same session use
+// the cookie set by these endpoints.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  limit: 30, // 30 / 15min per IP — generous for real users, blocks brute force
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Too many auth attempts, please try again later." },
+});
+router.use("/auth", authLimiter, authRouter);
+
+// ---------------------------------------------------------------------------
+// Authenticated endpoints (require a valid session).
+// ---------------------------------------------------------------------------
+
+router.use(requireAuth);
+
 router.use(productsRouter);
 router.use(supplierFinderRouter);
 router.use(suppliersRouter);

@@ -9,8 +9,7 @@ describe("fulfillment-engine external placement", () => {
 
   it("calls placeCJOrder when store connection is cjdropshipping", async () => {
     const { seedTable } = await import("@workspace/db");
-    seedTable("store_connections", [
-      {
+    seedTable("store_connections", [{ userId: 1,
         id: 1,
         storeName: "CJ Store",
         apiKey: "df_cj",
@@ -18,8 +17,7 @@ describe("fulfillment-engine external placement", () => {
         status: "active",
       },
     ]);
-    seedTable("orders", [
-      {
+    seedTable("orders", [{ userId: 1,
         id: 10,
         orderNumber: "ORD-CJ",
         customerName: "Cust",
@@ -50,8 +48,7 @@ describe("fulfillment-engine external placement", () => {
 
   it("calls placeZendropOrder when store connection is zendrop", async () => {
     const { seedTable } = await import("@workspace/db");
-    seedTable("store_connections", [
-      {
+    seedTable("store_connections", [{ userId: 1,
         id: 2,
         storeName: "Zen Store",
         apiKey: "df_zen",
@@ -59,8 +56,7 @@ describe("fulfillment-engine external placement", () => {
         status: "active",
       },
     ]);
-    seedTable("orders", [
-      {
+    seedTable("orders", [{ userId: 1,
         id: 11,
         orderNumber: "ORD-ZEN",
         customerName: "Cust",

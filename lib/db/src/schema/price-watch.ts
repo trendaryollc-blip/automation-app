@@ -8,9 +8,13 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { usersTable } from "./users";
 
 export const priceWatchTable = pgTable("price_watch", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   url: text("url").notNull(),
   myPrice: numeric("my_price", { precision: 10, scale: 2 }),
@@ -25,6 +29,9 @@ export const priceWatchTable = pgTable("price_watch", {
 
 export const priceSnapshotsTable = pgTable("price_snapshots", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   watchId: integer("watch_id")
     .notNull()
     .references(() => priceWatchTable.id, { onDelete: "cascade" }),

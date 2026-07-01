@@ -8,9 +8,13 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { usersTable } from "./users";
 
 export const returnsTable = pgTable("returns", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   returnNumber: text("return_number").notNull(),
   orderId: integer("order_id"),
   orderNumber: text("order_number"),

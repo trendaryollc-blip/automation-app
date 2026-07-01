@@ -3,9 +3,14 @@
  *
  * Each Drizzle table maps to a Firestore collection with the same name.
  * Documents use auto-generated IDs (or the `id` field from PostgreSQL).
+ *
+ * Every business collection is multi-tenant — the `userId` field on each
+ * document is the only way to scope queries.  The `users` collection
+ * stores account records (one per signup).
  */
 
 export const COLLECTIONS = {
+  USERS: "users",
   PRODUCTS: "products",
   SUPPLIERS: "suppliers",
   ORDERS: "orders",
@@ -19,8 +24,9 @@ export const COLLECTIONS = {
   PRICE_SNAPSHOTS: "price_snapshots",
   PRODUCT_TAGS: "product_tags",
   STORE_CONNECTIONS: "store_connections",
+  SYNC_LOGS: "sync_logs",
   LAUNCHES: "launches",
-  AD_CAMPAIGNS: "ad_campaigns",
+  AD_CAMPAINS: "ad_campaigns",
   AI_SETTINGS: "ai_settings",
   CUSTOMER_INSIGHTS: "customer_insights",
   CASH_FLOW: "cash_flow",
@@ -48,4 +54,16 @@ export function docsToData<T extends Record<string, unknown>>(
   snapshot: FirebaseFirestore.QuerySnapshot,
 ): T[] {
   return snapshot.docs.map((doc) => docToData<T>(doc));
+}
+
+/**
+ * Build a "where userId = X" filter for any business collection.
+ * Use this on every query that targets a tenant.
+ */
+export function userIdFilter(userId: number) {
+  return {
+    field: "userId" as const,
+    operator: "==" as const,
+    value: userId,
+  };
 }

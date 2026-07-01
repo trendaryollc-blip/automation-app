@@ -1,7 +1,8 @@
 {
   "name": "@workspace/scripts",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "hello": "tsx ./src/hello.ts",

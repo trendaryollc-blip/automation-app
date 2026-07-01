@@ -5,6 +5,18 @@ import { resetDb, seedTable } from "@workspace/db";
 describe("AI service unit tests", () => {
   beforeEach(() => {
     resetDb();
+  // Test-only auth setup: seed a default user so requireAuth() accepts
+  // requests.  This pattern is shared by every test in this folder;
+  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+  seedTable("users", [{ userId: 1,
+      id: 1,
+      email: "test@example.com",
+      passwordHash: "x",
+      name: "Test",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ]);
     vi.restoreAllMocks();
   });
 
@@ -25,8 +37,7 @@ describe("AI service unit tests", () => {
 
   it("tryProviders uses groq when groq key exists and returns chat content", async () => {
     // seed ai_settings with groq key
-    seedTable("ai_settings", [
-      { id: 1, provider: "groq", apiKey: "GROQKEY", model: "m1" },
+    seedTable("ai_settings", [{ userId: 1, id: 1, provider: "groq", apiKey: "GROQKEY", model: "m1" },
     ]);
 
     // stub fetch to emulate groq response

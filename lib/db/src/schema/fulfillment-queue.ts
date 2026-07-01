@@ -7,9 +7,13 @@ import {
   timestamp,
   boolean,
 } from "drizzle-orm/pg-core";
+import { usersTable } from "./users";
 
 export const fulfillmentQueueTable = pgTable("fulfillment_queue", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   orderId: integer("order_id").notNull(),
   orderNumber: text("order_number").notNull(),
   customerName: text("customer_name").notNull(),

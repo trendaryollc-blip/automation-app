@@ -4,13 +4,18 @@ import {
   serial,
   timestamp,
   numeric,
+  integer,
   jsonb,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { usersTable } from "./users";
 
 export const supplierFinderTable = pgTable("supplier_finder", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   productName: text("product_name").notNull(),
   targetCostPrice: numeric("target_cost_price", { precision: 10, scale: 2 }),
   preferredCountry: text("preferred_country"),

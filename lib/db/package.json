@@ -1,13 +1,15 @@
 {
   "name": "@workspace/db",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
     "./schema/index.ts": "./src/schema/index.ts",
-    "./firestore": "./src/firestore/index.ts"
+    "./firestore": "./src/firestore/index.ts",
+    "./test-utils": "./src/test-utils.ts"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",
@@ -17,6 +19,7 @@
     "seed:firestore": "tsx src/firestore/seed.ts"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "^0.8.3",
     "firebase-admin": "13.2.0",
@@ -24,6 +27,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "catalog:",
     "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.31.10",

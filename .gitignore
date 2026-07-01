@@ -27,6 +27,11 @@ node_modules
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# Replit
+.replit-artifact/
+.cache/
+.local/
+
 # misc
 /.sass-cache
 /connect.lock
@@ -36,22 +41,21 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+test-results/
 
 # System Files
 .DS_Store
 Thumbs.db
 
+# Cursor / Copilot instruction files
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
-
-# Replit
-.cache/
-.local/
 
 # Environment files
 .env
 .env.local
 .env.production
+.env.*.local
 
 # Firebase service account
 firebase-service-account.json
@@ -68,3 +72,21 @@ firebase-service-account.json
 # OS
 .DS_Store
 Thumbs.db
+
+# ---------------------------------------------------------------------------
+# Project-specific: temp / debug artifacts that should never be committed.
+# These were accidentally added to the repository at the project root
+# during initial development.  Keeping them out prevents deploys and CI
+# runs from picking up stale state.
+# ---------------------------------------------------------------------------
+
+# Throwaway log/output files written by `node ... > temp-*.txt`
+temp-*.log
+temp-*.txt
+temp-*.out
+temp-*.err
+
+# One-off debugging entry points
+debug-*.mjs
+debug-*.ts
+debug-*.js

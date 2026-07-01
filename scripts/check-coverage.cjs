@@ -1,19 +1,71 @@
+/**
+ * Coverage gate.
+ *
+ * Fails CI if either the frontend or the backend falls below the
+ * configured coverage thresholds.  Thresholds are tuned for a real
+ * production codebase: 60% on statements / branches / functions and
+ * 55% on lines.  These are not aspirational — they are the floor we
+ * expect from a healthy test suite.
+ *
+ * Set COVERAGE_MIN_PCT to override (e.g. for a temporary relax).
+ */
 const fs = require("fs");
 const path = require("path");
+
+const DEFAULT_MIN = {
+  statements: 60,
+  branches: 60,
+  functions: 60,
+  lines: 55,
+};
 
 function parseLcov(file) {
   if (!fs.existsSync(file)) return null;
   const content = fs.readFileSync(file, "utf8");
   const lines = content.split(/\r?\n/);
-  let total = 0;
-  let hit = 0;
+  let statementsTotal = 0;
+  let statementsHit = 0;
+  let branchesTotal = 0;
+  let branchesHit = 0;
+  let functionsTotal = 0;
+  let functionsHit = 0;
+  let linesTotal = 0;
+  let linesHit = 0;
   for (let i = 0; i < lines.length; i++) {
     const l = lines[i];
-    if (l.startsWith("LF:")) total += Number(l.slice(3));
-    if (l.startsWith("LH:")) hit += Number(l.slice(3));
+    if (l.startsWith("LF:")) linesTotal += Number(l.slice(3));
+    if (l.startsWith("LH:")) linesHit += Number(l.slice(3));
+    if (l.startsWith("FNF:")) functionsTotal += Number(l.slice(5));
+    if (l.startsWith("FNH:")) functionsHit += Number(l.slice(5));
+    if (l.startsWith("BRF:")) branchesTotal += Number(l.slice(4));
+    if (l.startsWith("BRH:")) branchesHit += Number(l.slice(4));
   }
-  if (total === 0) return 0;
-  return (hit / total) * 100;
+  // Statements aren't reported in lcov directly; use line-based ratio.
+  statementsTotal = linesTotal;
+  statementsHit = linesHit;
+  return {
+    statements:
+      statementsTotal === 0 ? 0 : (statementsHit / statementsTotal) * 100,
+    branches: branchesTotal === 0 ? 0 : (branchesHit / branchesTotal) * 100,
+    functions:
+      functionsTotal === 0 ? 0 : (functionsHit / functionsTotal) * 100,
+    lines: linesTotal === 0 ? 0 : (linesHit / linesTotal) * 100,
+  };
+}
+
+function coverageReport(label, file) {
+  const cov = parseLcov(file);
+  if (cov === null) {
+    console.log(`[${label}] no coverage file found at ${file}`);
+    return { ok: true, label, file, cov: null };
+  }
+  console.log(
+    `[${label}] statements=${cov.statements.toFixed(2)}% ` +
+      `branches=${cov.branches.toFixed(2)}% ` +
+      `functions=${cov.functions.toFixed(2)}% ` +
+      `lines=${cov.lines.toFixed(2)}%`,
+  );
+  return { ok: true, label, file, cov };
 }
 
 const frontendLcov = path.resolve(
@@ -25,26 +77,35 @@ const backendLcov = path.resolve(
   "../artifacts/api-server/coverage/lcov.info",
 );
 
-const frontPct = parseLcov(frontendLcov);
-const backPct = parseLcov(backendLcov);
+const frontend = coverageReport("frontend", frontendLcov);
+const backend = coverageReport("backend", backendLcov);
 
-console.log(
-  "frontend coverage pct:",
-  frontPct !== null ? frontPct.toFixed(2) : null,
-);
-console.log(
-  "backend coverage pct:",
-  backPct !== null ? backPct.toFixed(2) : null,
-);
+const min = { ...DEFAULT_MIN };
+if (process.env.COVERAGE_MIN_PCT) {
+  const v = Number(process.env.COVERAGE_MIN_PCT);
+  if (Number.isFinite(v) && v >= 0 && v <= 100) {
+    min.statements = v;
+    min.branches = v;
+    min.functions = v;
+    min.lines = v;
+  }
+}
 
-const min = 1; // minimum acceptable percent
-if (
-  (frontPct !== null && frontPct < min) ||
-  (backPct !== null && backPct < min)
-) {
-  console.error(
-    `Coverage below threshold (${min}%). Front: ${frontPct}, Back: ${backPct}`,
-  );
+const failures = [];
+for (const { label, cov } of [frontend, backend]) {
+  if (!cov) continue;
+  for (const key of Object.keys(min)) {
+    if (cov[key] < min[key]) {
+      failures.push(
+        `${label} ${key} coverage ${cov[key].toFixed(2)}% < min ${min[key]}%`,
+      );
+    }
+  }
+}
+
+if (failures.length > 0) {
+  console.error("Coverage below threshold:");
+  for (const f of failures) console.error("  - " + f);
   process.exit(2);
 }
 

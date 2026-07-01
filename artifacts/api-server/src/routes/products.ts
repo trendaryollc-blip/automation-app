@@ -1,83 +1,128 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, type SQL } from "drizzle-orm";
+import { z } from "zod/v4";
 import { db, productsTable } from "@workspace/db";
-import {
-  ListProductsQueryParams,
-  CreateProductBody,
-  GetProductParams,
-  UpdateProductParams,
-  UpdateProductBody,
-  DeleteProductParams,
-  GenerateProductDescriptionParams,
-} from "@workspace/api-zod";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
+// ---------------------------------------------------------------------------
+// Local Zod schemas (used for CSV import rows and for routes that don't yet
+// have a generated OpenAPI body schema in @workspace/api-zod).
+// ---------------------------------------------------------------------------
+
+const ProductStatusEnum = z.enum([
+  "hunting",
+  "sourcing",
+  "sampled",
+  "listed",
+  "paused",
+  "archived",
+]);
+
+const ListProductsQuerySchema = z.object({
+  status: ProductStatusEnum.optional(),
+});
+
+const CreateProductBodySchema = z.object({
+  name: z.string().min(1).max(200),
+  category: z.string().max(80).nullish(),
+  niche: z.string().max(80).nullish(),
+  status: ProductStatusEnum.optional(),
+  costPrice: z.number().nonnegative().nullish(),
+  sellPrice: z.number().nonnegative().nullish(),
+  description: z.string().max(8000).nullish(),
+  aiDescription: z.string().max(8000).nullish(),
+  imageUrl: z.string().url().max(2000).nullish(),
+  sourceUrl: z.string().url().max(2000).nullish(),
+  notes: z.string().max(4000).nullish(),
+  supplierId: z.number().int().positive().nullish(),
+  stockQuantity: z.number().int().nonnegative().nullish(),
+  stockThreshold: z.number().int().nonnegative().nullish(),
+});
+
+const UpdateProductBodySchema = CreateProductBodySchema.partial();
+
+const ImportRowSchema = z.object({
+  name: z.string().min(1),
+  category: z.string().nullish(),
+  niche: z.string().nullish(),
+  status: ProductStatusEnum.optional(),
+  costPrice: z.union([z.number(), z.string()]).nullish(),
+  sellPrice: z.union([z.number(), z.string()]).nullish(),
+  description: z.string().nullish(),
+  sourceUrl: z.string().nullish(),
+  stockQuantity: z.union([z.number(), z.string()]).nullish(),
+  stockThreshold: z.union([z.number(), z.string()]).nullish(),
+  notes: z.string().nullish(),
+});
+
+const ImportBodySchema = z.object({
+  rows: z.array(ImportRowSchema).min(1).max(10_000),
+});
+
+const IdParamSchema = z.object({ id: z.coerce.number().int().positive() });
+
+const formatProduct = (p: typeof productsTable.$inferSelect) => ({
+  ...p,
+  costPrice: p.costPrice != null ? Number(p.costPrice) : null,
+  sellPrice: p.sellPrice != null ? Number(p.sellPrice) : null,
+  margin:
+    p.costPrice != null && p.sellPrice != null && Number(p.sellPrice) > 0
+      ? Math.round(
+          ((Number(p.sellPrice) - Number(p.costPrice)) / Number(p.sellPrice)) *
+            100,
+        )
+      : null,
+  createdAt: p.createdAt.toISOString(),
+  updatedAt: p.updatedAt.toISOString(),
+});
+
 router.get("/products", async (req, res): Promise<void> => {
-  const parsed = ListProductsQueryParams.safeParse(req.query);
+  const parsed = ListProductsQuerySchema.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  let query = db.select().from(productsTable).$dynamic();
+  const user = currentUser(req);
+  const filters: SQL[] = [eq(productsTable.userId, user.id)];
   if (parsed.data.status) {
-    query = query.where(eq(productsTable.status, parsed.data.status));
+    filters.push(eq(productsTable.status, parsed.data.status));
   }
-  const products = await query.orderBy(desc(productsTable.createdAt));
-  const result = products.map((p) => ({
-    ...p,
-    costPrice: p.costPrice != null ? Number(p.costPrice) : null,
-    sellPrice: p.sellPrice != null ? Number(p.sellPrice) : null,
-    margin:
-      p.costPrice != null && p.sellPrice != null && Number(p.sellPrice) > 0
-        ? Math.round(
-            ((Number(p.sellPrice) - Number(p.costPrice)) /
-              Number(p.sellPrice)) *
-              100,
-          )
-        : null,
-    createdAt: p.createdAt.toISOString(),
-    updatedAt: p.updatedAt.toISOString(),
-  }));
-  res.json(result);
+  const products = await db
+    .select()
+    .from(productsTable)
+    .where(and(...filters))
+    .orderBy(desc(productsTable.createdAt));
+  res.json(products.map(formatProduct));
 });
 
 router.post("/products", async (req, res): Promise<void> => {
-  const parsed = CreateProductBody.safeParse(req.body);
+  const parsed = CreateProductBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const user = currentUser(req);
   const { costPrice, sellPrice, ...rest } = parsed.data;
   const [product] = await db
     .insert(productsTable)
     .values({
       ...rest,
+      userId: user.id,
       costPrice: costPrice != null ? String(costPrice) : undefined,
       sellPrice: sellPrice != null ? String(sellPrice) : undefined,
     })
     .returning();
-  res.status(201).json({
-    ...product,
-    costPrice: product.costPrice != null ? Number(product.costPrice) : null,
-    sellPrice: product.sellPrice != null ? Number(product.sellPrice) : null,
-    margin:
-      product.costPrice != null &&
-      product.sellPrice != null &&
-      Number(product.sellPrice) > 0
-        ? Math.round(
-            ((Number(product.sellPrice) - Number(product.costPrice)) /
-              Number(product.sellPrice)) *
-              100,
-          )
-        : null,
-    createdAt: product.createdAt.toISOString(),
-    updatedAt: product.updatedAt.toISOString(),
-  });
+  res.status(201).json(formatProduct(product));
 });
 
-router.get("/products/stock-alerts", async (_req, res): Promise<void> => {
-  const products = await db.select().from(productsTable);
+router.get("/products/stock-alerts", async (req, res): Promise<void> => {
+  const user = currentUser(req);
+  const products = await db
+    .select()
+    .from(productsTable)
+    .where(eq(productsTable.userId, user.id));
 
   const alerts = products
     .filter(
@@ -99,11 +144,17 @@ router.get("/products/stock-alerts", async (_req, res): Promise<void> => {
   res.json(alerts);
 });
 
-router.get("/products/trending", async (_req, res): Promise<void> => {
+router.get("/products/trending", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const products = await db
     .select()
     .from(productsTable)
-    .where(eq(productsTable.status, "listed"))
+    .where(
+      and(
+        eq(productsTable.userId, user.id),
+        eq(productsTable.status, "listed"),
+      ),
+    )
     .orderBy(desc(productsTable.sellPrice))
     .limit(10);
   const result = products
@@ -128,49 +179,37 @@ router.get("/products/trending", async (_req, res): Promise<void> => {
 });
 
 router.get("/products/:id", async (req, res): Promise<void> => {
-  const params = GetProductParams.safeParse(req.params);
+  const params = IdParamSchema.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
+  const user = currentUser(req);
   const [product] = await db
     .select()
     .from(productsTable)
-    .where(eq(productsTable.id, params.data.id));
+    .where(
+      and(eq(productsTable.id, params.data.id), eq(productsTable.userId, user.id)),
+    );
   if (!product) {
     res.status(404).json({ error: "Product not found" });
     return;
   }
-  res.json({
-    ...product,
-    costPrice: product.costPrice != null ? Number(product.costPrice) : null,
-    sellPrice: product.sellPrice != null ? Number(product.sellPrice) : null,
-    margin:
-      product.costPrice != null &&
-      product.sellPrice != null &&
-      Number(product.sellPrice) > 0
-        ? Math.round(
-            ((Number(product.sellPrice) - Number(product.costPrice)) /
-              Number(product.sellPrice)) *
-              100,
-          )
-        : null,
-    createdAt: product.createdAt.toISOString(),
-    updatedAt: product.updatedAt.toISOString(),
-  });
+  res.json(formatProduct(product));
 });
 
 router.patch("/products/:id", async (req, res): Promise<void> => {
-  const params = UpdateProductParams.safeParse(req.params);
+  const params = IdParamSchema.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const parsed = UpdateProductBody.safeParse(req.body);
+  const parsed = UpdateProductBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const user = currentUser(req);
   const { costPrice, sellPrice, ...rest } = parsed.data;
   const updateData: Record<string, unknown> = { ...rest };
   if (costPrice !== undefined)
@@ -181,40 +220,29 @@ router.patch("/products/:id", async (req, res): Promise<void> => {
   const [product] = await db
     .update(productsTable)
     .set(updateData)
-    .where(eq(productsTable.id, params.data.id))
+    .where(
+      and(eq(productsTable.id, params.data.id), eq(productsTable.userId, user.id)),
+    )
     .returning();
   if (!product) {
     res.status(404).json({ error: "Product not found" });
     return;
   }
-  res.json({
-    ...product,
-    costPrice: product.costPrice != null ? Number(product.costPrice) : null,
-    sellPrice: product.sellPrice != null ? Number(product.sellPrice) : null,
-    margin:
-      product.costPrice != null &&
-      product.sellPrice != null &&
-      Number(product.sellPrice) > 0
-        ? Math.round(
-            ((Number(product.sellPrice) - Number(product.costPrice)) /
-              Number(product.sellPrice)) *
-              100,
-          )
-        : null,
-    createdAt: product.createdAt.toISOString(),
-    updatedAt: product.updatedAt.toISOString(),
-  });
+  res.json(formatProduct(product));
 });
 
 router.delete("/products/:id", async (req, res): Promise<void> => {
-  const params = DeleteProductParams.safeParse(req.params);
+  const params = IdParamSchema.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
+  const user = currentUser(req);
   const [product] = await db
     .delete(productsTable)
-    .where(eq(productsTable.id, params.data.id))
+    .where(
+      and(eq(productsTable.id, params.data.id), eq(productsTable.userId, user.id)),
+    )
     .returning();
   if (!product) {
     res.status(404).json({ error: "Product not found" });
@@ -224,20 +252,18 @@ router.delete("/products/:id", async (req, res): Promise<void> => {
 });
 
 router.post("/products/import", async (req, res): Promise<void> => {
-  const { rows } = req.body as { rows: Record<string, unknown>[] };
-  if (!Array.isArray(rows) || rows.length === 0) {
-    res.status(400).json({ error: "rows must be a non-empty array" });
+  const parsed = ImportBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const user = currentUser(req);
+  const { rows } = parsed.data;
   const imported: number[] = [];
   const errors: { row: number; error: string }[] = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!row.name || typeof row.name !== "string") {
-      errors.push({ row: i + 1, error: "Missing required field: name" });
-      continue;
-    }
     try {
       const costPrice =
         row.costPrice != null && row.costPrice !== ""
@@ -250,24 +276,26 @@ router.post("/products/import", async (req, res): Promise<void> => {
       const [product] = await db
         .insert(productsTable)
         .values({
-          name: String(row.name),
-          category: row.category ? String(row.category) : undefined,
-          niche: row.niche ? String(row.niche) : undefined,
-          status: (row.status as any) || "hunting",
+          userId: user.id,
+          name: row.name,
+          category: row.category ?? undefined,
+          niche: row.niche ?? undefined,
+          status: row.status ?? "hunting",
           costPrice,
           sellPrice,
-          description: row.description ? String(row.description) : undefined,
-          sourceUrl: row.sourceUrl ? String(row.sourceUrl) : undefined,
+          description: row.description ?? undefined,
+          sourceUrl: row.sourceUrl ?? undefined,
           stockQuantity:
             row.stockQuantity != null ? Number(row.stockQuantity) : undefined,
           stockThreshold:
             row.stockThreshold != null ? Number(row.stockThreshold) : undefined,
-          notes: row.notes ? String(row.notes) : undefined,
+          notes: row.notes ?? undefined,
         })
         .returning();
       imported.push(product.id);
-    } catch (e: any) {
-      errors.push({ row: i + 1, error: e.message ?? "Insert failed" });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Insert failed";
+      errors.push({ row: i + 1, error: msg });
     }
   }
 
@@ -277,15 +305,21 @@ router.post("/products/import", async (req, res): Promise<void> => {
 router.post(
   "/products/:id/generate-description",
   async (req, res): Promise<void> => {
-    const params = GenerateProductDescriptionParams.safeParse(req.params);
+    const params = IdParamSchema.safeParse(req.params);
     if (!params.success) {
       res.status(400).json({ error: params.error.message });
       return;
     }
+    const user = currentUser(req);
     const [product] = await db
       .select()
       .from(productsTable)
-      .where(eq(productsTable.id, params.data.id));
+      .where(
+        and(
+          eq(productsTable.id, params.data.id),
+          eq(productsTable.userId, user.id),
+        ),
+      );
     if (!product) {
       res.status(404).json({ error: "Product not found" });
       return;
@@ -318,26 +352,15 @@ router.post(
     const [updated] = await db
       .update(productsTable)
       .set({ aiDescription })
-      .where(eq(productsTable.id, params.data.id))
+      .where(
+        and(
+          eq(productsTable.id, params.data.id),
+          eq(productsTable.userId, user.id),
+        ),
+      )
       .returning();
 
-    res.json({
-      ...updated,
-      costPrice: updated.costPrice != null ? Number(updated.costPrice) : null,
-      sellPrice: updated.sellPrice != null ? Number(updated.sellPrice) : null,
-      margin:
-        updated.costPrice != null &&
-        updated.sellPrice != null &&
-        Number(updated.sellPrice) > 0
-          ? Math.round(
-              ((Number(updated.sellPrice) - Number(updated.costPrice)) /
-                Number(updated.sellPrice)) *
-                100,
-            )
-          : null,
-      createdAt: updated.createdAt.toISOString(),
-      updatedAt: updated.updatedAt.toISOString(),
-    });
+    res.json(formatProduct(updated));
   },
 );
 

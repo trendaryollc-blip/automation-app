@@ -1,24 +1,36 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
+import { authedRequest } from "./helpers";
 import app from "../src/app";
 import { resetDb, seedTable, getTableData } from "@workspace/db";
 
 describe("Fulfillment routes", () => {
   beforeEach(() => {
     resetDb();
+  // Test-only auth setup: seed a default user so requireAuth() accepts
+  // requests.  This pattern is shared by every test in this folder;
+  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+  seedTable("users", [{ userId: 1,
+      id: 1,
+      email: "test@example.com",
+      passwordHash: "x",
+      name: "Test",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ]);
   });
 
   it("returns 400 when manual fulfillment missing orderId", async () => {
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.post("/api/fulfillment/manual").send({});
     expect(res.status).toBe(400);
     expect(res.body.error).toBe("orderId required");
   });
 
   it("creates a fulfillment queue item via manual endpoint", async () => {
-    const api = request(app);
-    const [order] = seedTable("orders", [
-      {
+    const api = authedRequest(app);
+    const [order] = seedTable("orders", [{ userId: 1,
         id: 200,
         orderNumber: "O200",
         customerName: "Alice",
@@ -42,14 +54,12 @@ describe("Fulfillment routes", () => {
   });
 
   it("approves and rejects fulfillment items", async () => {
-    const api = request(app);
+    const api = authedRequest(app);
 
     // Seed an order and a queue item
-    seedTable("orders", [
-      { id: 300, orderNumber: "O300", customerName: "Bob", status: "new" },
+    seedTable("orders", [{ userId: 1, id: 300, orderNumber: "O300", customerName: "Bob", status: "new" },
     ]);
-    const [q] = seedTable("fulfillment_queue", [
-      {
+    const [q] = seedTable("fulfillment_queue", [{ userId: 1,
         id: 400,
         orderId: 300,
         orderNumber: "O300",
@@ -74,8 +84,7 @@ describe("Fulfillment routes", () => {
     expect(queueAfter.length).toBeGreaterThanOrEqual(1);
 
     // Seed and reject another item
-    const [q2] = seedTable("fulfillment_queue", [
-      {
+    const [q2] = seedTable("fulfillment_queue", [{ userId: 1,
         id: 401,
         orderId: 301,
         orderNumber: "O301",
@@ -90,9 +99,8 @@ describe("Fulfillment routes", () => {
   });
 
   it("returns queue and stats", async () => {
-    const api = request(app);
-    seedTable("fulfillment_queue", [
-      { id: 500, status: "pending_approval", sellPrice: "10", quantity: 1 },
+    const api = authedRequest(app);
+    seedTable("fulfillment_queue", [{ userId: 1, id: 500, status: "pending_approval", sellPrice: "10", quantity: 1 },
       {
         id: 501,
         status: "approved",

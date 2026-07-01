@@ -39,12 +39,15 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
           DB_MODE: postgres
           NODE_ENV: production
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-jwt-secret-must-be-32-chars-long-please' }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN || '*' }}
 
       - name: Type check
         run: pnpm run typecheck
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
           DB_MODE: postgres
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-jwt-secret-must-be-32-chars-long-please' }}
 
       - name: Lint
         run: pnpm run lint
@@ -77,6 +80,8 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://localhost:5432/dropflow' }}
           DB_MODE: postgres
           NODE_ENV: production
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-jwt-secret-must-be-32-chars-long-please' }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN || '*' }}
 
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v4

@@ -1,9 +1,13 @@
 import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { usersTable } from "./users";
 
 export const storeConnectionsTable = pgTable("store_connections", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   storeName: text("store_name").notNull(),
   storeUrl: text("store_url"),
   platform: text("platform").notNull().default("custom"),
@@ -25,6 +29,9 @@ export const storeConnectionsTable = pgTable("store_connections", {
 
 export const syncLogsTable = pgTable("sync_logs", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   storeConnectionId: integer("store_connection_id").notNull(),
   event: text("event").notNull(),
   status: text("status").notNull().default("success"),

@@ -1,24 +1,95 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, inArray, sql } from "drizzle-orm";
+import { eq, desc, inArray, sql, and, type SQL } from "drizzle-orm";
+import { z } from "zod/v4";
+import crypto from "node:crypto";
 import {
   db,
   ordersTable,
   productsTable,
   orderTimelineTable,
 } from "@workspace/db";
-import {
-  ListOrdersQueryParams,
-  CreateOrderBody,
-  GetOrderParams,
-  UpdateOrderParams,
-  UpdateOrderBody,
-  DeleteOrderParams,
-  BulkUpdateOrdersBody,
-} from "@workspace/api-zod";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
-let orderCounter = 1000;
+// ---------------------------------------------------------------------------
+// Local Zod schemas
+// ---------------------------------------------------------------------------
+
+const OrderStatusEnum = z.enum([
+  "pending",
+  "processing",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "refunded",
+  "returned",
+]);
+
+const ListOrdersQuerySchema = z.object({
+  status: OrderStatusEnum.optional(),
+});
+
+const CreateOrderBodySchema = z.object({
+  orderNumber: z.string().max(80).nullish(),
+  productId: z.number().int().positive().nullish(),
+  productName: z.string().max(200).nullish(),
+  supplierId: z.number().int().positive().nullish(),
+  supplierName: z.string().max(200).nullish(),
+  customerName: z.string().min(1).max(200),
+  customerEmail: z.string().email().max(254).nullish(),
+  quantity: z.number().int().positive().default(1),
+  costPrice: z.number().nonnegative().nullish(),
+  sellPrice: z.number().nonnegative().nullish(),
+  status: OrderStatusEnum.optional(),
+  trackingNumber: z.string().max(200).nullish(),
+  shippingAddress: z.string().max(2000).nullish(),
+  placedAt: z.union([z.string(), z.date()]).nullish(),
+});
+
+const UpdateOrderBodySchema = CreateOrderBodySchema.partial();
+
+const BulkUpdateBodySchema = z.object({
+  orderIds: z.array(z.number().int().positive()).min(1).max(1000),
+  status: OrderStatusEnum.optional(),
+  trackingNumber: z.string().max(200).optional(),
+});
+
+const IdParamSchema = z.object({ id: z.coerce.number().int().positive() });
+
+const ImportRowSchema = z.object({
+  orderNumber: z.string().nullish(),
+  productName: z.string().min(1),
+  customerName: z.string().nullish(),
+  customerEmail: z.string().nullish(),
+  quantity: z.union([z.number(), z.string()]).nullish(),
+  status: OrderStatusEnum.optional(),
+  costPrice: z.union([z.number(), z.string()]).nullish(),
+  sellPrice: z.union([z.number(), z.string()]).nullish(),
+  trackingNumber: z.string().nullish(),
+  supplierName: z.string().nullish(),
+});
+
+const ImportBodySchema = z.object({
+  rows: z.array(ImportRowSchema).min(1).max(10_000),
+});
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a collision-resistant order number.
+ *
+ * Format: `DF-<8 hex timestamp>-<4 hex random>`.  This is process-local
+ * and never collides across cold starts; the database's UNIQUE
+ * constraint on `order_number` is the final source of truth.
+ */
+function generateOrderNumber(): string {
+  const ts = Date.now().toString(16).padStart(8, "0").toUpperCase();
+  const rand = crypto.randomBytes(2).toString("hex").toUpperCase();
+  return `DF-${ts}-${rand}`;
+}
 
 const formatOrder = (o: typeof ordersTable.$inferSelect) => ({
   ...o,
@@ -30,8 +101,12 @@ const formatOrder = (o: typeof ordersTable.$inferSelect) => ({
   placedAt: o.placedAt != null ? o.placedAt.toISOString() : null,
 });
 
+// ---------------------------------------------------------------------------
+// Routes
+// ---------------------------------------------------------------------------
+
 router.post("/orders/bulk-update", async (req, res): Promise<void> => {
-  const parsed = BulkUpdateOrdersBody.safeParse(req.body);
+  const parsed = BulkUpdateBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
@@ -43,6 +118,7 @@ router.post("/orders/bulk-update", async (req, res): Promise<void> => {
     });
     return;
   }
+  const user = currentUser(req);
 
   // Fetch existing orders before updating (for stock decrement logic)
   const existingOrders =
@@ -50,7 +126,12 @@ router.post("/orders/bulk-update", async (req, res): Promise<void> => {
       ? await db
           .select()
           .from(ordersTable)
-          .where(inArray(ordersTable.id, orderIds))
+          .where(
+            and(
+              inArray(ordersTable.id, orderIds),
+              eq(ordersTable.userId, user.id),
+            ),
+          )
       : [];
 
   const updateData: Record<string, unknown> = {};
@@ -60,7 +141,9 @@ router.post("/orders/bulk-update", async (req, res): Promise<void> => {
   const updated = await db
     .update(ordersTable)
     .set(updateData)
-    .where(inArray(ordersTable.id, orderIds))
+    .where(
+      and(inArray(ordersTable.id, orderIds), eq(ordersTable.userId, user.id)),
+    )
     .returning();
 
   // Auto-decrement stock for orders newly transitioned to "delivered"
@@ -74,7 +157,12 @@ router.post("/orders/bulk-update", async (req, res): Promise<void> => {
         .set({
           stockQuantity: sql`GREATEST(0, COALESCE(stock_quantity, 0) - ${o.quantity})`,
         })
-        .where(eq(productsTable.id, o.productId!));
+        .where(
+          and(
+            eq(productsTable.id, o.productId!),
+            eq(productsTable.userId, user.id),
+          ),
+        );
     }
   }
 
@@ -85,20 +173,18 @@ router.post("/orders/bulk-update", async (req, res): Promise<void> => {
 });
 
 router.post("/orders/import", async (req, res): Promise<void> => {
-  const { rows } = req.body as { rows: Record<string, unknown>[] };
-  if (!Array.isArray(rows) || rows.length === 0) {
-    res.status(400).json({ error: "rows must be a non-empty array" });
+  const parsed = ImportBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const user = currentUser(req);
+  const { rows } = parsed.data;
   const imported: number[] = [];
   const errors: { row: number; error: string }[] = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!row.productName || typeof row.productName !== "string") {
-      errors.push({ row: i + 1, error: "Missing required field: productName" });
-      continue;
-    }
     try {
       const costPrice =
         row.costPrice != null && row.costPrice !== ""
@@ -112,30 +198,28 @@ router.post("/orders/import", async (req, res): Promise<void> => {
       const profit =
         costPrice != null && sellPrice != null
           ? String((sellPrice - costPrice) * qty)
-          : undefined;
+          : null;
       const [order] = await db
         .insert(ordersTable)
         .values({
-          orderNumber: row.orderNumber
-            ? String(row.orderNumber)
-            : `DF-${Date.now()}-${i}`,
-          productName: String(row.productName),
+          userId: user.id,
+          orderNumber: row.orderNumber ? String(row.orderNumber) : generateOrderNumber(),
+          productName: row.productName,
           customerName: row.customerName ? String(row.customerName) : "Unknown",
           customerEmail: row.customerEmail ? String(row.customerEmail) : null,
           quantity: qty,
-          status: (row.status as any) || "pending",
+          status: row.status ?? "pending",
           costPrice: costPrice != null ? String(costPrice) : null,
           sellPrice: sellPrice != null ? String(sellPrice) : null,
-          profit: profit ?? null,
-          trackingNumber: row.trackingNumber
-            ? String(row.trackingNumber)
-            : null,
+          profit,
+          trackingNumber: row.trackingNumber ? String(row.trackingNumber) : null,
           supplierName: row.supplierName ? String(row.supplierName) : null,
         })
         .returning();
       imported.push(order.id);
-    } catch (e: any) {
-      errors.push({ row: i + 1, error: e.message ?? "Insert failed" });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Insert failed";
+      errors.push({ row: i + 1, error: msg });
     }
   }
 
@@ -143,45 +227,53 @@ router.post("/orders/import", async (req, res): Promise<void> => {
 });
 
 router.get("/orders", async (req, res): Promise<void> => {
-  const parsed = ListOrdersQueryParams.safeParse(req.query);
+  const parsed = ListOrdersQuerySchema.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  let query = db.select().from(ordersTable).$dynamic();
+  const user = currentUser(req);
+  const filters: SQL[] = [eq(ordersTable.userId, user.id)];
   if (parsed.data.status) {
-    query = query.where(eq(ordersTable.status, parsed.data.status));
+    filters.push(eq(ordersTable.status, parsed.data.status));
   }
-  const orders = await query.orderBy(desc(ordersTable.createdAt));
+  const orders = await db
+    .select()
+    .from(ordersTable)
+    .where(and(...filters))
+    .orderBy(desc(ordersTable.createdAt));
   res.json(orders.map(formatOrder));
 });
 
 router.post("/orders", async (req, res): Promise<void> => {
-  const parsed = CreateOrderBody.safeParse(req.body);
+  const parsed = CreateOrderBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  orderCounter++;
-  const { costPrice, sellPrice, ...rest } = parsed.data;
+  const user = currentUser(req);
+  const { costPrice, sellPrice, placedAt, ...rest } = parsed.data;
   const cost = costPrice != null ? Number(costPrice) : null;
   const sell = sellPrice != null ? Number(sellPrice) : null;
   const profit =
     cost != null && sell != null ? (sell - cost) * (rest.quantity ?? 1) : null;
-  const orderNumber = rest.orderNumber ?? `DF-${Date.now()}`;
+  const orderNumber = rest.orderNumber ?? generateOrderNumber();
   const [order] = await db
     .insert(ordersTable)
     .values({
       ...rest,
+      userId: user.id,
       orderNumber,
       costPrice: cost != null ? String(cost) : undefined,
       sellPrice: sell != null ? String(sell) : undefined,
       profit: profit != null ? String(profit) : undefined,
+      placedAt: placedAt ? new Date(placedAt) : undefined,
     })
     .returning();
 
   // Log creation event in timeline
   await db.insert(orderTimelineTable).values({
+    userId: user.id,
     orderId: order.id,
     event: "Order created",
     toStatus: order.status,
@@ -191,15 +283,18 @@ router.post("/orders", async (req, res): Promise<void> => {
 });
 
 router.get("/orders/:id", async (req, res): Promise<void> => {
-  const params = GetOrderParams.safeParse(req.params);
+  const params = IdParamSchema.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
+  const user = currentUser(req);
   const [order] = await db
     .select()
     .from(ordersTable)
-    .where(eq(ordersTable.id, params.data.id));
+    .where(
+      and(eq(ordersTable.id, params.data.id), eq(ordersTable.userId, user.id)),
+    );
   if (!order) {
     res.status(404).json({ error: "Order not found" });
     return;
@@ -208,16 +303,17 @@ router.get("/orders/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/orders/:id", async (req, res): Promise<void> => {
-  const params = UpdateOrderParams.safeParse(req.params);
+  const params = IdParamSchema.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const parsed = UpdateOrderBody.safeParse(req.body);
+  const parsed = UpdateOrderBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const user = currentUser(req);
   const { costPrice, sellPrice, placedAt, ...rest } = parsed.data;
   const updateData: Record<string, unknown> = { ...rest };
   if (costPrice !== undefined)
@@ -230,7 +326,9 @@ router.patch("/orders/:id", async (req, res): Promise<void> => {
   const existing = await db
     .select()
     .from(ordersTable)
-    .where(eq(ordersTable.id, params.data.id));
+    .where(
+      and(eq(ordersTable.id, params.data.id), eq(ordersTable.userId, user.id)),
+    );
   if (!existing[0]) {
     res.status(404).json({ error: "Order not found" });
     return;
@@ -262,7 +360,9 @@ router.patch("/orders/:id", async (req, res): Promise<void> => {
   const [order] = await db
     .update(ordersTable)
     .set(updateData)
-    .where(eq(ordersTable.id, params.data.id))
+    .where(
+      and(eq(ordersTable.id, params.data.id), eq(ordersTable.userId, user.id)),
+    )
     .returning();
 
   // Auto-decrement stock when an order transitions to "delivered"
@@ -276,12 +376,18 @@ router.patch("/orders/:id", async (req, res): Promise<void> => {
       .set({
         stockQuantity: sql`GREATEST(0, COALESCE(stock_quantity, 0) - ${order.quantity})`,
       })
-      .where(eq(productsTable.id, order.productId));
+      .where(
+        and(
+          eq(productsTable.id, order.productId),
+          eq(productsTable.userId, user.id),
+        ),
+      );
   }
 
   // Auto-log timeline event on status change
   if (rest.status && rest.status !== existing[0].status) {
     await db.insert(orderTimelineTable).values({
+      userId: user.id,
       orderId: order.id,
       event: `Status changed to ${rest.status}`,
       fromStatus: existing[0].status,
@@ -293,14 +399,17 @@ router.patch("/orders/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/orders/:id", async (req, res): Promise<void> => {
-  const params = DeleteOrderParams.safeParse(req.params);
+  const params = IdParamSchema.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
+  const user = currentUser(req);
   const [order] = await db
     .delete(ordersTable)
-    .where(eq(ordersTable.id, params.data.id))
+    .where(
+      and(eq(ordersTable.id, params.data.id), eq(ordersTable.userId, user.id)),
+    )
     .returning();
   if (!order) {
     res.status(404).json({ error: "Order not found" });

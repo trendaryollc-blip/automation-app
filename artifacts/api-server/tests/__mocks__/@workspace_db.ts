@@ -3,6 +3,9 @@
  *
  * It provides a Drizzle-like query interface for route tests while also exporting
  * the Firestore helper functions that the API routes import during test runs.
+ *
+ * v2 — adds a `users` table and a `userId` column to every business table so
+ * that the multi-tenant routes can be exercised in isolation.
  */
 const inMemoryData: Record<string, Record<number, any>> = {};
 let idCounter = 1;
@@ -186,6 +189,7 @@ function makeTable(name: string) {
   );
 }
 
+const usersTable = makeTable("users");
 const productsTable = makeTable("products");
 const suppliersTable = makeTable("suppliers");
 const ordersTable = makeTable("orders");
@@ -328,6 +332,7 @@ const db = {
 
 export { db };
 export {
+  usersTable,
   productsTable,
   suppliersTable,
   ordersTable,
@@ -365,6 +370,7 @@ export { eq, desc, asc, count, inArray, gte, lte, lt, and, sql };
 
 export const mockModule = {
   db,
+  usersTable,
   productsTable,
   suppliersTable,
   ordersTable,
@@ -440,4 +446,59 @@ export function aiSettingsRepo() {
     createWithId: async () => ({}),
     remove: async () => true,
   };
+}
+
+// Test-only auth helpers.  Duplicated here (instead of imported from
+// "@workspace/db/test-utils") because the vitest module alias redirects
+// any "@workspace/db/*" import back to this same mock file — so the
+// subpath would self-reference.  Keep these in sync with
+// `lib/db/src/test-utils.ts`.
+import { createHmac } from "node:crypto";
+
+const TEST_JWT_SECRET =
+  process.env["JWT_SECRET"] ||
+  createHmac("sha256", "")
+    .update("dropflow-test-secret")
+    .digest("hex");
+
+export interface FakeUser {
+  id: number;
+  email: string;
+  name: string | null;
+  passwordHash: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export function makeFakeUser(overrides: Partial<FakeUser> = {}): FakeUser {
+  return {
+    id: 1,
+    email: "test@example.com",
+    name: "Test User",
+    passwordHash: "$2a$12$invalid.hash.placeholder.value.xxxxxxxxxxxxxx",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function makeAuthToken(userId: number): string {
+  const header = { alg: "HS256", typ: "JWT" };
+  const now = Math.floor(Date.now() / 1000);
+  const payload = { sub: String(userId), iat: now, exp: now + 3600 };
+  const b64u = (obj: unknown) =>
+    Buffer.from(JSON.stringify(obj))
+      .toString("base64")
+      .replace(/=+$/, "")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
+  const headerB64 = b64u(header);
+  const payloadB64 = b64u(payload);
+  const sig = createHmac("sha256", TEST_JWT_SECRET)
+    .update(`${headerB64}.${payloadB64}`)
+    .digest("base64")
+    .replace(/=+$/, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+  return `${headerB64}.${payloadB64}.${sig}`;
 }

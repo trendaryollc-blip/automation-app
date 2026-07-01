@@ -1,9 +1,32 @@
 import { Router, type IRouter } from "express";
-import { db } from "@workspace/db";
-import { launchesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { z } from "zod/v4";
+import { eq, and } from "drizzle-orm";
+import { db, launchesTable } from "@workspace/db";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
+
+const LaunchStatusEnum = z.enum([
+  "planning",
+  "sourcing",
+  "creative",
+  "live",
+  "paused",
+  "killed",
+  "completed",
+]);
+
+const CreateLaunchBodySchema = z.object({
+  productName: z.string().min(1).max(200),
+  productId: z.number().int().positive().nullish(),
+  status: LaunchStatusEnum.optional(),
+  targetLaunchDate: z.union([z.string(), z.date()]).nullish(),
+  notes: z.string().max(4000).nullish(),
+});
+
+const UpdateLaunchBodySchema = CreateLaunchBodySchema.partial();
+
+const IdParamSchema = z.object({ id: z.coerce.number().int().positive() });
 
 const DEFAULT_STEPS = [
   {
@@ -50,45 +73,64 @@ const DEFAULT_STEPS = [
   },
 ];
 
-router.get("/launches", async (_req, res) => {
+router.get("/launches", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const all = await db
     .select()
     .from(launchesTable)
+    .where(eq(launchesTable.userId, user.id))
     .orderBy(launchesTable.createdAt);
   res.json(all.reverse());
 });
 
-router.post("/launches", async (req, res) => {
-  const { productName, productId, targetLaunchDate, notes } = req.body as {
-    productName?: string;
-    productId?: number;
-    targetLaunchDate?: string;
-    notes?: string;
-  };
-  if (!productName) {
-    res.status(400).json({ error: "productName is required" });
+router.post("/launches", async (req, res): Promise<void> => {
+  const parsed = CreateLaunchBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const user = currentUser(req);
+  const { productName, productId, targetLaunchDate, notes, status } =
+    parsed.data;
   const [launch] = await db
     .insert(launchesTable)
     .values({
+      userId: user.id,
       productName,
       productId: productId ?? null,
       targetLaunchDate: targetLaunchDate ? new Date(targetLaunchDate) : null,
       notes: notes ?? null,
       steps: DEFAULT_STEPS,
-      status: "planning",
+      status: status ?? "planning",
     })
     .returning();
   res.status(201).json(launch);
 });
 
-router.patch("/launches/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
+router.patch("/launches/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const parsed = UpdateLaunchBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  const { targetLaunchDate, ...rest } = parsed.data;
+  const updateData: Record<string, unknown> = { ...rest, updatedAt: new Date() };
+  if (targetLaunchDate !== undefined) {
+    updateData.targetLaunchDate =
+      targetLaunchDate != null ? new Date(targetLaunchDate) : null;
+  }
   const [updated] = await db
     .update(launchesTable)
-    .set({ ...req.body, updatedAt: new Date() })
-    .where(eq(launchesTable.id, id))
+    .set(updateData)
+    .where(
+      and(eq(launchesTable.id, params.data.id), eq(launchesTable.userId, user.id)),
+    )
     .returning();
   if (!updated) {
     res.status(404).json({ error: "Not found" });
@@ -97,9 +139,18 @@ router.patch("/launches/:id", async (req, res) => {
   res.json(updated);
 });
 
-router.delete("/launches/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
-  await db.delete(launchesTable).where(eq(launchesTable.id, id));
+router.delete("/launches/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  await db
+    .delete(launchesTable)
+    .where(
+      and(eq(launchesTable.id, params.data.id), eq(launchesTable.userId, user.id)),
+    );
   res.json({ success: true });
 });
 

@@ -1,32 +1,141 @@
 import { Router, type IRouter } from "express";
-import { db } from "@workspace/db";
-import { adCampaignsTable } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import { z } from "zod/v4";
+import { eq, desc, and } from "drizzle-orm";
+import { db, adCampaignsTable } from "@workspace/db";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
-router.get("/ad-campaigns", async (_req, res) => {
+const AdPlatformEnum = z.enum([
+  "facebook",
+  "instagram",
+  "tiktok",
+  "google",
+  "youtube",
+  "pinterest",
+  "snapchat",
+  "reddit",
+  "other",
+]);
+
+const AdStatusEnum = z.enum([
+  "draft",
+  "active",
+  "paused",
+  "completed",
+  "archived",
+]);
+
+const CreateAdCampaignBodySchema = z.object({
+  campaignName: z.string().min(1).max(200),
+  platform: AdPlatformEnum.optional(),
+  productId: z.number().int().positive().nullish(),
+  productName: z.string().max(200).nullish(),
+  spend: z.number().nonnegative().optional(),
+  revenue: z.number().nonnegative().optional(),
+  impressions: z.number().int().nonnegative().optional(),
+  clicks: z.number().int().nonnegative().optional(),
+  conversions: z.number().int().nonnegative().optional(),
+  status: AdStatusEnum.optional(),
+  startDate: z.union([z.string(), z.date()]).nullish(),
+  endDate: z.union([z.string(), z.date()]).nullish(),
+  notes: z.string().max(4000).nullish(),
+});
+
+const UpdateAdCampaignBodySchema = CreateAdCampaignBodySchema.partial();
+
+const IdParamSchema = z.object({ id: z.coerce.number().int().positive() });
+
+router.get("/ad-campaigns", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const all = await db
     .select()
     .from(adCampaignsTable)
+    .where(eq(adCampaignsTable.userId, user.id))
     .orderBy(desc(adCampaignsTable.createdAt));
   res.json(all);
 });
 
-router.post("/ad-campaigns", async (req, res) => {
+router.post("/ad-campaigns", async (req, res): Promise<void> => {
+  const parsed = CreateAdCampaignBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  const {
+    campaignName,
+    platform,
+    productId,
+    productName,
+    spend,
+    revenue,
+    impressions,
+    clicks,
+    conversions,
+    status,
+    startDate,
+    endDate,
+    notes,
+  } = parsed.data;
   const [campaign] = await db
     .insert(adCampaignsTable)
-    .values(req.body)
+    .values({
+      userId: user.id,
+      campaignName,
+      platform: platform ?? "facebook",
+      productId: productId ?? null,
+      productName: productName ?? null,
+      spend: String(spend ?? 0),
+      revenue: String(revenue ?? 0),
+      impressions: impressions ?? 0,
+      clicks: clicks ?? 0,
+      conversions: conversions ?? 0,
+      status: status ?? "active",
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
+      notes: notes ?? null,
+    })
     .returning();
   res.status(201).json(campaign);
 });
 
-router.patch("/ad-campaigns/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
+router.patch("/ad-campaigns/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const parsed = UpdateAdCampaignBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  const updateData: Record<string, unknown> = { ...parsed.data, updatedAt: new Date() };
+  if (parsed.data.spend !== undefined) {
+    updateData.spend = String(parsed.data.spend);
+  }
+  if (parsed.data.revenue !== undefined) {
+    updateData.revenue = String(parsed.data.revenue);
+  }
+  if (parsed.data.startDate !== undefined) {
+    updateData.startDate =
+      parsed.data.startDate != null ? new Date(parsed.data.startDate) : null;
+  }
+  if (parsed.data.endDate !== undefined) {
+    updateData.endDate =
+      parsed.data.endDate != null ? new Date(parsed.data.endDate) : null;
+  }
   const [updated] = await db
     .update(adCampaignsTable)
-    .set({ ...req.body, updatedAt: new Date() })
-    .where(eq(adCampaignsTable.id, id))
+    .set(updateData)
+    .where(
+      and(
+        eq(adCampaignsTable.id, params.data.id),
+        eq(adCampaignsTable.userId, user.id),
+      ),
+    )
     .returning();
   if (!updated) {
     res.status(404).json({ error: "Not found" });
@@ -35,29 +144,46 @@ router.patch("/ad-campaigns/:id", async (req, res) => {
   res.json(updated);
 });
 
-router.delete("/ad-campaigns/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
-  await db.delete(adCampaignsTable).where(eq(adCampaignsTable.id, id));
+router.delete("/ad-campaigns/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  await db
+    .delete(adCampaignsTable)
+    .where(
+      and(
+        eq(adCampaignsTable.id, params.data.id),
+        eq(adCampaignsTable.userId, user.id),
+      ),
+    );
   res.json({ success: true });
 });
 
-router.get("/ad-campaigns/stats", async (_req, res) => {
-  const all = await db.select().from(adCampaignsTable);
+router.get("/ad-campaigns/stats", async (req, res): Promise<void> => {
+  const user = currentUser(req);
+  const all = await db
+    .select()
+    .from(adCampaignsTable)
+    .where(eq(adCampaignsTable.userId, user.id));
+
   const totalSpend = all.reduce(
-    (s: number, c: any) => s + Number(c.spend ?? 0),
+    (s, c) => s + Number(c.spend ?? 0),
     0,
   );
   const totalRevenue = all.reduce(
-    (s: number, c: any) => s + Number(c.revenue ?? 0),
+    (s, c) => s + Number(c.revenue ?? 0),
     0,
   );
   const totalImpressions = all.reduce(
-    (s: number, c: any) => s + (c.impressions ?? 0),
+    (s, c) => s + (c.impressions ?? 0),
     0,
   );
-  const totalClicks = all.reduce((s: number, c: any) => s + (c.clicks ?? 0), 0);
+  const totalClicks = all.reduce((s, c) => s + (c.clicks ?? 0), 0);
   const totalConversions = all.reduce(
-    (s: number, c: any) => s + (c.conversions ?? 0),
+    (s, c) => s + (c.conversions ?? 0),
     0,
   );
   const roas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
@@ -65,10 +191,11 @@ router.get("/ad-campaigns/stats", async (_req, res) => {
   const cpc = totalClicks > 0 ? totalSpend / totalClicks : 0;
   const cpa = totalConversions > 0 ? totalSpend / totalConversions : 0;
 
-  const byPlatform = all.reduce((acc: Record<string, any>, c: any) => {
+  const byPlatform: Record<string, any> = {};
+  for (const c of all) {
     const p = c.platform ?? "other";
-    if (!acc[p])
-      acc[p] = {
+    if (!byPlatform[p]) {
+      byPlatform[p] = {
         platform: p,
         spend: 0,
         revenue: 0,
@@ -76,13 +203,13 @@ router.get("/ad-campaigns/stats", async (_req, res) => {
         clicks: 0,
         campaigns: 0,
       };
-    acc[p].spend += Number(c.spend ?? 0);
-    acc[p].revenue += Number(c.revenue ?? 0);
-    acc[p].conversions += c.conversions ?? 0;
-    acc[p].clicks += c.clicks ?? 0;
-    acc[p].campaigns += 1;
-    return acc;
-  }, {});
+    }
+    byPlatform[p].spend += Number(c.spend ?? 0);
+    byPlatform[p].revenue += Number(c.revenue ?? 0);
+    byPlatform[p].conversions += c.conversions ?? 0;
+    byPlatform[p].clicks += c.clicks ?? 0;
+    byPlatform[p].campaigns += 1;
+  }
 
   res.json({
     totalSpend,

@@ -1,7 +1,29 @@
-import { db, suppliersTable, productsTable, ordersTable } from "./index.js";
+/**
+ * Database seed script.
+ *
+ * Creates one demo user and assigns it as the owner of all seeded
+ * data. Useful for local development.
+ *
+ * SAFETY: This script refuses to run in production (NODE_ENV=production).
+ * If you really need a starter dataset, run with FORCE_SEED=1.
+ */
+import { randomBytes } from "node:crypto";
+import { db, usersTable, suppliersTable, productsTable, ordersTable } from "./index.js";
+import { hashPassword } from "./auth-utils.js";
+
+function isProduction(): boolean {
+  return process.env["NODE_ENV"] === "production";
+}
 
 async function seed() {
   console.log("Seeding database...");
+
+  if (isProduction() && process.env["FORCE_SEED"] !== "1") {
+    throw new Error(
+      "Refusing to run seed in production. " +
+        "If you really mean it, set FORCE_SEED=1 and NODE_ENV=production.",
+    );
+  }
 
   if (!db) {
     throw new Error(
@@ -9,10 +31,44 @@ async function seed() {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Demo user
+  //
+  // In dev, password is fixed for convenience. In production (only with
+  // FORCE_SEED=1) we generate a random password and print it so the
+  // operator can capture it.
+  // ---------------------------------------------------------------------------
+  const demoPassword = isProduction()
+    ? randomBytes(18).toString("base64url")
+    : "demo-password-123";
+  const passwordHash = await hashPassword(demoPassword);
+  const demoEmail = isProduction()
+    ? `seed-${Date.now()}@dropflow.local`
+    : "demo@dropflow.local";
+  const [demoUser] = await db
+    .insert(usersTable)
+    .values({
+      email: demoEmail,
+      passwordHash,
+      name: "Demo User",
+    })
+    .returning();
+  const userId = demoUser.id;
+  console.log(`Created demo user (id=${userId}, email=${demoEmail})`);
+  if (isProduction()) {
+    console.log(
+      `[seed] Generated password (capture it now): ${demoPassword}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Suppliers
+  // ---------------------------------------------------------------------------
   const suppliers = await db
     .insert(suppliersTable)
     .values([
       {
+        userId,
         name: "AliSource Global",
         country: "China",
         rating: "4.7",
@@ -23,6 +79,7 @@ async function seed() {
         notes: "Reliable electronics supplier. Fast processing.",
       },
       {
+        userId,
         name: "EuroLogistics BV",
         country: "Netherlands",
         rating: "4.5",
@@ -33,6 +90,7 @@ async function seed() {
         notes: "Fast EU-based fulfillment.",
       },
       {
+        userId,
         name: "Sunrise Wholesale",
         country: "United States",
         rating: "4.2",
@@ -43,6 +101,7 @@ async function seed() {
         notes: "Good for home goods and lifestyle products.",
       },
       {
+        userId,
         name: "HK Tech Imports",
         country: "Hong Kong",
         rating: "4.8",
@@ -57,10 +116,14 @@ async function seed() {
 
   console.log(`Inserted ${suppliers.length} suppliers`);
 
+  // ---------------------------------------------------------------------------
+  // Products
+  // ---------------------------------------------------------------------------
   const products = await db
     .insert(productsTable)
     .values([
       {
+        userId,
         name: "Wireless Earbuds Pro",
         category: "Electronics",
         niche: "Audio accessories",
@@ -74,6 +137,7 @@ async function seed() {
         stockThreshold: 20,
       },
       {
+        userId,
         name: "Portable Phone Stand",
         category: "Accessories",
         niche: "WFH / desk setup",
@@ -87,6 +151,7 @@ async function seed() {
         stockThreshold: 15,
       },
       {
+        userId,
         name: "LED Desk Lamp",
         category: "Home Office",
         niche: "WFH / desk setup",
@@ -100,6 +165,7 @@ async function seed() {
         stockThreshold: 15,
       },
       {
+        userId,
         name: "Yoga Mat Premium",
         category: "Sports & Fitness",
         niche: "Home fitness",
@@ -113,6 +179,7 @@ async function seed() {
         stockThreshold: 20,
       },
       {
+        userId,
         name: "Smart Watch Fitness Tracker",
         category: "Electronics",
         niche: "Wearables",
@@ -126,6 +193,7 @@ async function seed() {
         stockThreshold: 10,
       },
       {
+        userId,
         name: "Reusable Water Bottle",
         category: "Lifestyle",
         niche: "Eco products",
@@ -139,6 +207,7 @@ async function seed() {
         stockThreshold: 25,
       },
       {
+        userId,
         name: "Car Phone Mount",
         category: "Automotive",
         niche: "Car accessories",
@@ -152,6 +221,7 @@ async function seed() {
         stockThreshold: 20,
       },
       {
+        userId,
         name: "Massage Gun Mini",
         category: "Health & Wellness",
         niche: "Recovery tools",
@@ -163,6 +233,7 @@ async function seed() {
         stockThreshold: 5,
       },
       {
+        userId,
         name: "Posture Corrector",
         category: "Health & Wellness",
         niche: "WFH ergonomics",
@@ -174,6 +245,7 @@ async function seed() {
         stockThreshold: 10,
       },
       {
+        userId,
         name: "Bamboo Cutting Board Set",
         category: "Kitchen",
         niche: "Eco home",
@@ -189,6 +261,9 @@ async function seed() {
 
   console.log(`Inserted ${products.length} products`);
 
+  // ---------------------------------------------------------------------------
+  // Orders
+  // ---------------------------------------------------------------------------
   const now = new Date();
   function daysAgo(d: number) {
     const dt = new Date(now);
@@ -208,8 +283,9 @@ async function seed() {
   ];
 
   type OrderStatus =
-    "pending" | "placed" | "shipped" | "delivered" | "cancelled";
+    | "pending" | "placed" | "shipped" | "delivered" | "cancelled";
   const orderRows: {
+    userId: number;
     orderNumber: string;
     productId: number;
     productName: string;
@@ -250,8 +326,14 @@ async function seed() {
     const status: OrderStatus = statuses[i % statuses.length];
     const supplier = suppliers.find((s) => s.id === product.supplierId);
 
+    // Order number uses a base36 timestamp + 4-char random suffix so
+    // sequential business volume is not exposed in a predictable way.
+    const ts = Date.now().toString(36).toUpperCase();
+    const suffix = randomBytes(2).toString("hex").toUpperCase();
+
     orderRows.push({
-      orderNumber: `DF-${1000 + i}`,
+      userId,
+      orderNumber: `DF-${ts}${suffix}`,
       productId: product.id,
       productName: product.name,
       supplierId: supplier?.id ?? null,

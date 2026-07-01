@@ -14,10 +14,25 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 async function startServer() {
-  const [{ default: app }, { logger }] = await Promise.all([
-    import("./app"),
-    import("./lib/logger"),
-  ]);
+  // Load logger first so we can use it for startup diagnostics.
+  const { logger } = await import("./lib/logger");
+  const { validateProductionEnv } = await import("./lib/env");
+
+  // Refuse to boot in production with unsafe configuration.
+  const envReport = validateProductionEnv();
+  if (!envReport.ok) {
+    for (const e of envReport.errors) logger.fatal({ err: e }, "Env validation failed");
+    throw new Error(
+      "Refusing to start: production environment is misconfigured. " +
+        "Fix the errors above and re-deploy.\n" +
+        envReport.errors.map((e) => `  - ${e}`).join("\n"),
+    );
+  }
+  for (const w of envReport.warnings) {
+    logger.warn({ warning: w }, "Env warning");
+  }
+
+  const { default: app } = await import("./app");
 
   const listenCallback = (err: unknown) => {
     if (err) {

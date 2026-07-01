@@ -1,12 +1,13 @@
 import { Router, type IRouter } from "express";
+import { z } from "zod/v4";
+import { desc, eq, and } from "drizzle-orm";
 import {
   db,
   fulfillmentQueueTable,
   ordersTable,
   suppliersTable,
-  storeConnectionsTable,
 } from "@workspace/db";
-import { desc, eq, and } from "drizzle-orm";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
@@ -14,36 +15,28 @@ async function loadFulfillmentEngine() {
   return import("../services/fulfillment-engine.js");
 }
 
-const defaultServiceLoaderMap: Record<string, () => Promise<any>> = {
-  cjdropshipping: () => import("../services/cjdropshipping"),
-  zendrop: () => import("../services/zendrop"),
-};
+const IdParamSchema = z.object({ id: z.coerce.number().int().positive() });
 
-const defaultExternalServiceLoader = async (moduleName: string) => {
-  const loader = defaultServiceLoaderMap[moduleName];
-  if (!loader) {
-    throw new Error(`Unsupported fulfillment service: ${moduleName}`);
-  }
-  return loader();
-};
+const RejectBodySchema = z.object({
+  reason: z.string().max(2000).optional(),
+});
 
-let externalServiceLoader: (moduleName: string) => Promise<any> =
-  defaultExternalServiceLoader;
+const ManualBodySchema = z.object({
+  orderId: z.number().int().positive(),
+});
 
-export function setExternalServiceLoader(
-  loader: (moduleName: string) => Promise<any>,
-) {
-  externalServiceLoader = loader;
-}
+const PatchQueueBodySchema = z.object({
+  supplierId: z.number().int().positive().nullish(),
+  supplierName: z.string().max(200).nullish(),
+  estimatedCost: z.number().nonnegative().nullish(),
+});
 
-export function resetExternalServiceLoader() {
-  externalServiceLoader = defaultExternalServiceLoader;
-}
-
-router.get("/fulfillment/queue", async (_req, res) => {
+router.get("/fulfillment/queue", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const items = await db
     .select()
     .from(fulfillmentQueueTable)
+    .where(eq(fulfillmentQueueTable.userId, user.id))
     .orderBy(desc(fulfillmentQueueTable.createdAt));
   res.json(
     items.map((i) => ({
@@ -59,8 +52,12 @@ router.get("/fulfillment/queue", async (_req, res) => {
   );
 });
 
-router.get("/fulfillment/stats", async (_req, res) => {
-  const all = await db.select().from(fulfillmentQueueTable);
+router.get("/fulfillment/stats", async (req, res): Promise<void> => {
+  const user = currentUser(req);
+  const all = await db
+    .select()
+    .from(fulfillmentQueueTable)
+    .where(eq(fulfillmentQueueTable.userId, user.id));
   const pending = all.filter((i) => i.status === "pending_approval").length;
   const approved = all.filter((i) => i.status === "approved").length;
   const rejected = all.filter((i) => i.status === "rejected").length;
@@ -80,10 +77,30 @@ router.get("/fulfillment/stats", async (_req, res) => {
   });
 });
 
-router.post("/fulfillment/approve/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
+router.post("/fulfillment/approve/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  // Verify ownership before approving.
+  const [owned] = await db
+    .select({ id: fulfillmentQueueTable.id })
+    .from(fulfillmentQueueTable)
+    .where(
+      and(
+        eq(fulfillmentQueueTable.id, params.data.id),
+        eq(fulfillmentQueueTable.userId, user.id),
+      ),
+    )
+    .limit(1);
+  if (!owned) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   const { approveFulfillmentItem } = await loadFulfillmentEngine();
-  const result = await approveFulfillmentItem(id);
+  const result = await approveFulfillmentItem(params.data.id);
   if (!result.success) {
     res.status(400).json(result);
     return;
@@ -91,11 +108,37 @@ router.post("/fulfillment/approve/:id", async (req, res) => {
   res.json(result);
 });
 
-router.post("/fulfillment/reject/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
-  const { reason } = req.body as { reason?: string };
+router.post("/fulfillment/reject/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const parsed = RejectBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  const [owned] = await db
+    .select({ id: fulfillmentQueueTable.id })
+    .from(fulfillmentQueueTable)
+    .where(
+      and(
+        eq(fulfillmentQueueTable.id, params.data.id),
+        eq(fulfillmentQueueTable.userId, user.id),
+      ),
+    )
+    .limit(1);
+  if (!owned) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   const { rejectFulfillmentItem } = await loadFulfillmentEngine();
-  const result = await rejectFulfillmentItem(id, reason);
+  const result = await rejectFulfillmentItem(
+    params.data.id,
+    parsed.data.reason,
+  );
   if (!result.success) {
     res.status(400).json(result);
     return;
@@ -103,12 +146,18 @@ router.post("/fulfillment/reject/:id", async (req, res) => {
   res.json(result);
 });
 
-router.post("/fulfillment/approve-all", async (_req, res) => {
+router.post("/fulfillment/approve-all", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const { approveFulfillmentItem } = await loadFulfillmentEngine();
   const pending = await db
     .select()
     .from(fulfillmentQueueTable)
-    .where(eq(fulfillmentQueueTable.status, "pending_approval"));
+    .where(
+      and(
+        eq(fulfillmentQueueTable.userId, user.id),
+        eq(fulfillmentQueueTable.status, "pending_approval"),
+      ),
+    );
   const results = await Promise.all(
     pending.map((i) => approveFulfillmentItem(i.id)),
   );
@@ -116,28 +165,33 @@ router.post("/fulfillment/approve-all", async (_req, res) => {
   res.json({ approved: succeeded, failed: results.length - succeeded });
 });
 
-router.post("/fulfillment/manual", async (req, res) => {
-  const { orderId } = req.body as { orderId?: number };
-  if (!orderId) {
-    res.status(400).json({ error: "orderId required" });
+router.post("/fulfillment/manual", async (req, res): Promise<void> => {
+  const parsed = ManualBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
     return;
   }
-
+  const user = currentUser(req);
   const [order] = await db
     .select()
     .from(ordersTable)
-    .where(eq(ordersTable.id, orderId));
+    .where(
+      and(
+        eq(ordersTable.id, parsed.data.orderId),
+        eq(ordersTable.userId, user.id),
+      ),
+    );
   if (!order) {
     res.status(404).json({ error: "Order not found" });
     return;
   }
-
   const existing = await db
     .select()
     .from(fulfillmentQueueTable)
     .where(
       and(
-        eq(fulfillmentQueueTable.orderId, orderId),
+        eq(fulfillmentQueueTable.orderId, parsed.data.orderId),
+        eq(fulfillmentQueueTable.userId, user.id),
         eq(fulfillmentQueueTable.status, "pending_approval"),
       ),
     );
@@ -145,9 +199,9 @@ router.post("/fulfillment/manual", async (req, res) => {
     res.status(409).json({ error: "Order already in fulfillment queue" });
     return;
   }
-
   const { autoFulfillOrder } = await loadFulfillmentEngine();
   await autoFulfillOrder({
+    userId: user.id,
     id: order.id,
     orderNumber: order.orderNumber,
     customerName: order.customerName,
@@ -156,33 +210,53 @@ router.post("/fulfillment/manual", async (req, res) => {
     sellPrice: order.sellPrice ?? null,
     storeSource: "manual",
   });
-
   res.json({ success: true });
 });
 
-router.get("/fulfillment/suppliers", async (_req, res) => {
+router.get("/fulfillment/suppliers", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const suppliers = await db
     .select()
     .from(suppliersTable)
+    .where(eq(suppliersTable.userId, user.id))
     .orderBy(desc(suppliersTable.rating));
   res.json(suppliers);
 });
 
-router.patch("/fulfillment/queue/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
-  const { supplierId, supplierName, estimatedCost } = req.body as {
-    supplierId?: number;
-    supplierName?: string;
-    estimatedCost?: number;
-  };
+router.patch("/fulfillment/queue/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const parsed = PatchQueueBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
+  if (parsed.data.supplierId !== undefined) {
+    updateData.supplierId = parsed.data.supplierId;
+  }
+  if (parsed.data.supplierName !== undefined) {
+    updateData.supplierName = parsed.data.supplierName;
+  }
+  if (parsed.data.estimatedCost !== undefined) {
+    updateData.estimatedCost =
+      parsed.data.estimatedCost != null
+        ? String(parsed.data.estimatedCost)
+        : null;
+  }
   const [updated] = await db
     .update(fulfillmentQueueTable)
-    .set({
-      supplierId: supplierId ?? undefined,
-      supplierName: supplierName ?? undefined,
-      estimatedCost: estimatedCost?.toString() ?? undefined,
-    })
-    .where(eq(fulfillmentQueueTable.id, id))
+    .set(updateData)
+    .where(
+      and(
+        eq(fulfillmentQueueTable.id, params.data.id),
+        eq(fulfillmentQueueTable.userId, user.id),
+      ),
+    )
     .returning();
   if (!updated) {
     res.status(404).json({ error: "Not found" });
@@ -192,73 +266,3 @@ router.patch("/fulfillment/queue/:id", async (req, res) => {
 });
 
 export default router;
-
-export async function fulfillOrderExternal(
-  orderId: number,
-  connectionId: number,
-) {
-  const [order] = await db
-    .select()
-    .from(ordersTable)
-    .where(eq(ordersTable.id, orderId));
-  if (!order) {
-    console.debug("fulfillOrderExternal: missing order", { orderId });
-    return;
-  }
-
-  const [connection] = await db
-    .select()
-    .from(storeConnectionsTable)
-    .where(eq(storeConnectionsTable.id, connectionId));
-  void connection;
-
-  const [store] = await db
-    .select()
-    .from(storeConnectionsTable)
-    .where(eq(storeConnectionsTable.id, connectionId));
-  console.debug("fulfillOrderExternal: store", { connectionId, store });
-  console.debug("fulfillOrderExternal: order", { order });
-
-  const config = store?.config ? JSON.parse(String(store.config)) : {};
-  const apiKey = config.apiKey ?? store?.apiKey ?? null;
-  const apiSecret = config.apiSecret ?? null;
-
-  if (store?.platform === "cjdropshipping") {
-    const { placeCJOrder } = await externalServiceLoader("cjdropshipping");
-    await placeCJOrder({
-      productId: order.productName ?? "",
-      quantity: order.quantity ?? 1,
-      shippingInfo: {
-        firstName: order.customerName.split(" ")[0] || "Unknown",
-        lastName: order.customerName.split(" ").slice(1).join(" ") || "",
-        email: "",
-        phone: "",
-        address: "",
-        city: "",
-        state: "",
-        zip: "",
-        country: "",
-      },
-    });
-    return;
-  }
-
-  if (store?.platform === "zendrop") {
-    const { placeZendropOrder } = await externalServiceLoader("zendrop");
-    await placeZendropOrder({
-      productId: order.productName ?? "",
-      quantity: order.quantity ?? 1,
-      shippingInfo: {
-        firstName: order.customerName.split(" ")[0] || "Unknown",
-        lastName: order.customerName.split(" ").slice(1).join(" ") || "",
-        email: "",
-        phone: "",
-        address: "",
-        city: "",
-        state: "",
-        zip: "",
-        country: "",
-      },
-    });
-  }
-}

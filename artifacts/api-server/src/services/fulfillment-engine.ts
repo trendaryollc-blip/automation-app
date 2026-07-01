@@ -7,12 +7,13 @@ import {
   ordersTable,
   storeConnectionsTable,
 } from "@workspace/db";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and } from "drizzle-orm";
 import { placeCJOrder } from "./cjdropshipping.js";
 import { placeZendropOrder } from "./zendrop.js";
 import { detectCategory } from "./fulfillment-utils";
 
 type OrderPayload = {
+  userId: number;
   id: number;
   orderNumber: string;
   customerName: string;
@@ -22,7 +23,10 @@ type OrderPayload = {
   storeSource?: string;
 };
 
-async function matchBestSupplier(productName: string): Promise<{
+async function matchBestSupplier(
+  productName: string,
+  userId: number,
+): Promise<{
   supplierId: number | null;
   supplierName: string;
   estimatedCost: number;
@@ -31,6 +35,7 @@ async function matchBestSupplier(productName: string): Promise<{
   const suppliers = await db
     .select()
     .from(suppliersTable)
+    .where(eq(suppliersTable.userId, userId))
     .orderBy(desc(suppliersTable.rating));
   if (suppliers.length === 0) return null;
 
@@ -76,7 +81,7 @@ async function matchBestSupplier(productName: string): Promise<{
 export async function autoFulfillOrder(order: OrderPayload): Promise<void> {
   const sellPrice = order.sellPrice ? Number(order.sellPrice) : null;
 
-  const match = await matchBestSupplier(order.productName);
+  const match = await matchBestSupplier(order.productName, order.userId);
 
   const estimatedCost =
     match?.estimatedCost ?? (sellPrice ? sellPrice * 0.35 : null);
@@ -86,6 +91,7 @@ export async function autoFulfillOrder(order: OrderPayload): Promise<void> {
       : null;
 
   await db.insert(fulfillmentQueueTable).values({
+    userId: order.userId,
     orderId: order.id,
     orderNumber: order.orderNumber,
     customerName: order.customerName,
@@ -124,6 +130,7 @@ export async function approveFulfillmentItem(
   const [po] = await db
     .insert(purchaseOrdersTable)
     .values({
+      userId: item.userId,
       poNumber,
       supplierId: item.supplierId ?? null,
       supplierName: item.supplierName ?? null,
@@ -158,7 +165,12 @@ export async function approveFulfillmentItem(
       const [conn] = await db
         .select()
         .from(storeConnectionsTable)
-        .where(eq(storeConnectionsTable.storeName, item.storeSource));
+        .where(
+          and(
+            eq(storeConnectionsTable.userId, item.userId),
+            eq(storeConnectionsTable.storeName, item.storeSource),
+          ),
+        );
       if (conn && conn.config) {
         const config = JSON.parse(conn.config) as Record<string, unknown>;
         if (

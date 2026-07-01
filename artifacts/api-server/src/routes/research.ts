@@ -1,10 +1,131 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
+import { z } from "zod/v4";
+import { eq, desc, and } from "drizzle-orm";
 import { db, researchTable } from "@workspace/db";
-import { DeleteResearchReportParams } from "@workspace/api-zod";
+import { currentUser } from "../middlewares/auth.js";
 import { researchProduct } from "../services/ai.js";
 
 const router: IRouter = Router();
+
+const AnalyzeBodySchema = z.object({
+  query: z.string().min(1).max(200),
+});
+
+const IdParamSchema = z.object({ id: z.coerce.number().int().positive() });
+
+type CompetitionLevel = "low" | "medium" | "high" | "very-high";
+type Verdict = "strong-buy" | "buy" | "hold" | "avoid";
+
+interface ReportData {
+  demandScore: number;
+  competitionLevel: CompetitionLevel;
+  suggestedPrice: number;
+  estimatedMargin: number;
+  topNiches: { name: string; score: number }[];
+  pros: string[];
+  cons: string[];
+  verdict: Verdict;
+  summary: string;
+  aiPowered: boolean;
+}
+
+router.post("/research/analyze", async (req, res): Promise<void> => {
+  const parsed = AnalyzeBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  const { query } = parsed.data;
+
+  let reportData: ReportData;
+  let aiPowered = false;
+
+  try {
+    const raw = await researchProduct(query);
+    const json = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    reportData = { ...json, aiPowered: true };
+    aiPowered = true;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "";
+    reportData = buildFallback(query);
+    if (msg !== "No AI API keys configured") {
+      (reportData as unknown as Record<string, unknown>).aiError = msg;
+    }
+  }
+
+  const [report] = await db
+    .insert(researchTable)
+    .values({
+      userId: user.id,
+      query: query.trim(),
+      demandScore: reportData.demandScore,
+      competitionLevel: reportData.competitionLevel,
+      suggestedPrice: reportData.suggestedPrice,
+      estimatedMargin: reportData.estimatedMargin,
+      topNiches: reportData.topNiches,
+      pros: reportData.pros,
+      cons: reportData.cons,
+      verdict: reportData.verdict,
+      summary: reportData.summary,
+    })
+    .returning();
+
+  res.json({
+    ...report,
+    topNiches: report.topNiches as { name: string; score: number }[],
+    pros: report.pros as string[],
+    cons: report.cons as string[],
+    createdAt: report.createdAt.toISOString(),
+    aiPowered,
+  });
+});
+
+router.get("/research/history", async (req, res): Promise<void> => {
+  const user = currentUser(req);
+  const reports = await db
+    .select()
+    .from(researchTable)
+    .where(eq(researchTable.userId, user.id))
+    .orderBy(desc(researchTable.createdAt))
+    .limit(50);
+  res.json(
+    reports.map((r) => ({
+      ...r,
+      topNiches: r.topNiches as { name: string; score: number }[],
+      pros: r.pros as string[],
+      cons: r.cons as string[],
+      createdAt: r.createdAt.toISOString(),
+    })),
+  );
+});
+
+router.delete("/research/history/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  const [report] = await db
+    .delete(researchTable)
+    .where(
+      and(
+        eq(researchTable.id, params.data.id),
+        eq(researchTable.userId, user.id),
+      ),
+    )
+    .returning();
+  if (!report) {
+    res.status(404).json({ error: "Report not found" });
+    return;
+  }
+  res.sendStatus(204);
+});
+
+// ---------------------------------------------------------------------------
+// Local deterministic fallback used when no AI provider is configured.
+// ---------------------------------------------------------------------------
 
 const NICHES: Record<string, string[]> = {
   tech: [
@@ -64,41 +185,6 @@ const NICHES: Record<string, string[]> = {
     "Trend Followers",
   ],
 };
-const PROS_BANK = [
-  "Strong organic search interest year-round",
-  "Impulse-buy price point drives high conversion",
-  "Low return rate typical for this category",
-  "Highly giftable — ideal for Q4 campaigns",
-  "Works well with influencer / UGC marketing",
-  "Broad demographic appeal",
-  "Lightweight and cheap to ship",
-  "Easy to bundle for AOV lift",
-  "Trending on TikTok and Instagram Reels",
-  "Low supplier minimum order quantity",
-];
-const CONS_BANK = [
-  "Market is saturated — differentiation is key",
-  "Requires strong creative to stand out in ads",
-  "Price-sensitive buyers comparison-shop heavily",
-  "Potential quality variance between suppliers",
-  "Seasonal demand peaks may affect inventory",
-  "High ad CPMs in this niche",
-  "Customer support volume can be elevated",
-  "Many established branded competitors",
-];
-
-function seededRandom(seed: string): () => number {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) {
-    h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
-  }
-  return () => {
-    h ^= h << 13;
-    h ^= h >> 17;
-    h ^= h << 5;
-    return (h >>> 0) / 0xffffffff;
-  };
-}
 
 function detectCategory(query: string): string {
   const q = query.toLowerCase();
@@ -130,142 +216,56 @@ function detectCategory(query: string): string {
   return "default";
 }
 
-function buildFallback(query: string) {
-  const rand = seededRandom(query.trim().toLowerCase());
-  const category = detectCategory(query);
-  const nichePool = NICHES[category];
-  const demandScore = Math.round(40 + rand() * 55);
-  const competitionRoll = rand();
-  const competitionLevel =
-    competitionRoll < 0.2
+function buildFallback(query: string): ReportData {
+  const cat = detectCategory(query);
+  const seed = [...query].reduce((s, c) => s + c.charCodeAt(0), 0);
+  const rng = ((n: number) => (n * 9301 + 49297) % 233280 / 233280);
+  const r = rng(seed);
+  const demandScore = Math.round(40 + r * 55);
+  const compRoll = rng(seed + 1);
+  const competitionLevel: CompetitionLevel =
+    compRoll < 0.2
       ? "low"
-      : competitionRoll < 0.5
+      : compRoll < 0.5
         ? "medium"
-        : competitionRoll < 0.8
+        : compRoll < 0.8
           ? "high"
           : "very-high";
-  const suggestedPrice = 15 + Math.round(rand() * 55);
-  const estimatedMargin = Math.round(55 + rand() * 30);
-  const topNiches = nichePool
+  const suggestedPrice = 15 + Math.round(rng(seed + 2) * 55);
+  const estimatedMargin = Math.round(55 + rng(seed + 3) * 30);
+  const topNiches = (NICHES[cat] ?? NICHES.default)
     .slice(0, 4)
-    .map((name, i) => ({ name, score: Math.round(60 + rand() * 35) - i * 3 }))
+    .map((name, i) => ({ name, score: Math.round(60 + rng(seed + i) * 35) }))
     .sort((a, b) => b.score - a.score);
-  const prosPool = [...PROS_BANK].sort(() => rand() - 0.5);
-  const consPool = [...CONS_BANK].sort(() => rand() - 0.5);
-  const pros = prosPool.slice(0, 3 + Math.floor(rand() * 2));
-  const cons = consPool.slice(0, 2 + Math.floor(rand() * 2));
-  const verdictRoll =
-    demandScore +
-    (competitionLevel === "low"
-      ? 20
-      : competitionLevel === "medium"
-        ? 10
-        : competitionLevel === "high"
-          ? -10
-          : -20);
-  const verdict =
-    verdictRoll >= 80
+  const verdictScore = demandScore + (competitionLevel === "low" ? 20 : competitionLevel === "medium" ? 10 : competitionLevel === "high" ? -10 : -20);
+  const verdict: Verdict =
+    verdictScore >= 80
       ? "strong-buy"
-      : verdictRoll >= 60
+      : verdictScore >= 60
         ? "buy"
-        : verdictRoll >= 45
+        : verdictScore >= 45
           ? "hold"
           : "avoid";
-  const summary = `"${query}" shows ${competitionLevel} competition with a demand score of ${demandScore}/100. At a suggested price of $${suggestedPrice}, you can expect around ${estimatedMargin}% margin. ${verdict === "strong-buy" || verdict === "buy" ? "Solid potential — move quickly." : verdict === "hold" ? "Test at small scale first." : "Consider a less saturated alternative."}`;
   return {
     demandScore,
     competitionLevel,
     suggestedPrice,
     estimatedMargin,
     topNiches,
-    pros,
-    cons,
+    pros: [
+      "Strong organic search interest year-round",
+      "Impulse-buy price point drives high conversion",
+      "Low return rate typical for this category",
+    ],
+    cons: [
+      "Market is saturated — differentiation is key",
+      "Requires strong creative to stand out in ads",
+      "Price-sensitive buyers comparison-shop heavily",
+    ],
     verdict,
-    summary,
+    summary: `"${query}" shows ${competitionLevel} competition with a demand score of ${demandScore}/100. At a suggested price of $${suggestedPrice}, you can expect around ${estimatedMargin}% margin.`,
     aiPowered: false,
   };
 }
-
-router.post("/research/analyze", async (req, res): Promise<void> => {
-  const { query } = req.body as { query?: string };
-  if (!query || typeof query !== "string") {
-    res.status(400).json({ error: "query is required" });
-    return;
-  }
-
-  let reportData: ReturnType<typeof buildFallback>;
-  let aiPowered = false;
-
-  try {
-    const raw = await researchProduct(query);
-    const json = JSON.parse(raw.replace(/```json|```/g, "").trim());
-    reportData = { ...json, aiPowered: true };
-    aiPowered = true;
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "";
-    reportData = buildFallback(query);
-    if (msg !== "No AI API keys configured")
-      (reportData as Record<string, unknown>).aiError = msg;
-  }
-
-  const [report] = await db
-    .insert(researchTable)
-    .values({
-      query: query.trim(),
-      demandScore: reportData.demandScore,
-      competitionLevel: reportData.competitionLevel,
-      suggestedPrice: reportData.suggestedPrice,
-      estimatedMargin: reportData.estimatedMargin,
-      topNiches: reportData.topNiches,
-      pros: reportData.pros,
-      cons: reportData.cons,
-      verdict: reportData.verdict,
-      summary: reportData.summary,
-    })
-    .returning();
-
-  res.json({
-    ...report,
-    topNiches: report.topNiches as { name: string; score: number }[],
-    pros: report.pros as string[],
-    cons: report.cons as string[],
-    createdAt: report.createdAt.toISOString(),
-    aiPowered,
-  });
-});
-
-router.get("/research/history", async (_req, res): Promise<void> => {
-  const reports = await db
-    .select()
-    .from(researchTable)
-    .orderBy(desc(researchTable.createdAt))
-    .limit(50);
-  res.json(
-    reports.map((r) => ({
-      ...r,
-      topNiches: r.topNiches as { name: string; score: number }[],
-      pros: r.pros as string[],
-      cons: r.cons as string[],
-      createdAt: r.createdAt.toISOString(),
-    })),
-  );
-});
-
-router.delete("/research/history/:id", async (req, res): Promise<void> => {
-  const params = DeleteResearchReportParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const [report] = await db
-    .delete(researchTable)
-    .where(eq(researchTable.id, params.data.id))
-    .returning();
-  if (!report) {
-    res.status(404).json({ error: "Report not found" });
-    return;
-  }
-  res.sendStatus(204);
-});
 
 export default router;

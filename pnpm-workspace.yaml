@@ -1,8 +1,22 @@
 packages:
-  - artifacts/*
-  - lib/*
-  - lib/integrations/*
+  # Production workspace packages.  Each one is listed explicitly so a
+  # future sandbox / experiment package dropped into artifacts/ is NOT
+  # silently included in CI, builds, or production deploys.
+  - artifacts/api-server
+  - artifacts/dropflow
+  - lib/api-zod
+  - lib/api-client-react
+  - lib/db
+  - lib/integrations
   - scripts
+
+  # `mockup-sandbox` is intentionally excluded from the workspace.
+  # It is a free-standing UI prototyping playground kept under
+  # artifacts/ for reference only.  It is NOT built, NOT deployed,
+  # NOT installed in CI, and NOT shipped to customers.  If you need
+  # to work on it locally, install it manually:
+  #     cd artifacts/mockup-sandbox && pnpm install
+  # Re-add it to this list only if you decide to ship it.
 
 allowBuilds:
   "@firebase/util": true

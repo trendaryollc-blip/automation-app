@@ -25,12 +25,17 @@ import {
   Plug,
   Brain,
   ListChecks,
+  Crosshair,
+  UserCircle2,
 } from "lucide-react";
 import {
   useGetStockAlerts,
   useListPriceWatches,
 } from "@workspace/api-client-react";
 import { loadSettings } from "@/pages/settings";
+import { UserMenu } from "@/hooks/use-auth-actions.tsx";
+import { AccountMenu } from "./AccountMenu";
+import { VerifyEmailBanner } from "./VerifyEmailBanner";
 
 function useTotalAlerts() {
   const settings = loadSettings();
@@ -81,6 +86,8 @@ const NAV_GROUPS = [
   {
     label: "Intelligence",
     links: [
+      { href: "/product-hunting", label: "Product Hunting", icon: Crosshair },
+      { href: "/customer-intelligence", label: "Customer Intel", icon: UserCircle2 },
       { href: "/product-scorer", label: "Virality Scorer", icon: Flame },
       { href: "/velocity", label: "Sales Velocity", icon: Zap },
       { href: "/price-watch", label: "Price Watch", icon: Eye },
@@ -110,71 +117,76 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const totalAlerts = useTotalAlerts();
 
   return (
-    <div className="flex min-h-screen w-full">
-      <div className="w-56 border-r border-border bg-card flex flex-col">
-        <div className="p-4 pb-3">
-          <h1 className="text-lg font-bold tracking-tight text-primary">
-            DropFlow
-          </h1>
-        </div>
-        <nav className="flex-1 px-3 space-y-4 overflow-y-auto pb-2">
-          {NAV_GROUPS.map((group) => (
-            <div key={group.label}>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 px-2 mb-1">
-                {group.label}
-              </p>
-              <div className="space-y-0.5">
-                {group.links.map((link) => {
-                  const Icon = link.icon;
-                  const isActive =
-                    location === link.href ||
-                    (link.href !== "/" && location.startsWith(link.href));
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
-                    >
-                      <Icon className="w-3.5 h-3.5 shrink-0" />
-                      {link.label}
-                    </Link>
-                  );
-                })}
+    <div className="flex min-h-screen w-full flex-col">
+      <VerifyEmailBanner />
+      <div className="flex flex-1 min-h-0">
+        <div className="w-56 border-r border-border bg-card flex flex-col">
+          <div className="p-4 pb-3">
+            <h1 className="text-lg font-bold tracking-tight text-primary">
+              DropFlow
+            </h1>
+          </div>
+          <nav className="flex-1 px-3 space-y-4 overflow-y-auto pb-2">
+            {NAV_GROUPS.map((group) => (
+              <div key={group.label}>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 px-2 mb-1">
+                  {group.label}
+                </p>
+                <div className="space-y-0.5">
+                  {group.links.map((link) => {
+                    const Icon = link.icon;
+                    const isActive =
+                      location === link.href ||
+                      (link.href !== "/" && location.startsWith(link.href));
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+                      >
+                        <Icon className="w-3.5 h-3.5 shrink-0" />
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
-        </nav>
-        <div className="px-3 pb-4 border-t border-border pt-3 space-y-0.5">
-          <Link
-            href="/notifications"
-            className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${location === "/notifications" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
-          >
-            <div className="relative">
-              <Bell className="w-3.5 h-3.5" />
+            ))}
+          </nav>
+          <div className="px-3 pb-4 border-t border-border pt-3 space-y-0.5">
+            <Link
+              href="/notifications"
+              className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${location === "/notifications" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+            >
+              <div className="relative">
+                <Bell className="w-3.5 h-3.5" />
+                {totalAlerts > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                    {totalAlerts > 9 ? "9+" : totalAlerts}
+                  </span>
+                )}
+              </div>
+              Notifications
               {totalAlerts > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
-                  {totalAlerts > 9 ? "9+" : totalAlerts}
+                <span className="ml-auto text-xs bg-red-500/15 text-red-400 border border-red-500/20 rounded-full px-1.5 py-0.5 font-semibold">
+                  {totalAlerts}
                 </span>
               )}
-            </div>
-            Notifications
-            {totalAlerts > 0 && (
-              <span className="ml-auto text-xs bg-red-500/15 text-red-400 border border-red-500/20 rounded-full px-1.5 py-0.5 font-semibold">
-                {totalAlerts}
-              </span>
-            )}
-          </Link>
-          <Link
-            href="/settings"
-            className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${location === "/settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
-          >
-            <Settings className="w-3.5 h-3.5" />
-            Settings
-          </Link>
+            </Link>
+            <Link
+              href="/settings"
+              className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${location === "/settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Settings
+            </Link>
+            <UserMenu />
+            <AccountMenu />
+          </div>
         </div>
-      </div>
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <main className="flex-1 overflow-auto p-8">{children}</main>
+        <div className="flex-1 flex flex-col h-screen overflow-hidden">
+          <main className="flex-1 overflow-auto p-8">{children}</main>
+        </div>
       </div>
     </div>
   );

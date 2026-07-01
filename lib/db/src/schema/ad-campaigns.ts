@@ -8,9 +8,13 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { usersTable } from "./users";
 
 export const adCampaignsTable = pgTable("ad_campaigns", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   campaignName: text("campaign_name").notNull(),
   platform: text("platform").notNull().default("facebook"),
   productId: integer("product_id"),

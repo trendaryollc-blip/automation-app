@@ -1,149 +1,108 @@
 import { Router, type IRouter } from "express";
+import { z } from "zod/v4";
+import { eq, and } from "drizzle-orm";
 import { db, aiSettingsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
-function isFirestoreMode(): boolean {
-  return (process.env.DB_MODE || "").toLowerCase() === "firestore";
-}
+const ProviderParamSchema = z.object({
+  provider: z.enum([
+    "groq",
+    "openrouter",
+    "mistral",
+    "deepseek",
+    "cohere",
+    "serpapi",
+  ]),
+});
 
-function aiSettingsRepo() {
-  return {
-    findMany: async () => [] as any[],
-    findById: async (_id: string) => null as any,
-    findOne: async (_filters: any) => null as any,
-    createWithId: async (_id: string, _data: any) => ({}),
-    remove: async (_id: string) => true,
-  };
-}
+const SaveKeyBodySchema = z.object({
+  apiKey: z.string().min(1).max(4000),
+  model: z.string().max(200).nullish(),
+});
 
 const PROVIDERS = [
-  {
-    id: "groq",
-    label: "Groq",
-    defaultModel: "llama-3.3-70b-versatile",
-    freeUrl: "https://console.groq.com/keys",
-    task: "Product scoring & descriptions",
-  },
-  {
-    id: "mistral",
-    label: "Mistral AI",
-    defaultModel: "mistral-small-latest",
-    freeUrl: "https://console.mistral.ai/api-keys/",
-    task: "Market analysis & research",
-  },
-  {
-    id: "deepseek",
-    label: "DeepSeek",
-    defaultModel: "deepseek-chat",
-    freeUrl: "https://platform.deepseek.com/api_keys",
-    task: "Product research & supplier finding",
-  },
-  {
-    id: "openrouter",
-    label: "OpenRouter",
-    defaultModel: "mistralai/mistral-7b-instruct:free",
-    freeUrl: "https://openrouter.ai/keys",
-    task: "General fallback (free models)",
-  },
-  {
-    id: "cohere",
-    label: "Cohere",
-    defaultModel: "command-r",
-    freeUrl: "https://dashboard.cohere.com/api-keys",
-    task: "Semantic search & embeddings",
-  },
-  {
-    id: "serpapi",
-    label: "SerpAPI",
-    defaultModel: null,
-    freeUrl: "https://serpapi.com/manage-api-key",
-    task: "Web search for supplier research",
-  },
-];
+  { id: "groq", label: "Groq", defaultModel: "llama-3.3-70b-versatile" },
+  { id: "mistral", label: "Mistral AI", defaultModel: "mistral-small-latest" },
+  { id: "deepseek", label: "DeepSeek", defaultModel: "deepseek-chat" },
+  { id: "openrouter", label: "OpenRouter", defaultModel: "mistralai/mistral-7b-instruct:free" },
+  { id: "cohere", label: "Cohere", defaultModel: "command-r" },
+  { id: "serpapi", label: "SerpAPI", defaultModel: null },
+] as const;
 
-router.get("/ai-settings/providers", (_req, res) => {
+router.get("/ai-settings/providers", (_req, res): void => {
   res.json(PROVIDERS);
 });
 
-router.get("/ai-settings", async (_req, res) => {
-  if (isFirestoreMode()) {
-    const rows = await aiSettingsRepo().findMany();
-    const result = rows.map((r: any) => ({
-      provider: r.provider,
-      model: r.model,
-      hasKey: true,
-      maskedKey: r.apiKey.slice(0, 6) + "••••••••" + r.apiKey.slice(-4),
-      updatedAt: r.updatedAt,
-    }));
-    res.json(result);
-    return;
-  }
-  const rows = await db.select().from(aiSettingsTable);
-  const result = rows.map((r) => {
-    const safeApiKey =
-      typeof r.apiKey === "string" ? r.apiKey : String(r.apiKey ?? "");
-    return {
-      provider: r.provider,
-      model: r.model,
-      hasKey: true,
-      maskedKey: safeApiKey.slice(0, 6) + "••••••••" + safeApiKey.slice(-4),
-      updatedAt: r.updatedAt.toISOString(),
-    };
-  });
-  res.json(result);
+router.get("/ai-settings", async (req, res): Promise<void> => {
+  const user = currentUser(req);
+  const rows = await db
+    .select()
+    .from(aiSettingsTable)
+    .where(eq(aiSettingsTable.userId, user.id));
+  res.json(
+    rows.map((r) => {
+      const safeApiKey =
+        typeof r.apiKey === "string" ? r.apiKey : String(r.apiKey ?? "");
+      return {
+        provider: r.provider,
+        model: r.model,
+        hasKey: true,
+        maskedKey: safeApiKey.slice(0, 6) + "••••••••" + safeApiKey.slice(-4),
+        updatedAt: r.updatedAt.toISOString(),
+      };
+    }),
+  );
 });
 
-router.put("/ai-settings/:provider", async (req, res) => {
-  const { provider } = req.params;
-  const { apiKey, model } = req.body as { apiKey?: string; model?: string };
-
-  if (!PROVIDERS.find((p) => p.id === provider)) {
-    res.status(400).json({ error: "Unknown provider" });
+router.put("/ai-settings/:provider", async (req, res): Promise<void> => {
+  const params = ProviderParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
     return;
   }
-  if (!apiKey || !apiKey.trim()) {
-    res.status(400).json({ error: "apiKey is required" });
+  const parsed = SaveKeyBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const user = currentUser(req);
+  const { provider } = params.data;
+  const apiKey = parsed.data.apiKey.trim();
+  const model = parsed.data.model?.trim() || null;
 
-  if (isFirestoreMode()) {
-    const repo = aiSettingsRepo();
-    await repo.createWithId(provider, {
-      provider,
-      apiKey: apiKey.trim(),
-      model: model?.trim() || null,
-    });
-    const row = await repo.findById(provider);
-    if (!row) {
-      res.status(500).json({ error: "Failed to save settings" });
-      return;
-    }
-    const safeApiKey =
-      typeof row.apiKey === "string" ? row.apiKey : String(row.apiKey ?? "");
-    res.json({
-      provider: row.provider,
-      model: row.model,
-      hasKey: true,
-      maskedKey: safeApiKey.slice(0, 6) + "••••••••" + safeApiKey.slice(-4),
-      updatedAt: row.updatedAt,
-    });
-    return;
-  }
+  // Per-user upsert: select existing (userId, provider) row, update or insert.
+  const [existing] = await db
+    .select()
+    .from(aiSettingsTable)
+    .where(
+      and(
+        eq(aiSettingsTable.userId, user.id),
+        eq(aiSettingsTable.provider, provider),
+      ),
+    )
+    .limit(1);
 
-  const [row] = await db
-    .insert(aiSettingsTable)
-    .values({ provider, apiKey: apiKey.trim(), model: model?.trim() || null })
-    .onConflictDoUpdate({
-      target: aiSettingsTable.provider,
-      set: {
-        apiKey: apiKey.trim(),
-        model: model?.trim() || null,
-        updatedAt: new Date(),
-      },
-    })
-    .returning();
+  const row = existing
+    ? (
+        await db
+          .update(aiSettingsTable)
+          .set({ apiKey, model, updatedAt: new Date() })
+          .where(
+            and(
+              eq(aiSettingsTable.userId, user.id),
+              eq(aiSettingsTable.provider, provider),
+            ),
+          )
+          .returning()
+      )[0]
+    : (
+        await db
+          .insert(aiSettingsTable)
+          .values({ userId: user.id, provider, apiKey, model })
+          .returning()
+      )[0];
 
   const safeApiKey =
     typeof row.apiKey === "string" ? row.apiKey : String(row.apiKey ?? "");
@@ -156,36 +115,45 @@ router.put("/ai-settings/:provider", async (req, res) => {
   });
 });
 
-router.delete("/ai-settings/:provider", async (req, res) => {
-  const { provider } = req.params;
-  if (isFirestoreMode()) {
-    await aiSettingsRepo().remove(provider);
-    res.sendStatus(204);
+router.delete("/ai-settings/:provider", async (req, res): Promise<void> => {
+  const params = ProviderParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
     return;
   }
+  const user = currentUser(req);
   await db
     .delete(aiSettingsTable)
-    .where(eq(aiSettingsTable.provider, provider));
+    .where(
+      and(
+        eq(aiSettingsTable.userId, user.id),
+        eq(aiSettingsTable.provider, params.data.provider),
+      ),
+    );
   res.sendStatus(204);
 });
 
-router.post("/ai-settings/test/:provider", async (req, res) => {
-  const { provider } = req.params;
-  const row = isFirestoreMode()
-    ? await aiSettingsRepo().findOne({
-        filters: [{ field: "provider", operator: "==", value: provider }],
-      })
-    : (
-        await db
-          .select()
-          .from(aiSettingsTable)
-          .where(eq(aiSettingsTable.provider, provider))
-      )[0];
+router.post("/ai-settings/test/:provider", async (req, res): Promise<void> => {
+  const params = ProviderParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  const { provider } = params.data;
+  const [row] = await db
+    .select()
+    .from(aiSettingsTable)
+    .where(
+      and(
+        eq(aiSettingsTable.userId, user.id),
+        eq(aiSettingsTable.provider, provider),
+      ),
+    )
+    .limit(1);
 
   if (!row) {
-    res
-      .status(404)
-      .json({ ok: false, error: "No key saved for this provider" });
+    res.status(404).json({ ok: false, error: "No key saved for this provider" });
     return;
   }
 
@@ -223,12 +191,12 @@ router.post("/ai-settings/test/:provider", async (req, res) => {
       return;
     }
 
-    let body: object;
-    let headers: Record<string, string> = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     };
 
+    let body: object;
     if (provider === "cohere") {
       body = {
         model: row.model ?? "command-r",

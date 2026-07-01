@@ -1,15 +1,34 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
+import { authedRequest } from "../helpers";
 import app from "../../src/app";
 import { resetDb, seedTable } from "@workspace/db";
+
+// Use the in-memory mock DB so auth can find a seeded user.
+vi.mock("@workspace/db", () => {
+  const mod = require("../__mocks__/@workspace_db.ts");
+  return { ...mod, default: mod };
+});
 
 describe("RFM routes", () => {
   beforeEach(() => {
     resetDb();
+  // Test-only auth setup: seed a default user so requireAuth() accepts
+  // requests.  This pattern is shared by every test in this folder;
+  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+  seedTable("users", [{ userId: 1,
+      id: 1,
+      email: "test@example.com",
+      passwordHash: "x",
+      name: "Test",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ]);
   });
 
   it("GET /customers/rfm returns empty segments when no orders", async () => {
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.get("/api/customers/rfm");
     expect(res.status).toBe(200);
     expect(res.body.customers).toEqual([]);
@@ -82,7 +101,7 @@ describe("RFM routes", () => {
       },
     ]);
 
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.get("/api/customers/rfm");
     expect(res.status).toBe(200);
     expect(res.body.customers).toHaveLength(3);
@@ -100,8 +119,7 @@ describe("RFM routes", () => {
   });
 
   it("GET /customers/rfm handles orders without email", async () => {
-    seedTable("orders", [
-      {
+    seedTable("orders", [{ userId: 1,
         id: 10,
         customerName: "No Email",
         status: "paid",
@@ -111,7 +129,7 @@ describe("RFM routes", () => {
       },
     ]);
 
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.get("/api/customers/rfm");
     expect(res.status).toBe(200);
     expect(res.body.customers).toHaveLength(1);

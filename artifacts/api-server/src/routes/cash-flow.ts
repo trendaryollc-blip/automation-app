@@ -1,57 +1,59 @@
 import { Router, type IRouter } from "express";
-import { db } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import {
+  db,
   ordersTable,
   purchaseOrdersTable,
   adCampaignsTable,
 } from "@workspace/db";
-import { gte, and, lte } from "drizzle-orm";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
-router.get("/cash-flow/forecast", async (_req, res) => {
+router.get("/cash-flow/forecast", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const now = new Date();
-  const d90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
   const [allOrders, allPOs, allCampaigns] = await Promise.all([
-    db.select().from(ordersTable),
-    db.select().from(purchaseOrdersTable),
-    db.select().from(adCampaignsTable),
+    db.select().from(ordersTable).where(eq(ordersTable.userId, user.id)),
+    db
+      .select()
+      .from(purchaseOrdersTable)
+      .where(eq(purchaseOrdersTable.userId, user.id)),
+    db
+      .select()
+      .from(adCampaignsTable)
+      .where(eq(adCampaignsTable.userId, user.id)),
   ]);
 
   const totalRevenue = allOrders
-    .filter((o: any) => o.status !== "cancelled")
+    .filter((o) => o.status !== "cancelled")
     .reduce(
-      (s: number, o: any) =>
-        s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
+      (s, o) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
       0,
     );
 
   const totalCogs = allOrders
-    .filter((o: any) => o.status !== "cancelled")
+    .filter((o) => o.status !== "cancelled")
     .reduce(
-      (s: number, o: any) =>
-        s + Number(o.costPrice ?? 0) * Number(o.quantity ?? 1),
+      (s, o) => s + Number(o.costPrice ?? 0) * Number(o.quantity ?? 1),
       0,
     );
 
   const pendingRevenue = allOrders
-    .filter((o: any) =>
-      ["pending", "processing", "shipped"].includes(o.status ?? ""),
-    )
+    .filter((o) => ["pending", "processing", "shipped"].includes(o.status ?? ""))
     .reduce(
-      (s: number, o: any) =>
-        s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
+      (s, o) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
       0,
     );
 
   const pendingCosts = allPOs
-    .filter((p: any) => ["draft", "sent", "confirmed"].includes(p.status ?? ""))
-    .reduce((s: number, p: any) => s + Number(p.totalCost ?? 0), 0);
+    .filter((p) => ["draft", "sent", "confirmed"].includes(p.status ?? ""))
+    .reduce((s, p) => s + Number(p.totalCost ?? 0), 0);
 
   const activeAdSpend = allCampaigns
-    .filter((c: any) => c.status === "active")
-    .reduce((s: number, c: any) => s + Number(c.spend ?? 0), 0);
+    .filter((c) => c.status === "active")
+    .reduce((s, c) => s + Number(c.spend ?? 0), 0);
 
   const totalProfit = totalRevenue - totalCogs;
   const netCashPosition = totalRevenue - totalCogs - activeAdSpend;
@@ -96,7 +98,7 @@ router.get("/cash-flow/forecast", async (_req, res) => {
   }));
 
   const platformBreakdown = allCampaigns.reduce(
-    (acc: Record<string, { spend: number; revenue: number }>, c: any) => {
+    (acc: Record<string, { spend: number; revenue: number }>, c) => {
       const p = c.platform ?? "other";
       if (!acc[p]) acc[p] = { spend: 0, revenue: 0 };
       acc[p].spend += Number(c.spend ?? 0);

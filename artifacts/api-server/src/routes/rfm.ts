@@ -1,11 +1,16 @@
 import { Router, type IRouter } from "express";
-import { db } from "@workspace/db";
-import { ordersTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
+import { db, ordersTable } from "@workspace/db";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
-router.get("/customers/rfm", async (_req, res) => {
-  const orders = await db.select().from(ordersTable);
+router.get("/customers/rfm", async (req, res): Promise<void> => {
+  const user = currentUser(req);
+  const orders = await db
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.userId, user.id));
   const now = Date.now();
 
   const map: Record<

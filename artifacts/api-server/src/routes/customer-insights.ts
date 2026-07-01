@@ -1,13 +1,16 @@
 import { Router, type IRouter } from "express";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db, ordersTable } from "@workspace/db";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
-router.get("/orders/customer-insights", async (_req, res): Promise<void> => {
+router.get("/orders/customer-insights", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const allOrders = await db
     .select()
     .from(ordersTable)
+    .where(eq(ordersTable.userId, user.id))
     .orderBy(desc(ordersTable.createdAt));
 
   type CustomerBucket = {

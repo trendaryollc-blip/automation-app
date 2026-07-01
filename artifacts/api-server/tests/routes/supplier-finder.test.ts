@@ -1,15 +1,34 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
+import { authedRequest } from "../helpers";
 import app from "../../src/app";
 import { resetDb, seedTable, getTableData } from "@workspace/db";
+
+// Use the in-memory mock DB so auth can find a seeded user.
+vi.mock("@workspace/db", () => {
+  const mod = require("../__mocks__/@workspace_db.ts");
+  return { ...mod, default: mod };
+});
 
 describe("Supplier Finder routes", () => {
   beforeEach(() => {
     resetDb();
+  // Test-only auth setup: seed a default user so requireAuth() accepts
+  // requests.  This pattern is shared by every test in this folder;
+  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+  seedTable("users", [{ userId: 1,
+      id: 1,
+      email: "test@example.com",
+      passwordHash: "x",
+      name: "Test",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ]);
   });
 
   it("POST /suppliers/find returns 400 when productName missing", async () => {
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api
       .post("/api/suppliers/find")
       .send({ targetCostPrice: 10 });
@@ -18,8 +37,7 @@ describe("Supplier Finder routes", () => {
   });
 
   it("POST /suppliers/find returns matches with existing suppliers", async () => {
-    seedTable("suppliers", [
-      {
+    seedTable("suppliers", [{ userId: 1,
         id: 1,
         name: "TechSupplier Co",
         country: "China",
@@ -39,7 +57,7 @@ describe("Supplier Finder routes", () => {
       },
     ]);
 
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.post("/api/suppliers/find").send({
       productName: "Wireless Earbuds Bluetooth",
       targetCostPrice: 8,
@@ -64,7 +82,7 @@ describe("Supplier Finder routes", () => {
   });
 
   it("POST /suppliers/find works without existing suppliers", async () => {
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.post("/api/suppliers/find").send({
       productName: "Yoga Mat Premium",
     });
@@ -74,8 +92,7 @@ describe("Supplier Finder routes", () => {
   });
 
   it("GET /suppliers/find/history returns past searches", async () => {
-    seedTable("supplier_finder", [
-      {
+    seedTable("supplier_finder", [{ userId: 1,
         id: 1,
         productName: "Search 1",
         topPick: "Supplier A",
@@ -85,7 +102,7 @@ describe("Supplier Finder routes", () => {
       },
     ]);
 
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.get("/api/suppliers/find/history");
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
@@ -93,21 +110,20 @@ describe("Supplier Finder routes", () => {
   });
 
   it("DELETE /suppliers/find/history/:id returns 400 with invalid id", async () => {
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.delete("/api/suppliers/find/history/not-a-number");
     expect(res.status).toBe(400);
   });
 
   it("DELETE /suppliers/find/history/:id returns 404 for missing record", async () => {
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.delete("/api/suppliers/find/history/9999");
     expect(res.status).toBe(404);
     expect(res.body.error).toBe("Record not found");
   });
 
   it("DELETE /suppliers/find/history/:id deletes a record", async () => {
-    seedTable("supplier_finder", [
-      {
+    seedTable("supplier_finder", [{ userId: 1,
         id: 100,
         productName: "To Delete",
         topPick: "X",
@@ -117,7 +133,7 @@ describe("Supplier Finder routes", () => {
       },
     ]);
 
-    const api = request(app);
+    const api = authedRequest(app);
     const res = await api.delete("/api/suppliers/find/history/100");
     expect(res.status).toBe(204);
     expect(getTableData("supplier_finder").length).toBe(0);

@@ -1,4 +1,8 @@
 {
+  "name": "dropflow-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
   "scripts": {
     "typecheck": "pnpm -r run typecheck",
     "test": "pnpm -r run test",

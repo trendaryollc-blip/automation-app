@@ -1,46 +1,72 @@
 import { Router, type IRouter } from "express";
-import { db } from "@workspace/db";
+import { z } from "zod/v4";
+import crypto from "node:crypto";
+import { eq, desc, and } from "drizzle-orm";
 import {
+  db,
   storeConnectionsTable,
   syncLogsTable,
-  ordersTable,
 } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
-import crypto from "crypto";
-import { autoFulfillOrder } from "../services/fulfillment-engine.js";
+import { currentUser } from "../middlewares/auth.js";
 import { testCJDropshipping } from "../services/cjdropshipping.js";
 import { testZendrop } from "../services/zendrop.js";
 
 const router: IRouter = Router();
 
+// NOTE: the public `/webhooks/store` endpoint is in `store-webhooks.ts` and
+// is mounted separately BEFORE requireAuth in `routes/index.ts`.
+
 function generateApiKey(): string {
   return "df_" + crypto.randomBytes(24).toString("hex");
 }
 
-router.get("/store-connections", async (_req, res) => {
+const IdParamSchema = z.object({ id: z.coerce.number().int().positive() });
+
+const CreateConnectionBodySchema = z.object({
+  storeName: z.string().min(1).max(200),
+  storeUrl: z.string().url().max(2000).nullish(),
+  platform: z.string().max(80).default("custom"),
+  notes: z.string().max(4000).nullish(),
+  config: z.record(z.string(), z.unknown()).nullish(),
+});
+
+const UpdateConnectionBodySchema = z.object({
+  storeName: z.string().min(1).max(200).optional(),
+  storeUrl: z.string().url().max(2000).nullish(),
+  platform: z.string().max(80).optional(),
+  notes: z.string().max(4000).nullish(),
+  status: z.string().max(80).optional(),
+  config: z.record(z.string(), z.unknown()).nullish(),
+});
+
+router.get("/store-connections", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const connections = await db
     .select()
     .from(storeConnectionsTable)
+    .where(eq(storeConnectionsTable.userId, user.id))
     .orderBy(desc(storeConnectionsTable.createdAt));
-  res.json(connections);
+  res.json(
+    connections.map((c) => ({
+      ...c,
+      config: c.config ? JSON.parse(c.config) : null,
+    })),
+  );
 });
 
-router.post("/store-connections", async (req, res) => {
-  const { storeName, storeUrl, platform, notes, config } = req.body as {
-    storeName?: string;
-    storeUrl?: string;
-    platform?: string;
-    notes?: string;
-    config?: Record<string, unknown> | null;
-  };
-  if (!storeName) {
-    res.status(400).json({ error: "storeName is required" });
+router.post("/store-connections", async (req, res): Promise<void> => {
+  const parsed = CreateConnectionBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const user = currentUser(req);
+  const { storeName, storeUrl, platform, notes, config } = parsed.data;
   const apiKey = generateApiKey();
   const [conn] = await db
     .insert(storeConnectionsTable)
     .values({
+      userId: user.id,
       storeName,
       storeUrl: storeUrl ?? null,
       platform: platform ?? "custom",
@@ -50,14 +76,25 @@ router.post("/store-connections", async (req, res) => {
       config: config ? JSON.stringify(config) : null,
     })
     .returning();
-  res
-    .status(201)
-    .json({ ...conn, config: conn.config ? JSON.parse(conn.config) : null });
+  res.status(201).json({
+    ...conn,
+    config: conn.config ? JSON.parse(conn.config) : null,
+  });
 });
 
-router.patch("/store-connections/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
-  const { config, ...rest } = req.body as Record<string, unknown>;
+router.patch("/store-connections/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const parsed = UpdateConnectionBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  const { config, ...rest } = parsed.data;
   const updateData: Record<string, unknown> = {
     ...rest,
     updatedAt: new Date(),
@@ -68,7 +105,12 @@ router.patch("/store-connections/:id", async (req, res) => {
   const [updated] = await db
     .update(storeConnectionsTable)
     .set(updateData)
-    .where(eq(storeConnectionsTable.id, id))
+    .where(
+      and(
+        eq(storeConnectionsTable.id, params.data.id),
+        eq(storeConnectionsTable.userId, user.id),
+      ),
+    )
     .returning();
   if (!updated) {
     res.status(404).json({ error: "Not found" });
@@ -80,46 +122,99 @@ router.patch("/store-connections/:id", async (req, res) => {
   });
 });
 
-router.delete("/store-connections/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
+router.delete("/store-connections/:id", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const user = currentUser(req);
   await db
     .delete(storeConnectionsTable)
-    .where(eq(storeConnectionsTable.id, id));
+    .where(
+      and(
+        eq(storeConnectionsTable.id, params.data.id),
+        eq(storeConnectionsTable.userId, user.id),
+      ),
+    );
   res.json({ success: true });
 });
 
-router.get("/store-connections/:id/logs", async (req, res) => {
-  const id = parseInt(req.params.id);
+router.get("/store-connections/:id/logs", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  // Verify ownership before returning logs.
+  const [owned] = await db
+    .select({ id: storeConnectionsTable.id })
+    .from(storeConnectionsTable)
+    .where(
+      and(
+        eq(storeConnectionsTable.id, params.data.id),
+        eq(storeConnectionsTable.userId, user.id),
+      ),
+    )
+    .limit(1);
+  if (!owned) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   const logs = await db
     .select()
     .from(syncLogsTable)
-    .where(eq(syncLogsTable.storeConnectionId, id))
+    .where(eq(syncLogsTable.storeConnectionId, params.data.id))
     .orderBy(desc(syncLogsTable.createdAt))
     .limit(50);
   res.json(logs);
 });
 
-router.post("/store-connections/:id/regenerate-key", async (req, res) => {
-  const id = parseInt(req.params.id);
-  const newKey = generateApiKey();
-  const [updated] = await db
-    .update(storeConnectionsTable)
-    .set({ apiKey: newKey, updatedAt: new Date() })
-    .where(eq(storeConnectionsTable.id, id))
-    .returning();
-  if (!updated) {
-    res.status(404).json({ error: "Not found" });
+router.post(
+  "/store-connections/:id/regenerate-key",
+  async (req, res): Promise<void> => {
+    const params = IdParamSchema.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+    const user = currentUser(req);
+    const newKey = generateApiKey();
+    const [updated] = await db
+      .update(storeConnectionsTable)
+      .set({ apiKey: newKey, updatedAt: new Date() })
+      .where(
+        and(
+          eq(storeConnectionsTable.id, params.data.id),
+          eq(storeConnectionsTable.userId, user.id),
+        ),
+      )
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    res.json(updated);
+  },
+);
+
+router.post("/store-connections/:id/test", async (req, res): Promise<void> => {
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
     return;
   }
-  res.json(updated);
-});
-
-router.post("/store-connections/:id/test", async (req, res) => {
-  const id = parseInt(req.params.id);
+  const user = currentUser(req);
   const [conn] = await db
     .select()
     .from(storeConnectionsTable)
-    .where(eq(storeConnectionsTable.id, id));
+    .where(
+      and(
+        eq(storeConnectionsTable.id, params.data.id),
+        eq(storeConnectionsTable.userId, user.id),
+      ),
+    );
   if (!conn) {
     res.status(404).json({ error: "Not found" });
     return;
@@ -146,121 +241,6 @@ router.post("/store-connections/:id/test", async (req, res) => {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
     res.status(400).json({ ok: false, error: msg });
-  }
-});
-
-router.post("/webhooks/store", async (req, res) => {
-  const apiKey = req.headers["x-dropflow-key"] as string | undefined;
-  if (!apiKey) {
-    res.status(401).json({ error: "Missing X-DropFlow-Key header" });
-    return;
-  }
-
-  const [conn] = await db
-    .select()
-    .from(storeConnectionsTable)
-    .where(eq(storeConnectionsTable.apiKey, apiKey));
-  if (!conn) {
-    res.status(401).json({ error: "Invalid API key" });
-    return;
-  }
-  if (conn.status !== "active") {
-    res.status(403).json({ error: "Store connection is disabled" });
-    return;
-  }
-
-  const { event, order, product } = req.body as {
-    event?: string;
-    order?: {
-      orderNumber?: string;
-      customerName?: string;
-      customerEmail?: string;
-      productName?: string;
-      quantity?: number;
-      sellPrice?: number;
-      costPrice?: number;
-      status?: string;
-      notes?: string;
-      shippingAddress?: string;
-    };
-    product?: {
-      name?: string;
-      category?: string;
-      sellPrice?: number;
-      costPrice?: number;
-      description?: string;
-      imageUrl?: string;
-      sourceUrl?: string;
-      stockQuantity?: number;
-    };
-  };
-
-  let logStatus = "success";
-  let logError: string | null = null;
-
-  try {
-    if (event === "order.created" || event === "order.updated") {
-      if (!order) throw new Error("order object required for order events");
-      const count = await db.select().from(ordersTable);
-      const autoNumber =
-        order.orderNumber ??
-        `${conn.storeName.toUpperCase().replace(/\s+/g, "").slice(0, 4)}-${String(count.length + 1).padStart(4, "0")}`;
-      await db.insert(ordersTable).values({
-        orderNumber: autoNumber,
-        customerName: order.customerName ?? "Unknown",
-        customerEmail: order.customerEmail ?? null,
-        productName: order.productName ?? "Unknown Product",
-        quantity: order.quantity ?? 1,
-        sellPrice: order.sellPrice?.toString() ?? "0",
-        costPrice: order.costPrice?.toString() ?? null,
-        status: order.status ?? "pending",
-        shippingAddress: order.shippingAddress ?? null,
-      });
-      await db
-        .update(storeConnectionsTable)
-        .set({
-          totalOrdersSynced: conn.totalOrdersSynced + 1,
-          lastSyncedAt: new Date(),
-          updatedAt: new Date(),
-        })
-        .where(eq(storeConnectionsTable.id, conn.id));
-
-      // Trigger auto-fulfillment engine (non-blocking)
-      const [inserted] = await db
-        .select()
-        .from(ordersTable)
-        .where(eq(ordersTable.orderNumber, autoNumber));
-      if (inserted) {
-        autoFulfillOrder({
-          id: inserted.id,
-          orderNumber: inserted.orderNumber ?? autoNumber,
-          customerName: inserted.customerName ?? "Unknown",
-          productName: inserted.productName ?? "Unknown Product",
-          quantity: inserted.quantity ?? 1,
-          sellPrice: inserted.sellPrice ?? null,
-          storeSource: conn.storeName ?? "unknown",
-        }).catch(() => {});
-      }
-    } else {
-      throw new Error(`Unknown event type: ${event}`);
-    }
-  } catch (err: any) {
-    logStatus = "error";
-    logError = err?.message ?? "Unknown error";
-  }
-
-  await db.insert(syncLogsTable).values({
-    storeConnectionId: conn.id,
-    event: event ?? "unknown",
-    status: logStatus,
-    payload: JSON.stringify(req.body).slice(0, 2000),
-    error: logError,
-  });
-
-  if (logStatus === "error") {
-    res.status(400).json({ error: logError });
-  } else {
-    res.json({ success: true, event });
   }
 });
 

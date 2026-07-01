@@ -2,7 +2,18 @@ import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Component, ErrorInfo, ReactNode } from "react";
 import NotFound from "@/pages/not-found";
+
+import { AuthProvider } from "./contexts/auth-context";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import Login from "./pages/login";
+import Signup from "./pages/signup";
+import ForgotPassword from "./pages/forgot-password";
+import ResetPassword from "./pages/reset-password";
+import Terms from "./pages/terms";
+import Privacy from "./pages/privacy";
+import VerifyEmail from "./pages/verify-email";
 
 import Layout from "./components/layout";
 import Dashboard from "./pages/dashboard";
@@ -34,58 +45,220 @@ import AdSpendPage from "./pages/ad-spend";
 import StoreConnectionsPage from "./pages/store-connections";
 import AISettingsPage from "./pages/ai-settings";
 import FulfillmentPage from "./pages/fulfillment";
+import ProductHuntingPage from "./pages/product-hunting";
+import CustomerIntelligencePage from "./pages/customer-intelligence";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+/**
+ * Top-level error boundary.  Catches uncaught render errors anywhere
+ * in the tree, logs them, and shows a friendly fallback.  Without
+ * this, an exception in any component would unmount the whole app.
+ */
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: Error | null }
+> {
+  state = { error: null as Error | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    // eslint-disable-next-line no-console
+    console.error("Uncaught render error", { error, info });
+    // Optional: report to a future Sentry / telemetry endpoint.
+    const dsn = (import.meta as unknown as { env?: Record<string, string> })
+      .env?.VITE_SENTRY_DSN;
+    if (!dsn) return;
+    try {
+      fetch(dsn, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: error.message,
+          stack: error.stack,
+          info: info.componentStack,
+        }),
+        keepalive: true,
+      }).catch(() => {
+        /* best-effort */
+      });
+    } catch {
+      /* ignore */
+    }
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-background p-6">
+          <div className="max-w-md rounded-lg border border-border bg-card p-6 shadow-sm">
+            <h1 className="text-lg font-semibold tracking-tight">
+              Something went wrong
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              The page hit an unexpected error. Please refresh, and if the
+              problem persists, contact support.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Reload
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+/**
+ * Helper: render a route inside the authenticated layout.  Every
+ * business page goes through this so that unauthenticated users are
+ * redirected to /login and the page chrome (sidebar, etc.) is shared.
+ */
+const Authed = ({ Component }: { Component: React.ComponentType }) => (
+  <Layout>
+    <Component />
+  </Layout>
+);
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/products" component={Products} />
-        <Route path="/products/:id" component={ProductDetail} />
-        <Route path="/research" component={Research} />
-        <Route path="/suppliers" component={Suppliers} />
-        <Route path="/suppliers/find" component={SupplierFinder} />
-        <Route path="/suppliers/:id" component={SupplierDetail} />
-        <Route path="/orders" component={Orders} />
-        <Route path="/orders/:id" component={OrderDetail} />
-        <Route path="/margin-calculator" component={MarginCalculator} />
-        <Route path="/price-watch" component={PriceWatch} />
-        <Route path="/pl-report" component={PlReport} />
-        <Route path="/reorder" component={Reorder} />
-        <Route path="/notifications" component={Notifications} />
-        <Route path="/settings" component={SettingsPage} />
-        <Route path="/import" component={ImportPage} />
-        <Route path="/analytics" component={AnalyticsPage} />
-        <Route path="/purchase-orders" component={PurchaseOrdersPage} />
-        <Route path="/returns" component={ReturnsPage} />
-        <Route path="/customers" component={CustomersPage} />
-        <Route path="/velocity" component={VelocityPage} />
-        <Route path="/promotions" component={PromotionsPage} />
-        <Route path="/cash-flow" component={CashFlowPage} />
-        <Route path="/product-scorer" component={ProductScorerPage} />
-        <Route path="/launches" component={LaunchesPage} />
-        <Route path="/ad-spend" component={AdSpendPage} />
-        <Route path="/store-connections" component={StoreConnectionsPage} />
-        <Route path="/ai-settings" component={AISettingsPage} />
-        <Route path="/fulfillment" component={FulfillmentPage} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      {/* Public auth routes — no chrome, no ProtectedRoute. */}
+      <Route path="/login" component={Login} />
+      <Route path="/signup" component={Signup} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/verify-email" component={VerifyEmail} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
+
+      {/* Everything else requires authentication. */}
+      <Route path="/">
+        <Authed Component={Dashboard} />
+      </Route>
+      <Route path="/products">
+        <Authed Component={Products} />
+      </Route>
+      <Route path="/products/:id">
+        <Authed Component={ProductDetail} />
+      </Route>
+      <Route path="/research">
+        <Authed Component={Research} />
+      </Route>
+      <Route path="/suppliers">
+        <Authed Component={Suppliers} />
+      </Route>
+      <Route path="/suppliers/find">
+        <Authed Component={SupplierFinder} />
+      </Route>
+      <Route path="/suppliers/:id">
+        <Authed Component={SupplierDetail} />
+      </Route>
+      <Route path="/orders">
+        <Authed Component={Orders} />
+      </Route>
+      <Route path="/orders/:id">
+        <Authed Component={OrderDetail} />
+      </Route>
+      <Route path="/margin-calculator">
+        <Authed Component={MarginCalculator} />
+      </Route>
+      <Route path="/price-watch">
+        <Authed Component={PriceWatch} />
+      </Route>
+      <Route path="/pl-report">
+        <Authed Component={PlReport} />
+      </Route>
+      <Route path="/reorder">
+        <Authed Component={Reorder} />
+      </Route>
+      <Route path="/notifications">
+        <Authed Component={Notifications} />
+      </Route>
+      <Route path="/settings">
+        <Authed Component={SettingsPage} />
+      </Route>
+      <Route path="/import">
+        <Authed Component={ImportPage} />
+      </Route>
+      <Route path="/analytics">
+        <Authed Component={AnalyticsPage} />
+      </Route>
+      <Route path="/purchase-orders">
+        <Authed Component={PurchaseOrdersPage} />
+      </Route>
+      <Route path="/returns">
+        <Authed Component={ReturnsPage} />
+      </Route>
+      <Route path="/customers">
+        <Authed Component={CustomersPage} />
+      </Route>
+      <Route path="/velocity">
+        <Authed Component={VelocityPage} />
+      </Route>
+      <Route path="/promotions">
+        <Authed Component={PromotionsPage} />
+      </Route>
+      <Route path="/cash-flow">
+        <Authed Component={CashFlowPage} />
+      </Route>
+      <Route path="/product-scorer">
+        <Authed Component={ProductScorerPage} />
+      </Route>
+      <Route path="/launches">
+        <Authed Component={LaunchesPage} />
+      </Route>
+      <Route path="/ad-spend">
+        <Authed Component={AdSpendPage} />
+      </Route>
+      <Route path="/store-connections">
+        <Authed Component={StoreConnectionsPage} />
+      </Route>
+      <Route path="/ai-settings">
+        <Authed Component={AISettingsPage} />
+      </Route>
+      <Route path="/fulfillment">
+        <Authed Component={FulfillmentPage} />
+      </Route>
+      <Route path="/product-hunting">
+        <Authed Component={ProductHuntingPage} />
+      </Route>
+      <Route path="/customer-intelligence">
+        <Authed Component={CustomerIntelligencePage} />
+      </Route>
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

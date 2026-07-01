@@ -3,6 +3,10 @@
  *
  * This provides a query interface similar to Drizzle ORM so that
  * API route handlers can work with either PostgreSQL or Firestore.
+ *
+ * All queries that touch a business collection MUST include a
+ * `userId` filter.  Use the `userIdFilter()` helper from
+ * `./collections` to build one.
  */
 
 import { getFirestoreDb, isFirestoreMode, logger } from "./index";
@@ -42,7 +46,12 @@ export function createRepository<T extends Record<string, unknown>>(
   const collection = () => db().collection(collectionName);
 
   /**
-   * Find all documents matching the query options
+   * Find all documents matching the query options.
+   *
+   * NOTE: Callers MUST pass a `userId` filter (or the equivalent
+   * ownership filter) in `options.filters` for business collections.
+   * The repository does NOT enforce this — it's the caller's job to
+   * thread `userId` from the authenticated request.
    */
   async function findMany(options?: QueryOptions): Promise<T[]> {
     let query: FirebaseFirestore.Query = collection();
@@ -73,7 +82,10 @@ export function createRepository<T extends Record<string, unknown>>(
   }
 
   /**
-   * Find a single document by ID
+   * Find a single document by ID.
+   *
+   * Callers MUST verify ownership against the authenticated user after
+   * fetching.
    */
   async function findById(id: string): Promise<T | null> {
     const doc = await collection().doc(id).get();
@@ -82,7 +94,10 @@ export function createRepository<T extends Record<string, unknown>>(
   }
 
   /**
-   * Find a single document matching the filters
+   * Find a single document matching the filters.
+   *
+   * Callers MUST include a `userId` filter in `options.filters` for
+   * business collections.
    */
   async function findOne(options: QueryOptions): Promise<T | null> {
     const results = await findMany({ ...options, limit: 1 });
@@ -90,7 +105,7 @@ export function createRepository<T extends Record<string, unknown>>(
   }
 
   /**
-   * Create a new document
+   * Create a new document.
    */
   async function create(data: Partial<T>): Promise<T> {
     const docRef = await collection().add(data as Record<string, unknown>);
@@ -99,7 +114,7 @@ export function createRepository<T extends Record<string, unknown>>(
   }
 
   /**
-   * Create a new document with a specific ID
+   * Create a new document with a specific ID.
    */
   async function createWithId(id: string, data: Partial<T>): Promise<T> {
     await collection()
@@ -110,7 +125,10 @@ export function createRepository<T extends Record<string, unknown>>(
   }
 
   /**
-   * Update a document by ID
+   * Update a document by ID.
+   *
+   * Callers MUST verify ownership against the authenticated user before
+   * calling this.
    */
   async function update(id: string, data: Partial<T>): Promise<T | null> {
     await collection()
@@ -120,7 +138,10 @@ export function createRepository<T extends Record<string, unknown>>(
   }
 
   /**
-   * Delete a document by ID
+   * Delete a document by ID.
+   *
+   * Callers MUST verify ownership against the authenticated user before
+   * calling this.
    */
   async function remove(id: string): Promise<boolean> {
     await collection().doc(id).delete();
@@ -128,7 +149,9 @@ export function createRepository<T extends Record<string, unknown>>(
   }
 
   /**
-   * Count documents matching the filters
+   * Count documents matching the filters.
+   *
+   * Callers MUST include a `userId` filter for business collections.
    */
   async function count(options?: { filters?: QueryFilter[] }): Promise<number> {
     let query: FirebaseFirestore.Query = collection();
@@ -159,6 +182,7 @@ export function createRepository<T extends Record<string, unknown>>(
 // Pre-built Repositories
 // =============================================================================
 
+export const usersRepo = () => createRepository(COLLECTIONS.USERS);
 export const productsRepo = () => createRepository(COLLECTIONS.PRODUCTS);
 export const suppliersRepo = () => createRepository(COLLECTIONS.SUPPLIERS);
 export const ordersRepo = () => createRepository(COLLECTIONS.ORDERS);
@@ -177,8 +201,9 @@ export const priceSnapshotsRepo = () =>
 export const productTagsRepo = () => createRepository(COLLECTIONS.PRODUCT_TAGS);
 export const storeConnectionsRepo = () =>
   createRepository(COLLECTIONS.STORE_CONNECTIONS);
+export const syncLogsRepo = () => createRepository(COLLECTIONS.SYNC_LOGS);
 export const launchesRepo = () => createRepository(COLLECTIONS.LAUNCHES);
-export const adCampaignsRepo = () => createRepository(COLLECTIONS.AD_CAMPAIGNS);
+export const adCampaignsRepo = () => createRepository(COLLECTIONS.AD_CAMPAINS);
 export const aiSettingsRepo = () => createRepository(COLLECTIONS.AI_SETTINGS);
 export const customerInsightsRepo = () =>
   createRepository(COLLECTIONS.CUSTOMER_INSIGHTS);

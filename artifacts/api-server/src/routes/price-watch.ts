@@ -1,13 +1,37 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, count, sql } from "drizzle-orm";
-import { db, priceWatchTable, priceSnapshotsTable } from "@workspace/db";
+import { z } from "zod/v4";
+import { eq, desc, and } from "drizzle-orm";
+import {
+  db,
+  priceWatchTable,
+  priceSnapshotsTable,
+} from "@workspace/db";
+import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
-router.get("/price-watch", async (_req, res): Promise<void> => {
+const CreatePriceWatchBodySchema = z.object({
+  name: z.string().min(1).max(200),
+  url: z.string().url().max(2000),
+  myPrice: z.number().nonnegative().nullish(),
+  notes: z.string().max(4000).nullish(),
+  productId: z.union([z.number(), z.string()]).nullish(),
+  targetPrice: z.union([z.number(), z.string()]).nullish(),
+});
+
+const IdParamSchema = z.object({ id: z.coerce.number().int().positive() });
+
+const SnapshotBodySchema = z.object({
+  price: z.number().nonnegative(),
+  note: z.string().max(2000).nullish(),
+});
+
+router.get("/price-watch", async (req, res): Promise<void> => {
+  const user = currentUser(req);
   const watches = await db
     .select()
     .from(priceWatchTable)
+    .where(eq(priceWatchTable.userId, user.id))
     .orderBy(desc(priceWatchTable.createdAt));
 
   const result = await Promise.all(
@@ -18,21 +42,31 @@ router.get("/price-watch", async (_req, res): Promise<void> => {
           recordedAt: priceSnapshotsTable.recordedAt,
         })
         .from(priceSnapshotsTable)
-        .where(eq(priceSnapshotsTable.watchId, w.id))
+        .where(
+          and(
+            eq(priceSnapshotsTable.watchId, w.id),
+            eq(priceSnapshotsTable.userId, user.id),
+          ),
+        )
         .orderBy(desc(priceSnapshotsTable.recordedAt))
         .limit(1);
 
-      const [cnt] = await db
-        .select({ total: count() })
+      const snapshots = await db
+        .select()
         .from(priceSnapshotsTable)
-        .where(eq(priceSnapshotsTable.watchId, w.id));
+        .where(
+          and(
+            eq(priceSnapshotsTable.watchId, w.id),
+            eq(priceSnapshotsTable.userId, user.id),
+          ),
+        );
 
       return {
         ...w,
         myPrice: w.myPrice != null ? Number(w.myPrice) : null,
         latestPrice: latest ? Number(latest.price) : null,
         latestRecordedAt: latest ? latest.recordedAt.toISOString() : null,
-        snapshotCount: Number(cnt?.total ?? 0),
+        snapshotCount: snapshots.length,
         createdAt: w.createdAt.toISOString(),
         updatedAt: w.updatedAt.toISOString(),
       };
@@ -43,48 +77,30 @@ router.get("/price-watch", async (_req, res): Promise<void> => {
 });
 
 router.post("/price-watch", async (req, res): Promise<void> => {
-  const { name, url, myPrice, notes, productId, targetPrice } = req.body as {
-    name: string;
-    url: string;
-    myPrice?: number | null;
-    notes?: string | null;
-    productId?: number | string | null;
-    targetPrice?: number | string | null;
-  };
-
-  const normalizedName =
-    typeof name === "string" && name.trim() ? name.trim() : null;
-  const normalizedUrl =
-    typeof url === "string" && url.trim() ? url.trim() : null;
-  const hasPayload = Boolean(
-    normalizedName || normalizedUrl || productId != null || targetPrice != null,
-  );
-  const fallbackName =
-    productId != null ? `Product ${String(productId)}` : "Tracked Product";
-  const fallbackUrl =
-    productId != null
-      ? `https://example.com/products/${String(productId)}`
-      : "https://example.com/products/unknown";
-
-  const resolvedName = normalizedName ?? fallbackName;
-  const resolvedUrl = normalizedUrl ?? fallbackUrl;
-
-  if (!hasPayload || !resolvedName || !resolvedUrl) {
-    res.status(400).json({ error: "name and url are required" });
+  const parsed = CreatePriceWatchBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const user = currentUser(req);
+  const { name, url, myPrice, notes, productId, targetPrice } = parsed.data;
+
+  const normalizedName = name.trim();
+  const normalizedUrl = url.trim();
+  const resolvedMyPrice =
+    myPrice != null
+      ? String(myPrice)
+      : targetPrice != null
+        ? String(targetPrice)
+        : null;
 
   const [created] = await db
     .insert(priceWatchTable)
     .values({
-      name: resolvedName,
-      url: resolvedUrl,
-      myPrice:
-        myPrice != null
-          ? String(myPrice)
-          : targetPrice != null
-            ? String(targetPrice)
-            : null,
+      userId: user.id,
+      name: normalizedName,
+      url: normalizedUrl,
+      myPrice: resolvedMyPrice,
       notes: notes ?? null,
     })
     .returning();
@@ -101,28 +117,41 @@ router.post("/price-watch", async (req, res): Promise<void> => {
 });
 
 router.delete("/price-watch/:id", async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid id" });
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
     return;
   }
-  await db.delete(priceWatchTable).where(eq(priceWatchTable.id, id));
+  const user = currentUser(req);
+  // Snapshots cascade via the FK in the schema.
+  await db
+    .delete(priceWatchTable)
+    .where(
+      and(
+        eq(priceWatchTable.id, params.data.id),
+        eq(priceWatchTable.userId, user.id),
+      ),
+    );
   res.status(204).send();
 });
 
 router.get("/price-watch/:id/snapshots", async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid id" });
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
     return;
   }
-
+  const user = currentUser(req);
   const snapshots = await db
     .select()
     .from(priceSnapshotsTable)
-    .where(eq(priceSnapshotsTable.watchId, id))
+    .where(
+      and(
+        eq(priceSnapshotsTable.watchId, params.data.id),
+        eq(priceSnapshotsTable.userId, user.id),
+      ),
+    )
     .orderBy(priceSnapshotsTable.recordedAt);
-
   res.json(
     snapshots.map((s) => ({
       ...s,
@@ -133,28 +162,54 @@ router.get("/price-watch/:id/snapshots", async (req, res): Promise<void> => {
 });
 
 router.post("/price-watch/:id/snapshots", async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid id" });
+  const params = IdParamSchema.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
     return;
   }
+  const parsed = SnapshotBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const user = currentUser(req);
 
-  const { price, note } = req.body as { price: number; note?: string | null };
-  if (price == null || isNaN(Number(price))) {
-    res.status(400).json({ error: "price is required" });
+  // Verify the parent watch belongs to this user before inserting the snapshot.
+  const [watch] = await db
+    .select({ id: priceWatchTable.id })
+    .from(priceWatchTable)
+    .where(
+      and(
+        eq(priceWatchTable.id, params.data.id),
+        eq(priceWatchTable.userId, user.id),
+      ),
+    )
+    .limit(1);
+  if (!watch) {
+    res.status(404).json({ error: "Price watch not found" });
     return;
   }
 
   const [snap] = await db
     .insert(priceSnapshotsTable)
-    .values({ watchId: id, price: String(price), note: note ?? null })
+    .values({
+      userId: user.id,
+      watchId: params.data.id,
+      price: String(parsed.data.price),
+      note: parsed.data.note ?? null,
+    })
     .returning();
 
-  // bump updatedAt on the watch
+  // Bump the parent watch's updatedAt so the list view reflects activity.
   await db
     .update(priceWatchTable)
-    .set({ updatedAt: sql`now()` })
-    .where(eq(priceWatchTable.id, id));
+    .set({ updatedAt: new Date() })
+    .where(
+      and(
+        eq(priceWatchTable.id, params.data.id),
+        eq(priceWatchTable.userId, user.id),
+      ),
+    );
 
   res.status(201).json({
     ...snap,
