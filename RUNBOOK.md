@@ -17,10 +17,10 @@ dedicated doc instead.
 
 ## Health endpoints
 
-| Endpoint       | Purpose                              | What 5xx means                |
-| -------------- | ------------------------------------ | ----------------------------- |
-| `/api/healthz` | Liveness — "is the process up?"      | Process crashed / not booted  |
-| `/api/readyz`  | Readiness — "is the DB reachable?"   | DB outage, blocked by 503     |
+| Endpoint       | Purpose                            | What 5xx means               |
+| -------------- | ---------------------------------- | ---------------------------- |
+| `/api/healthz` | Liveness — "is the process up?"    | Process crashed / not booted |
+| `/api/readyz`  | Readiness — "is the DB reachable?" | DB outage, blocked by 503    |
 
 The uptime monitor should poll `/api/healthz` every 60s with a 5s
 timeout. Alert on 2 consecutive failures.
@@ -32,16 +32,16 @@ timeout. Alert on 2 consecutive failures.
 1. Check Sentry for new errors tagged with `signup` or `email`.
 2. In Resend, look at the "Logs" tab for failed sends and bounces.
 3. Confirm `EMAIL_PROVIDER=resend` and `RESEND_API_KEY` are set in
-   Vercel (Settings → Environment Variables).  Rotate the key if it
+   Vercel (Settings → Environment Variables). Rotate the key if it
    leaked.
-4. Confirm `EMAIL_FROM` is on a verified domain.  Resend will reject
+4. Confirm `EMAIL_FROM` is on a verified domain. Resend will reject
    otherwise.
 
 ### 2. "Users can't log in" / "JWT errors in Sentry"
 
-1. Check `JWT_SECRET` in Vercel.  If it was rotated, **all sessions are
-   invalidated** — that is expected.  Communicate via status page.
-2. Confirm `NODE_ENV=production` in Vercel.  If dev, the per-process
+1. Check `JWT_SECRET` in Vercel. If it was rotated, **all sessions are
+   invalidated** — that is expected. Communicate via status page.
+2. Confirm `NODE_ENV=production` in Vercel. If dev, the per-process
    fallback secret is in use and every cold start invalidates
    sessions.
 3. Check Postgres connectivity from `/api/readyz`.
@@ -50,12 +50,12 @@ timeout. Alert on 2 consecutive failures.
 
 1. Check Vercel logs for repeated `db.execute` timeouts.
 2. In your DB console, run `SELECT * FROM pg_stat_activity ORDER BY
-   query_start DESC LIMIT 20;` to see long-running queries.
+query_start DESC LIMIT 20;` to see long-running queries.
 3. If a specific route is hot, check for missing indexes — most tables
    have `userId` indexed by FK convention; `orders` has additional
    indexes on `createdAt` and `status` in the schema.
 4. As a stop-gap, scale up the DB plan or add a connection pooler
-   (PgBouncer / Neon pooler).  Restart function instances by
+   (PgBouncer / Neon pooler). Restart function instances by
    re-deploying if needed.
 
 ### 4. "Sentry is full of 500s"
@@ -67,14 +67,14 @@ timeout. Alert on 2 consecutive failures.
 
 ### 5. "I need to disable signup RIGHT NOW"
 
-Set `SIGNUP_ENABLED=false` in Vercel env vars and re-deploy.  The
-`POST /api/auth/signup` endpoint will return 403.  This is
+Set `SIGNUP_ENABLED=false` in Vercel env vars and re-deploy. The
+`POST /api/auth/signup` endpoint will return 403. This is
 documented and tested in `env.ts` and `auth.ts`.
 
 ### 6. "I need to roll back the last deploy"
 
 Vercel → Project → Deployments → click the previous successful
-deployment → "Promote to Production".  One click, takes ~30s.  No DB
+deployment → "Promote to Production". One click, takes ~30s. No DB
 migration rollback is needed for app-only rollbacks.
 
 ### 7. "I think a customer has been compromised"
@@ -98,12 +98,12 @@ migration rollback is needed for app-only rollbacks.
 
 ## Secrets rotation schedule
 
-| Secret            | Rotation cadence             | Owner       |
-| ----------------- | ---------------------------- | ----------- |
-| `JWT_SECRET`      | Quarterly + on compromise    | Eng on-call |
-| `RESEND_API_KEY`  | Annually + on compromise     | Eng on-call |
-| `SENTRY_DSN`      | On compromise only           | Eng on-call |
-| `DATABASE_URL`    | Quarterly (DB user password) | Eng on-call |
+| Secret           | Rotation cadence             | Owner       |
+| ---------------- | ---------------------------- | ----------- |
+| `JWT_SECRET`     | Quarterly + on compromise    | Eng on-call |
+| `RESEND_API_KEY` | Annually + on compromise     | Eng on-call |
+| `SENTRY_DSN`     | On compromise only           | Eng on-call |
+| `DATABASE_URL`   | Quarterly (DB user password) | Eng on-call |
 
 ## When in doubt
 

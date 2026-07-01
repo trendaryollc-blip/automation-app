@@ -45,23 +45,23 @@ vi.mock("wouter", () => ({
 import Layout from "../../src/components/layout";
 
 describe("Layout", () => {
-it("renders navigation groups and notifications badge", async () => {
-  render(
-    <Layout>
-      <div>page content</div>
-    </Layout>,
-  );
+  it("renders navigation groups and notifications badge", async () => {
+    render(
+      <Layout>
+        <div>page content</div>
+      </Layout>,
+    );
 
-  // Title
-  expect(screen.getByText("DropFlow")).toBeTruthy();
+    // Title
+    expect(screen.getByText("DropFlow")).toBeTruthy();
 
-  // Dashboard link present
-  expect(screen.getByText("Dashboard")).toBeTruthy();
+    // Dashboard link present
+    expect(screen.getByText("Dashboard")).toBeTruthy();
 
-  // Settings link present
-  expect(screen.getByText("Settings")).toBeTruthy();
+    // Settings link present
+    expect(screen.getByText("Settings")).toBeTruthy();
 
-  // Notification badge should show combined alerts (1 stock + 1 price)
-  expect(screen.getAllByText("2").length).toBeGreaterThan(0);
-});
+    // Notification badge should show combined alerts (1 stock + 1 price)
+    expect(screen.getAllByText("2").length).toBeGreaterThan(0);
+  });
 });

@@ -93,22 +93,22 @@ vi.mock("@workspace/api-client-react", () => ({
 import Dashboard from "../../src/pages/dashboard";
 
 describe("Dashboard", () => {
-it("Dashboard renders key statistics and stock alert banner", async () => {
-  render(<Dashboard />);
+  it("Dashboard renders key statistics and stock alert banner", async () => {
+    render(<Dashboard />);
 
-  expect(await screen.findByText("War Room")).toBeTruthy();
-  expect(screen.getByText(/All Systems Operational/i)).toBeTruthy();
-  expect(screen.getByText(/running low on stock/i)).toBeTruthy();
-  expect(screen.getAllByText("Total Revenue")[0]).toBeTruthy();
-  expect(screen.getAllByText("Net Profit")[0]).toBeTruthy();
-});
+    expect(await screen.findByText("War Room")).toBeTruthy();
+    expect(screen.getByText(/All Systems Operational/i)).toBeTruthy();
+    expect(screen.getByText(/running low on stock/i)).toBeTruthy();
+    expect(screen.getAllByText("Total Revenue")[0]).toBeTruthy();
+    expect(screen.getAllByText("Net Profit")[0]).toBeTruthy();
+  });
 
-it("Dashboard switches period buttons", async () => {
-  render(<Dashboard />);
+  it("Dashboard switches period buttons", async () => {
+    render(<Dashboard />);
 
-  const user = userEvent.setup();
-  const monthly = await screen.findByText("Monthly");
-  await user.click(monthly);
-  expect(monthly).toBeTruthy();
-});
+    const user = userEvent.setup();
+    const monthly = await screen.findByText("Monthly");
+    await user.click(monthly);
+    expect(monthly).toBeTruthy();
+  });
 });

@@ -1,36 +1,36 @@
 # Sub-processors and data residency
 
-DropFlow uses a small number of third-party services to run.  Under
+DropFlow uses a small number of third-party services to run. Under
 GDPR and most privacy regulations, every third party that processes
 customer data is a "sub-processor" and must be disclosed in the
 Privacy Policy and (where required) in a Data Processing Agreement
 (DPA).
 
 > **Action required before public launch:** Have a lawyer review this
-> list.  Update `pages/privacy.tsx` to mention every entry below,
+> list. Update `pages/privacy.tsx` to mention every entry below,
 > link to each provider's privacy / DPA page, and disclose data
 > residency.
 
 ## Infrastructure
 
-| Provider       | What we use it for                    | Data processed                       | Region(s)              | DPA / Privacy                                                                                                                  |
-| -------------- | ------------------------------------- | ------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Vercel         | Frontend hosting, serverless API      | All HTTP traffic, request logs, IPs  | Configurable (default: US East) | https://vercel.com/legal/dpa                                                                                                   |
-| Managed Postgres (Neon / Vercel Postgres / Supabase / RDS) | Primary data store        | All customer data (users, products, orders, …)  | Configurable          | Provider-specific.  Get the signed DPA from the provider.                                                                     |
-| Resend         | Transactional email (signup verify, password reset) | Email address, name, message body | US / EU                | https://resend.com/legal/dpa                                                                                                  |
+| Provider                                                   | What we use it for                                  | Data processed                                 | Region(s)                       | DPA / Privacy                                            |
+| ---------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------- | ------------------------------- | -------------------------------------------------------- |
+| Vercel                                                     | Frontend hosting, serverless API                    | All HTTP traffic, request logs, IPs            | Configurable (default: US East) | https://vercel.com/legal/dpa                             |
+| Managed Postgres (Neon / Vercel Postgres / Supabase / RDS) | Primary data store                                  | All customer data (users, products, orders, …) | Configurable                    | Provider-specific. Get the signed DPA from the provider. |
+| Resend                                                     | Transactional email (signup verify, password reset) | Email address, name, message body              | US / EU                         | https://resend.com/legal/dpa                             |
 
 ## Observability
 
-| Provider | What we use it for | Data processed                          | Region          | DPA / Privacy                                  |
-| -------- | ------------------ | --------------------------------------- | --------------- | ---------------------------------------------- |
-| Sentry   | Error & performance monitoring | Stack traces, request URL, IP, user agent | US / EU         | https://sentry.io/legal/dpa/                   |
+| Provider | What we use it for             | Data processed                            | Region  | DPA / Privacy                |
+| -------- | ------------------------------ | ----------------------------------------- | ------- | ---------------------------- |
+| Sentry   | Error & performance monitoring | Stack traces, request URL, IP, user agent | US / EU | https://sentry.io/legal/dpa/ |
 
 ## Cookies DropFlow sets
 
-| Cookie             | Purpose                    | Lifetime      | Type    |
-| ------------------ | -------------------------- | ------------- | ------- |
-| `<AUTH_COOKIE_NAME>` (a single HTTP-only cookie, default name `df_session`) | Holds the signed JWT session. | 7 days        | Necessary |
-| (No third-party cookies.  No analytics or marketing cookies.) | | | |
+| Cookie                                                                      | Purpose                       | Lifetime | Type      |
+| --------------------------------------------------------------------------- | ----------------------------- | -------- | --------- |
+| `<AUTH_COOKIE_NAME>` (a single HTTP-only cookie, default name `df_session`) | Holds the signed JWT session. | 7 days   | Necessary |
+| (No third-party cookies. No analytics or marketing cookies.)                |                               |          |           |
 
 ## What the Privacy Policy MUST say
 
