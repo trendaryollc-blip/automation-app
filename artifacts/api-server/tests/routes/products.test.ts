@@ -8,16 +8,27 @@ vi.mock("@workspace/db", () => {
   return { ...mod, default: mod };
 });
 
-import productsRouter from "../../src/routes/products";
+import app from "../../src/app";
 import { resetDb, seedTable } from "@workspace/db/test-utils";
 
-const app = express().use(express.json()).use(productsRouter);
-
 describe("Products", () => {
-  beforeEach(() => resetDb());
+  beforeEach(() => {
+    resetDb();
+    seedTable("users", [
+      {
+        userId: 1,
+        id: 1,
+        email: "test@example.com",
+        passwordHash: "x",
+        name: "Test",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+  });
 
   it("GET /products returns empty", async () => {
-    const res = await authedRequest(app).get("/products");
+    const res = await authedRequest(app).get("/api/products");
     expect(res.body).toEqual([]);
   });
 
@@ -31,16 +42,14 @@ describe("Products", () => {
         sellPrice: "15",
       },
     ]);
-    const res = await authedRequest(express().use(productsRouter)).get(
-      "/products",
-    );
+    const res = await authedRequest(app).get("/api/products");
     expect(res.body[0].name).toBe("Widget");
     expect(res.body[0].margin).toBe(67);
   });
 
   it("POST /products creates", async () => {
     const res = await authedRequest(app)
-      .post("/products")
+      .post("/api/products")
       .send({ name: "New", costPrice: 10, sellPrice: 25 });
     expect(res.status).toBe(201);
   });
@@ -55,16 +64,12 @@ describe("Products", () => {
         status: "listed",
       },
     ]);
-    const res = await authedRequest(express().use(productsRouter)).get(
-      "/products/stock-alerts",
-    );
+    const res = await authedRequest(app).get("/api/products/stock-alerts");
     expect(res.body[0].name).toBe("Low");
   });
 
   it("GET /products/:id returns 404", async () => {
-    const res = await authedRequest(express().use(productsRouter)).get(
-      "/products/999",
-    );
+    const res = await authedRequest(app).get("/api/products/999");
     expect(res.status).toBe(404);
   });
 });

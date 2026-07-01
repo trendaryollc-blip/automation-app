@@ -88,3 +88,11 @@ export function seedTable(
 ): SeedRow[] {
   return [];
 }
+
+/**
+ * Reads all rows from a table.  No-op in production; replaced by the
+ * mock implementation in tests.
+ */
+export function getTableData(_tableName: string): SeedRow[] {
+  return [];
+}

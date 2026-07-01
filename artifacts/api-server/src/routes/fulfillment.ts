@@ -106,6 +106,22 @@ const RejectBodySchema = z.object({
   reason: z.string().max(2000).optional(),
 });
 
+function friendlyZodError(error: unknown, fieldMessages?: Record<string, string>): string {
+  const issues = (error as { issues?: { path?: unknown[]; message?: string }[] })?.issues ?? [];
+  const first = issues[0];
+  if (first && fieldMessages) {
+    const fieldName = String(first.path?.[0] ?? "");
+    if (fieldMessages[fieldName]) return fieldMessages[fieldName];
+  }
+  if (first) {
+    const fieldName = String(first.path?.[0] ?? "");
+    return fieldName
+      ? `${fieldName} ${first.message ?? "is invalid"}`
+      : first.message ?? "Validation failed";
+  }
+  return "Validation failed";
+}
+
 const ManualBodySchema = z.object({
   orderId: z.number().int().positive(),
 });
@@ -253,7 +269,7 @@ router.post("/fulfillment/approve-all", async (req, res): Promise<void> => {
 router.post("/fulfillment/manual", async (req, res): Promise<void> => {
   const parsed = ManualBodySchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: friendlyZodError(parsed.error, { orderId: "orderId required" }) });
     return;
   }
   const user = currentUser(req);

@@ -8,22 +8,29 @@ vi.mock("@workspace/db", () => {
   return { ...mod, default: mod };
 });
 
-import ordersRouter from "../../src/routes/orders";
+import app from "../../src/app";
 import { resetDb, seedTable } from "@workspace/db/test-utils";
 
-function createApp() {
-  const app = express();
-  app.use(express.json());
-  app.use(ordersRouter);
-  return app;
-}
-
 describe("Orders Route", () => {
-  beforeEach(() => resetDb());
+  beforeEach(() => {
+    resetDb();
+    // Test-only auth setup: seed a default user so requireAuth() accepts requests.
+    seedTable("users", [
+      {
+        userId: 1,
+        id: 1,
+        email: "test@example.com",
+        passwordHash: "x",
+        name: "Test",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+  });
 
   describe("GET /orders", () => {
     it("returns empty array when no orders", async () => {
-      const res = await authedRequest(createApp()).get("/orders");
+      const res = await authedRequest(app).get("/api/orders");
       expect(res.status).toBe(200);
       expect(res.body).toEqual([]);
     });
@@ -39,7 +46,7 @@ describe("Orders Route", () => {
           quantity: 1,
         },
       ]);
-      const res = await authedRequest(createApp()).get("/orders");
+      const res = await authedRequest(app).get("/api/orders");
       expect(res.body).toHaveLength(1);
       expect(res.body[0].customerName).toBe("Alice");
     });
@@ -47,13 +54,15 @@ describe("Orders Route", () => {
 
   describe("POST /orders", () => {
     it("creates an order with valid data", async () => {
-      const res = await authedRequest(createApp()).post("/orders").send({
-        productName: "Widget",
-        customerName: "Bob",
-        sellPrice: 50,
-        costPrice: 20,
-        quantity: 2,
-      });
+      const res = await authedRequest(app)
+        .post("/api/orders")
+        .send({
+          productName: "Widget",
+          customerName: "Bob",
+          sellPrice: 50,
+          costPrice: 20,
+          quantity: 2,
+        });
       expect(res.status).toBe(201);
       expect(res.body.customerName).toBe("Bob");
     });
@@ -65,8 +74,8 @@ describe("Orders Route", () => {
         { userId: 1, id: 1, orderNumber: "O1", status: "pending" },
         { id: 2, orderNumber: "O2", status: "pending" },
       ]);
-      const res = await authedRequest(createApp())
-        .post("/orders/bulk-update")
+      const res = await authedRequest(app)
+        .post("/api/orders/bulk-update")
         .send({ orderIds: [1, 2], status: "placed" });
       expect(res.body.updatedCount).toBe(2);
     });
@@ -74,8 +83,8 @@ describe("Orders Route", () => {
 
   describe("POST /orders/import", () => {
     it("imports orders from rows", async () => {
-      const res = await authedRequest(createApp())
-        .post("/orders/import")
+      const res = await authedRequest(app)
+        .post("/api/orders/import")
         .send({ rows: [{ productName: "Imported" }] });
       expect(res.body.imported).toBe(1);
     });
@@ -91,13 +100,13 @@ describe("Orders Route", () => {
           status: "pending",
         },
       ]);
-      const res = await authedRequest(createApp()).get(`/orders/${o.id}`);
+      const res = await authedRequest(app).get(`/api/orders/${o.id}`);
       expect(res.status).toBe(200);
       expect(res.body.customerName).toBe("Charlie");
     });
 
     it("returns 404 for missing order", async () => {
-      const res = await authedRequest(createApp()).get("/orders/999");
+      const res = await authedRequest(app).get("/api/orders/999");
       expect(res.status).toBe(404);
     });
   });
@@ -112,8 +121,8 @@ describe("Orders Route", () => {
           status: "pending",
         },
       ]);
-      const res = await authedRequest(createApp())
-        .patch(`/orders/${o.id}`)
+      const res = await authedRequest(app)
+        .patch(`/api/orders/${o.id}`)
         .send({ status: "shipped", trackingNumber: "TRACK123" });
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("shipped");
@@ -130,7 +139,7 @@ describe("Orders Route", () => {
           status: "pending",
         },
       ]);
-      const res = await authedRequest(createApp()).delete(`/orders/${o.id}`);
+      const res = await authedRequest(app).delete(`/api/orders/${o.id}`);
       expect(res.status).toBe(204);
     });
   });
