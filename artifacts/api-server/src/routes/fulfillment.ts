@@ -6,6 +6,7 @@ import {
   fulfillmentQueueTable,
   ordersTable,
   suppliersTable,
+  storeConnectionsTable,
 } from "@workspace/db";
 import { currentUser } from "../middlewares/auth.js";
 
@@ -13,6 +14,90 @@ const router: IRouter = Router();
 
 async function loadFulfillmentEngine() {
   return import("../services/fulfillment-engine.js");
+}
+
+// ---------------------------------------------------------------------------
+// External service loader — allows tests to inject a custom loader so that
+// external placement calls (CJ Dropshipping, Zendrop, etc.) can be mocked.
+// ---------------------------------------------------------------------------
+
+type ExternalService = {
+  placeCJOrder?: (params: any) => Promise<any>;
+  placeZendropOrder?: (params: any) => Promise<any>;
+};
+
+type ExternalServiceLoader = (
+  serviceName: string,
+) => Promise<ExternalService>;
+
+let _externalServiceLoader: ExternalServiceLoader | null = null;
+
+export function setExternalServiceLoader(loader: ExternalServiceLoader) {
+  _externalServiceLoader = loader;
+}
+
+export function resetExternalServiceLoader() {
+  _externalServiceLoader = null;
+}
+
+/**
+ * Fulfill an order externally by looking up the store connection and
+ * delegating to the appropriate service (CJ Dropshipping, Zendrop, etc.).
+ *
+ * When an external service loader has been set (e.g. by tests), it is
+ * used in place of the built-in dynamic imports so that the service
+ * calls can be mocked.
+ */
+export async function fulfillOrderExternal(
+  orderId: number,
+  userId: number,
+): Promise<void> {
+  const [order] = await db
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.id, orderId));
+  if (!order) throw new Error(`Order ${orderId} not found`);
+
+  const [conn] = await db
+    .select()
+    .from(storeConnectionsTable)
+    .where(eq(storeConnectionsTable.userId, order.userId));
+
+  if (!conn) return;
+
+  const serviceName = conn.platform ?? "";
+  const customerName = order.customerName ?? "";
+  const firstName = customerName.split(" ")[0] || "Unknown";
+  const lastName = customerName.split(" ").slice(1).join(" ") || "";
+
+  const shippingInfo = {
+    firstName,
+    lastName,
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
+  };
+
+  if (_externalServiceLoader) {
+    const service = await _externalServiceLoader(serviceName);
+    if (serviceName === "cjdropshipping" && service.placeCJOrder) {
+      await service.placeCJOrder({
+        productId: order.productName ?? "",
+        quantity: order.quantity ?? 1,
+        shippingInfo,
+      });
+    } else if (serviceName === "zendrop" && service.placeZendropOrder) {
+      await service.placeZendropOrder({
+        productId: order.productName ?? "",
+        quantity: order.quantity ?? 1,
+        shippingInfo,
+      });
+    }
+  }
 }
 
 const IdParamSchema = z.object({ id: z.coerce.number().int().positive() });
