@@ -12,22 +12,24 @@ vi.mock("recharts", () => {
   const React = require("react");
   const Stub = ({ children }: any) => <div>{children}</div>;
   return {
-    AreaChart: Stub,
-    BarChart: Stub,
-    LineChart: Stub,
-    PieChart: Stub,
-    RadialBarChart: Stub,
-    ResponsiveContainer: Stub,
-    CartesianGrid: Stub,
-    XAxis: Stub,
-    YAxis: Stub,
-    Tooltip: Stub,
-    Area: Stub,
-    Bar: Stub,
-    Line: Stub,
-    Pie: Stub,
-    Cell: Stub,
-    RadialBar: Stub,
+    default: {
+      AreaChart: Stub,
+      BarChart: Stub,
+      LineChart: Stub,
+      PieChart: Stub,
+      RadialBarChart: Stub,
+      ResponsiveContainer: Stub,
+      CartesianGrid: Stub,
+      XAxis: Stub,
+      YAxis: Stub,
+      Tooltip: Stub,
+      Area: Stub,
+      Bar: Stub,
+      Line: Stub,
+      Pie: Stub,
+      Cell: Stub,
+      RadialBar: Stub,
+    },
   };
 });
 

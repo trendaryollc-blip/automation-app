@@ -19,7 +19,7 @@
   "functions": {
     "api/index.mjs": {
       "runtime": "nodejs@22.x",
-      "maxDuration": 30
+      "maxDuration": 60
     }
   },
   "env": {

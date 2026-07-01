@@ -20,8 +20,28 @@
  */
 import { Router, type IRouter, type Response } from "express";
 import { z } from "zod/v4";
-import { and, eq, gt, isNull, sql } from "drizzle-orm";
-import { db, usersTable, publicUserSchema } from "@workspace/db";
+import { and, eq, gt } from "drizzle-orm";
+import {
+  db,
+  usersTable,
+  publicUserSchema,
+  productsTable,
+  suppliersTable,
+  ordersTable,
+  researchTable,
+  supplierFinderTable,
+  priceWatchTable,
+  purchaseOrdersTable,
+  returnsTable,
+  orderTimelineTable,
+  promotionsTable,
+  productTagsTable,
+  launchesTable,
+  adCampaignsTable,
+  storeConnectionsTable,
+  aiSettingsTable,
+  fulfillmentQueueTable,
+} from "@workspace/db";
 import {
   AUTH_COOKIE_NAME,
   hashPassword,
@@ -516,40 +536,56 @@ router.post(
 // GDPR: account deletion & data export
 // ---------------------------------------------------------------------------
 
-const USER_OWNED_TABLES = [
-  "suppliers",
-  "products",
-  "orders",
-  "research",
-  "supplier_finder",
-  "price_watch",
-  "purchase_orders",
-  "returns",
-  "order_timeline",
-  "promotions",
-  "product_tags",
-  "launches",
-  "ad_campaigns",
-  "store_connections",
-  "ai_settings",
-  "fulfillment_queue",
-] as const;
-
+/**
+ * Every user-owned table declares a foreign key to `users.id` with
+ * `onDelete: "cascade"`, so deleting the user row in a single
+ * transaction transparently removes all owned data.  We rely on the
+ * database as the source of truth for the cascade graph — this avoids
+ * a fragile list of table names and a `sql.raw` round-trip.
+ *
+ * If you ever add a new owned table, just give its `userId` column a
+ * `.references(() => usersTable.id, { onDelete: "cascade" })` and the
+ * deletion will keep working with no change to this file.
+ */
 router.delete("/auth/account", requireAuth, async (req, res): Promise<void> => {
   const u = currentUser(req);
-  // Delete owned rows first, then the user.  We do it in a single
-  // transaction so partial deletes can't leave orphaned data.
   await db.transaction(async (tx) => {
-    for (const table of USER_OWNED_TABLES) {
-      await tx.execute(
-        sql.raw(`DELETE FROM ${table} WHERE "user_id" = ${u.id}`),
-      );
-    }
     await tx.delete(usersTable).where(eq(usersTable.id, u.id));
   });
   clearAuthCookie(res);
   res.status(204).end();
 });
+
+/**
+ * Tables whose rows are owned by a user and should be included in the
+ * GDPR data export.  Each table exposes a `userId` column, so we use a
+ * small generic loop instead of a per-table handler.
+ */
+type OwnedTable = {
+  key: string;
+  table: {
+    userId: import("drizzle-orm/pg-core").PgColumn;
+  };
+};
+
+const OWNED_TABLES: OwnedTable[] = [
+  { key: "products", table: productsTable },
+  { key: "suppliers", table: suppliersTable },
+  { key: "orders", table: ordersTable },
+  { key: "research", table: researchTable },
+  { key: "supplierFinder", table: supplierFinderTable },
+  { key: "priceWatch", table: priceWatchTable },
+  { key: "purchaseOrders", table: purchaseOrdersTable },
+  { key: "returns", table: returnsTable },
+  { key: "orderTimeline", table: orderTimelineTable },
+  { key: "promotions", table: promotionsTable },
+  { key: "productTags", table: productTagsTable },
+  { key: "launches", table: launchesTable },
+  { key: "adCampaigns", table: adCampaignsTable },
+  { key: "storeConnections", table: storeConnectionsTable },
+  { key: "aiSettings", table: aiSettingsTable },
+  { key: "fulfillmentQueue", table: fulfillmentQueueTable },
+];
 
 router.get(
   "/auth/data-export",
@@ -565,8 +601,23 @@ router.get(
       res.status(404).json({ error: "User not found" });
       return;
     }
-    const exportData: Record<string, unknown> = {
+
+    // Fetch the user's owned rows.  We do this in a single transaction
+    // so the export is a consistent snapshot of the user's data.
+    const data: Record<string, unknown[]> = {};
+    await db.transaction(async (tx) => {
+      for (const { key, table } of OWNED_TABLES) {
+        const rows = await tx
+          .select()
+          .from(table as never)
+          .where(eq(table.userId, u.id));
+        data[key] = rows;
+      }
+    });
+
+    const exportData = {
       exportedAt: new Date().toISOString(),
+      schemaVersion: 1,
       user: {
         id: user.id,
         email: user.email,
@@ -574,11 +625,9 @@ router.get(
         createdAt: user.createdAt,
         emailVerifiedAt: user.emailVerifiedAt,
       },
+      data,
     };
-    // Note: full data export across all owned tables is a heavier
-    // operation; we provide a starter shape here.  Production deployments
-    // should expand this with the actual records (or hand-roll a
-    // background job for very large tenants).
+    res.setHeader("Cache-Control", "no-store");
     res.setHeader(
       "Content-Disposition",
       'attachment; filename="dropflow-data.json"',

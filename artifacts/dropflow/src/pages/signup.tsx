@@ -9,6 +9,7 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,6 +18,12 @@ export default function Signup() {
     setError(null);
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (!agreed) {
+      setError(
+        "Please agree to the Terms of Service and Privacy Policy to continue.",
+      );
       return;
     }
     setSubmitting(true);
@@ -94,6 +101,40 @@ export default function Signup() {
               {error}
             </p>
           ) : null}
+          <div className="flex items-start gap-2 pt-1">
+            <input
+              id="agree"
+              type="checkbox"
+              required
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
+            />
+            <label
+              htmlFor="agree"
+              className="text-xs leading-5 text-muted-foreground"
+            >
+              I agree to the{" "}
+              <Link
+                href="/terms"
+                target="_blank"
+                rel="noopener"
+                className="underline hover:text-primary"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                target="_blank"
+                rel="noopener"
+                className="underline hover:text-primary"
+              >
+                Privacy Policy
+              </Link>
+              .
+            </label>
+          </div>
           <button
             type="submit"
             disabled={submitting}
@@ -110,17 +151,6 @@ export default function Signup() {
           >
             Sign in
           </Link>
-        </p>
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          By creating an account you agree to our{" "}
-          <Link href="/terms" className="underline hover:text-primary">
-            Terms
-          </Link>{" "}
-          and{" "}
-          <Link href="/privacy" className="underline hover:text-primary">
-            Privacy Policy
-          </Link>
-          .
         </p>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 // Mock the auth context so VerifyEmailBanner / UserMenu / AccountMenu
 // (which all call useAuth) don't throw "must be used within <AuthProvider>".
-vi.mock("@/contexts/auth-context", () => ({
+vi.mock("../../src/contexts/auth-context", () => ({
   useAuth: () => ({
     user: { id: 1, email: "test@example.com", emailVerified: true },
     loading: false,
