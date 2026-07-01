@@ -1,6 +1,28 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// Mock the auth context so VerifyEmailBanner / UserMenu / AccountMenu
+// (which all call useAuth) don't throw "must be used within <AuthProvider>".
+vi.mock("@/contexts/auth-context", () => ({
+  useAuth: () => ({
+    user: { id: 1, email: "test@example.com", emailVerified: true },
+    loading: false,
+    login: vi.fn(),
+    signup: vi.fn(),
+    logout: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock the menu components that depend on auth and router internals.
+vi.mock("@/hooks/use-auth-actions.tsx", () => ({
+  UserMenu: () => null,
+}));
+vi.mock("../../src/components/AccountMenu", () => ({
+  AccountMenu: () => null,
+}));
 
 // Mock external hooks and router used by Layout
 vi.mock("@workspace/api-client-react", () => ({
@@ -22,7 +44,8 @@ vi.mock("wouter", () => ({
 
 import Layout from "../../src/components/layout";
 
-test("renders navigation groups and notifications badge", async () => {
+describe("Layout", () => {
+it("renders navigation groups and notifications badge", async () => {
   render(
     <Layout>
       <div>page content</div>
@@ -40,4 +63,5 @@ test("renders navigation groups and notifications badge", async () => {
 
   // Notification badge should show combined alerts (1 stock + 1 price)
   expect(screen.getAllByText("2").length).toBeGreaterThan(0);
+});
 });
