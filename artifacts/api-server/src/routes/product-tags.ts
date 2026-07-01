@@ -141,45 +141,42 @@ router.post("/products/:id/tags", async (req, res): Promise<void> => {
   res.status(201).json({ productId: params.data.id, tagId: parsed.data.tagId });
 });
 
-router.delete(
-  "/products/:id/tags/:tagId",
-  async (req, res): Promise<void> => {
-    const params = z
-      .object({
-        id: z.coerce.number().int().positive(),
-        tagId: z.coerce.number().int().positive(),
-      })
-      .safeParse(req.params);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
-    const user = currentUser(req);
-    // Only delete if the tag is owned by this user.
-    const [owned] = await db
-      .select({ id: productTagsTable.id })
-      .from(productTagsTable)
-      .where(
-        and(
-          eq(productTagsTable.id, params.data.tagId),
-          eq(productTagsTable.userId, user.id),
-        ),
-      )
-      .limit(1);
-    if (!owned) {
-      res.status(404).json({ error: "Tag not found" });
-      return;
-    }
-    await db
-      .delete(productTagLinksTable)
-      .where(
-        and(
-          eq(productTagLinksTable.productId, params.data.id),
-          eq(productTagLinksTable.tagId, params.data.tagId),
-        ),
-      );
-    res.json({ success: true });
-  },
-);
+router.delete("/products/:id/tags/:tagId", async (req, res): Promise<void> => {
+  const params = z
+    .object({
+      id: z.coerce.number().int().positive(),
+      tagId: z.coerce.number().int().positive(),
+    })
+    .safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const user = currentUser(req);
+  // Only delete if the tag is owned by this user.
+  const [owned] = await db
+    .select({ id: productTagsTable.id })
+    .from(productTagsTable)
+    .where(
+      and(
+        eq(productTagsTable.id, params.data.tagId),
+        eq(productTagsTable.userId, user.id),
+      ),
+    )
+    .limit(1);
+  if (!owned) {
+    res.status(404).json({ error: "Tag not found" });
+    return;
+  }
+  await db
+    .delete(productTagLinksTable)
+    .where(
+      and(
+        eq(productTagLinksTable.productId, params.data.id),
+        eq(productTagLinksTable.tagId, params.data.tagId),
+      ),
+    );
+  res.json({ success: true });
+});
 
 export default router;

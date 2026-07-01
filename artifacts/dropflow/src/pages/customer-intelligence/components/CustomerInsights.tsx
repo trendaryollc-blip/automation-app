@@ -17,47 +17,122 @@ import {
 
 /* ─── Top Spenders ─── */
 const TOP_SPENDERS = [
-  { name: "James Patel", spend: 5640, orders: 22, avatar: "JP", color: "from-yellow-500/30 to-orange-500/30" },
-  { name: "Olivia Bennett", spend: 4280, orders: 18, avatar: "OB", color: "from-blue-500/30 to-violet-500/30" },
-  { name: "Isabella Garcia", spend: 3850, orders: 15, avatar: "IG", color: "from-pink-500/30 to-rose-500/30" },
-  { name: "Yuki Tanaka", spend: 2980, orders: 16, avatar: "YT", color: "from-emerald-500/30 to-cyan-500/30" },
-  { name: "Marcus Chen", spend: 2150, orders: 12, avatar: "MC", color: "from-violet-500/30 to-purple-500/30" },
+  {
+    name: "James Patel",
+    spend: 5640,
+    orders: 22,
+    avatar: "JP",
+    color: "from-yellow-500/30 to-orange-500/30",
+  },
+  {
+    name: "Olivia Bennett",
+    spend: 4280,
+    orders: 18,
+    avatar: "OB",
+    color: "from-blue-500/30 to-violet-500/30",
+  },
+  {
+    name: "Isabella Garcia",
+    spend: 3850,
+    orders: 15,
+    avatar: "IG",
+    color: "from-pink-500/30 to-rose-500/30",
+  },
+  {
+    name: "Yuki Tanaka",
+    spend: 2980,
+    orders: 16,
+    avatar: "YT",
+    color: "from-emerald-500/30 to-cyan-500/30",
+  },
+  {
+    name: "Marcus Chen",
+    spend: 2150,
+    orders: 12,
+    avatar: "MC",
+    color: "from-violet-500/30 to-purple-500/30",
+  },
 ];
 
 /* ─── Churn Risk ─── */
 const CHURN_RISK = [
-  { name: "Diego Silva", risk: 87, ltv: 1050, reason: "Inactive 60+ days", avatar: "DS" },
-  { name: "Lucas Muller", risk: 72, ltv: 1480, reason: "Declining frequency", avatar: "LM" },
-  { name: "Ethan Brown", risk: 94, ltv: 320, reason: "Lost — re-engage", avatar: "EB" },
+  {
+    name: "Diego Silva",
+    risk: 87,
+    ltv: 1050,
+    reason: "Inactive 60+ days",
+    avatar: "DS",
+  },
+  {
+    name: "Lucas Muller",
+    risk: 72,
+    ltv: 1480,
+    reason: "Declining frequency",
+    avatar: "LM",
+  },
+  {
+    name: "Ethan Brown",
+    risk: 94,
+    ltv: 320,
+    reason: "Lost — re-engage",
+    avatar: "EB",
+  },
 ];
 
 /* ─── New Leads ─── */
 const NEW_LEADS = [
-  { name: "Aisha Khan", joined: "Today", potential: "High", score: 87, avatar: "AK" },
-  { name: "Noah Williams", joined: "Yesterday", potential: "Medium", score: 64, avatar: "NW" },
-  { name: "Maya Park", joined: "2 days ago", potential: "High", score: 82, avatar: "MP" },
-  { name: "Carlos Rivera", joined: "3 days ago", potential: "Medium", score: 58, avatar: "CR" },
+  {
+    name: "Aisha Khan",
+    joined: "Today",
+    potential: "High",
+    score: 87,
+    avatar: "AK",
+  },
+  {
+    name: "Noah Williams",
+    joined: "Yesterday",
+    potential: "Medium",
+    score: 64,
+    avatar: "NW",
+  },
+  {
+    name: "Maya Park",
+    joined: "2 days ago",
+    potential: "High",
+    score: 82,
+    avatar: "MP",
+  },
+  {
+    name: "Carlos Rivera",
+    joined: "3 days ago",
+    potential: "Medium",
+    score: 58,
+    avatar: "CR",
+  },
 ];
 
 /* ─── AI Recommendations ─── */
 const AI_RECS = [
   {
     title: "Re-engage 'At Risk' with 15% discount",
-    reason: "12 customers haven't ordered in 60+ days. Win-back offer projected to recover $4,200 LTV.",
+    reason:
+      "12 customers haven't ordered in 60+ days. Win-back offer projected to recover $4,200 LTV.",
     confidence: 89,
     impact: "+$4.2K",
     icon: <Zap className="w-3.5 h-3.5" />,
   },
   {
     title: "VIP loyalty program",
-    reason: "Top 7% of customers drive 41% of revenue. Personalized rewards could lift LTV by 18%.",
+    reason:
+      "Top 7% of customers drive 41% of revenue. Personalized rewards could lift LTV by 18%.",
     confidence: 94,
     impact: "+18% LTV",
     icon: <Crown className="w-3.5 h-3.5" />,
   },
   {
     title: "Cross-sell to Loyal segment",
-    reason: "248 Loyal customers show 76% repurchase intent on beauty & wellness categories.",
+    reason:
+      "248 Loyal customers show 76% repurchase intent on beauty & wellness categories.",
     confidence: 81,
     impact: "+$2.8K",
     icon: <Target className="w-3.5 h-3.5" />,
@@ -95,7 +170,9 @@ export default function CustomerInsights() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">Top Spenders</h3>
-            <p className="text-[10px] text-muted-foreground">Top 5 by total spend</p>
+            <p className="text-[10px] text-muted-foreground">
+              Top 5 by total spend
+            </p>
           </div>
         </div>
 
@@ -148,7 +225,9 @@ export default function CustomerInsights() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">Churn Risk</h3>
-            <p className="text-[10px] text-muted-foreground">Predicted to drop off</p>
+            <p className="text-[10px] text-muted-foreground">
+              Predicted to drop off
+            </p>
           </div>
         </div>
 
@@ -195,7 +274,9 @@ export default function CustomerInsights() {
                     <TrendingDown className="w-2.5 h-2.5" />
                     {item.reason}
                   </span>
-                  <span className="font-mono">${item.ltv.toLocaleString()} LTV</span>
+                  <span className="font-mono">
+                    ${item.ltv.toLocaleString()} LTV
+                  </span>
                 </div>
               </motion.div>
             );
@@ -228,7 +309,9 @@ export default function CustomerInsights() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">New Leads</h3>
-            <p className="text-[10px] text-muted-foreground">Recently acquired</p>
+            <p className="text-[10px] text-muted-foreground">
+              Recently acquired
+            </p>
           </div>
         </div>
 
@@ -246,7 +329,9 @@ export default function CustomerInsights() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium truncate">{lead.name}</p>
-                <p className="text-[10px] text-muted-foreground">{lead.joined}</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {lead.joined}
+                </p>
               </div>
               <div className="text-right shrink-0">
                 <span
@@ -280,7 +365,9 @@ export default function CustomerInsights() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">AI Recommendations</h3>
-            <p className="text-[10px] text-muted-foreground">Retention strategies</p>
+            <p className="text-[10px] text-muted-foreground">
+              Retention strategies
+            </p>
           </div>
         </div>
 
@@ -312,7 +399,9 @@ export default function CustomerInsights() {
                   <span className="text-[10px] font-mono font-semibold text-violet-400">
                     {rec.confidence}%
                   </span>
-                  <span className="text-[10px] text-muted-foreground">conf.</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    conf.
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <DollarSign className="w-2.5 h-2.5 text-emerald-400" />

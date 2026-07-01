@@ -60,7 +60,7 @@ export function validateProductionEnv(): ProductionEnvReport {
     jwt === "ci-jwt-secret-must-be-32-chars-long-please"
   ) {
     errors.push(
-      'JWT_SECRET is still set to the example/placeholder value. Replace it with a real secret.',
+      "JWT_SECRET is still set to the example/placeholder value. Replace it with a real secret.",
     );
   }
 

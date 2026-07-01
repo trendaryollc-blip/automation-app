@@ -87,7 +87,11 @@ const NAV_GROUPS = [
     label: "Intelligence",
     links: [
       { href: "/product-hunting", label: "Product Hunting", icon: Crosshair },
-      { href: "/customer-intelligence", label: "Customer Intel", icon: UserCircle2 },
+      {
+        href: "/customer-intelligence",
+        label: "Customer Intel",
+        icon: UserCircle2,
+      },
       { href: "/product-scorer", label: "Virality Scorer", icon: Flame },
       { href: "/velocity", label: "Sales Velocity", icon: Zap },
       { href: "/price-watch", label: "Price Watch", icon: Eye },

@@ -37,7 +37,14 @@ describe("Returns routes", () => {
   });
 
   it("PATCH /returns/:id updates a return", async () => {
-    const [ret] = seedTable("returns", [{ userId: 1, id: 10, returnNumber: "RET-0001", status: "pending", reason: "Defect" },
+    const [ret] = seedTable("returns", [
+      {
+        userId: 1,
+        id: 10,
+        returnNumber: "RET-0001",
+        status: "pending",
+        reason: "Defect",
+      },
     ]);
 
     const res = await authedRequest(app).patch(`/returns/${ret.id}`).send({

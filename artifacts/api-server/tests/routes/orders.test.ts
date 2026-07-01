@@ -29,7 +29,9 @@ describe("Orders Route", () => {
     });
 
     it("returns seeded orders", async () => {
-      seedTable("orders", [{ userId: 1,
+      seedTable("orders", [
+        {
+          userId: 1,
           orderNumber: "ORD-001",
           customerName: "Alice",
           status: "pending",
@@ -59,7 +61,8 @@ describe("Orders Route", () => {
 
   describe("POST /orders/bulk-update", () => {
     it("updates multiple orders status", async () => {
-      seedTable("orders", [{ userId: 1, id: 1, orderNumber: "O1", status: "pending" },
+      seedTable("orders", [
+        { userId: 1, id: 1, orderNumber: "O1", status: "pending" },
         { id: 2, orderNumber: "O2", status: "pending" },
       ]);
       const res = await authedRequest(createApp())
@@ -80,7 +83,13 @@ describe("Orders Route", () => {
 
   describe("GET /orders/:id", () => {
     it("returns a specific order", async () => {
-      const [o] = seedTable("orders", [{ userId: 1, orderNumber: "O3", customerName: "Charlie", status: "pending" },
+      const [o] = seedTable("orders", [
+        {
+          userId: 1,
+          orderNumber: "O3",
+          customerName: "Charlie",
+          status: "pending",
+        },
       ]);
       const res = await authedRequest(createApp()).get(`/orders/${o.id}`);
       expect(res.status).toBe(200);
@@ -95,7 +104,13 @@ describe("Orders Route", () => {
 
   describe("PATCH /orders/:id", () => {
     it("updates an order", async () => {
-      const [o] = seedTable("orders", [{ userId: 1, orderNumber: "O4", customerName: "Dave", status: "pending" },
+      const [o] = seedTable("orders", [
+        {
+          userId: 1,
+          orderNumber: "O4",
+          customerName: "Dave",
+          status: "pending",
+        },
       ]);
       const res = await authedRequest(createApp())
         .patch(`/orders/${o.id}`)
@@ -107,7 +122,13 @@ describe("Orders Route", () => {
 
   describe("DELETE /orders/:id", () => {
     it("deletes an order", async () => {
-      const [o] = seedTable("orders", [{ userId: 1, orderNumber: "O5", customerName: "Eve", status: "pending" },
+      const [o] = seedTable("orders", [
+        {
+          userId: 1,
+          orderNumber: "O5",
+          customerName: "Eve",
+          status: "pending",
+        },
       ]);
       const res = await authedRequest(createApp()).delete(`/orders/${o.id}`);
       expect(res.status).toBe(204);

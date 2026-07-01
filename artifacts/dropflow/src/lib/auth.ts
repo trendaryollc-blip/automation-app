@@ -122,3 +122,17 @@ export const authClient = {
     return `${API_BASE}/data-export`;
   },
 };
+
+// Stand-alone helpers for the public auth pages (forgot/reset password).
+// These match the `authClient` methods but can be imported directly
+// without going through the `authClient.` prefix.
+export async function forgotPassword(email: string): Promise<void> {
+  await authClient.forgotPassword(email);
+}
+
+export async function resetPassword(
+  token: string,
+  password: string,
+): Promise<void> {
+  await authClient.resetPassword(token, password);
+}

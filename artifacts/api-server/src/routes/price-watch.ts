@@ -1,11 +1,7 @@
 import { Router, type IRouter } from "express";
 import { z } from "zod/v4";
 import { eq, desc, and } from "drizzle-orm";
-import {
-  db,
-  priceWatchTable,
-  priceSnapshotsTable,
-} from "@workspace/db";
+import { db, priceWatchTable, priceSnapshotsTable } from "@workspace/db";
 import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();

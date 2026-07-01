@@ -21,7 +21,8 @@ async function startServer() {
   // Refuse to boot in production with unsafe configuration.
   const envReport = validateProductionEnv();
   if (!envReport.ok) {
-    for (const e of envReport.errors) logger.fatal({ err: e }, "Env validation failed");
+    for (const e of envReport.errors)
+      logger.fatal({ err: e }, "Env validation failed");
     throw new Error(
       "Refusing to start: production environment is misconfigured. " +
         "Fix the errors above and re-deploy.\n" +

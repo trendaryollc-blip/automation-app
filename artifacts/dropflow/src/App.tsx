@@ -76,8 +76,8 @@ class ErrorBoundary extends Component<
     // eslint-disable-next-line no-console
     console.error("Uncaught render error", { error, info });
     // Optional: report to a future Sentry / telemetry endpoint.
-    const dsn = (import.meta as unknown as { env?: Record<string, string> })
-      .env?.VITE_SENTRY_DSN;
+    const dsn = (import.meta as unknown as { env?: Record<string, string> }).env
+      ?.VITE_SENTRY_DSN;
     if (!dsn) return;
     try {
       fetch(dsn, {

@@ -13,18 +13,20 @@ vi.mock("@workspace/db", () => {
 describe("Launches routes", () => {
   beforeEach(() => {
     resetDb();
-  // Test-only auth setup: seed a default user so requireAuth() accepts
-  // requests.  This pattern is shared by every test in this folder;
-  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
-  seedTable("users", [{ userId: 1,
-      id: 1,
-      email: "test@example.com",
-      passwordHash: "x",
-      name: "Test",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ]);
+    // Test-only auth setup: seed a default user so requireAuth() accepts
+    // requests.  This pattern is shared by every test in this folder;
+    // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+    seedTable("users", [
+      {
+        userId: 1,
+        id: 1,
+        email: "test@example.com",
+        passwordHash: "x",
+        name: "Test",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
   });
 
   it("GET /launches returns empty array initially", async () => {
@@ -55,7 +57,14 @@ describe("Launches routes", () => {
   });
 
   it("PATCH /launches/:id updates a launch", async () => {
-    const [launch] = seedTable("launches", [{ userId: 1, id: 10, productName: "Old Name", status: "planning", steps: [] },
+    const [launch] = seedTable("launches", [
+      {
+        userId: 1,
+        id: 10,
+        productName: "Old Name",
+        status: "planning",
+        steps: [],
+      },
     ]);
 
     const api = authedRequest(app);
@@ -76,7 +85,9 @@ describe("Launches routes", () => {
   });
 
   it("DELETE /launches/:id removes a launch", async () => {
-    seedTable("launches", [{ userId: 1, id: 20, productName: "To Delete", steps: [] }]);
+    seedTable("launches", [
+      { userId: 1, id: 20, productName: "To Delete", steps: [] },
+    ]);
 
     const api = authedRequest(app);
     const res = await api.delete("/api/launches/20");

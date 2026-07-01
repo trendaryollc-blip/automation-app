@@ -13,18 +13,20 @@ vi.mock("@workspace/db", () => {
 describe("Supplier Finder routes", () => {
   beforeEach(() => {
     resetDb();
-  // Test-only auth setup: seed a default user so requireAuth() accepts
-  // requests.  This pattern is shared by every test in this folder;
-  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
-  seedTable("users", [{ userId: 1,
-      id: 1,
-      email: "test@example.com",
-      passwordHash: "x",
-      name: "Test",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ]);
+    // Test-only auth setup: seed a default user so requireAuth() accepts
+    // requests.  This pattern is shared by every test in this folder;
+    // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+    seedTable("users", [
+      {
+        userId: 1,
+        id: 1,
+        email: "test@example.com",
+        passwordHash: "x",
+        name: "Test",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
   });
 
   it("POST /suppliers/find returns 400 when productName missing", async () => {
@@ -37,7 +39,9 @@ describe("Supplier Finder routes", () => {
   });
 
   it("POST /suppliers/find returns matches with existing suppliers", async () => {
-    seedTable("suppliers", [{ userId: 1,
+    seedTable("suppliers", [
+      {
+        userId: 1,
         id: 1,
         name: "TechSupplier Co",
         country: "China",
@@ -92,7 +96,9 @@ describe("Supplier Finder routes", () => {
   });
 
   it("GET /suppliers/find/history returns past searches", async () => {
-    seedTable("supplier_finder", [{ userId: 1,
+    seedTable("supplier_finder", [
+      {
+        userId: 1,
         id: 1,
         productName: "Search 1",
         topPick: "Supplier A",
@@ -123,7 +129,9 @@ describe("Supplier Finder routes", () => {
   });
 
   it("DELETE /suppliers/find/history/:id deletes a record", async () => {
-    seedTable("supplier_finder", [{ userId: 1,
+    seedTable("supplier_finder", [
+      {
+        userId: 1,
         id: 100,
         productName: "To Delete",
         topPick: "X",

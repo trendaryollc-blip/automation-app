@@ -13,18 +13,20 @@ vi.mock("@workspace/db", () => {
 describe("Store Connections routes", () => {
   beforeEach(() => {
     resetDb();
-  // Test-only auth setup: seed a default user so requireAuth() accepts
-  // requests.  This pattern is shared by every test in this folder;
-  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
-  seedTable("users", [{ userId: 1,
-      id: 1,
-      email: "test@example.com",
-      passwordHash: "x",
-      name: "Test",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ]);
+    // Test-only auth setup: seed a default user so requireAuth() accepts
+    // requests.  This pattern is shared by every test in this folder;
+    // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+    seedTable("users", [
+      {
+        userId: 1,
+        id: 1,
+        email: "test@example.com",
+        passwordHash: "x",
+        name: "Test",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
   });
 
   afterEach(() => {
@@ -62,7 +64,14 @@ describe("Store Connections routes", () => {
   });
 
   it("PATCH /store-connections/:id updates a connection", async () => {
-    const [conn] = seedTable("store_connections", [{ userId: 1, id: 10, storeName: "Old Name", apiKey: "df_test", status: "active" },
+    const [conn] = seedTable("store_connections", [
+      {
+        userId: 1,
+        id: 10,
+        storeName: "Old Name",
+        apiKey: "df_test",
+        status: "active",
+      },
     ]);
 
     const api = authedRequest(app);
@@ -83,7 +92,8 @@ describe("Store Connections routes", () => {
   });
 
   it("DELETE /store-connections/:id removes a connection", async () => {
-    seedTable("store_connections", [{ userId: 1, id: 20, storeName: "To Delete", apiKey: "df_test" },
+    seedTable("store_connections", [
+      { userId: 1, id: 20, storeName: "To Delete", apiKey: "df_test" },
     ]);
 
     const api = authedRequest(app);
@@ -94,9 +104,12 @@ describe("Store Connections routes", () => {
   });
 
   it("GET /store-connections/:id/logs returns logs", async () => {
-    seedTable("store_connections", [{ userId: 1, id: 30, storeName: "Logged", apiKey: "df_test" },
+    seedTable("store_connections", [
+      { userId: 1, id: 30, storeName: "Logged", apiKey: "df_test" },
     ]);
-    seedTable("sync_logs", [{ userId: 1,
+    seedTable("sync_logs", [
+      {
+        userId: 1,
         id: 1,
         storeConnectionId: 30,
         event: "order.created",
@@ -117,7 +130,14 @@ describe("Store Connections routes", () => {
   });
 
   it("POST /store-connections/:id/regenerate-key generates a new API key", async () => {
-    seedTable("store_connections", [{ userId: 1, id: 40, storeName: "Key Store", apiKey: "df_oldkey", status: "active" },
+    seedTable("store_connections", [
+      {
+        userId: 1,
+        id: 40,
+        storeName: "Key Store",
+        apiKey: "df_oldkey",
+        status: "active",
+      },
     ]);
 
     const api = authedRequest(app);
@@ -135,7 +155,14 @@ describe("Store Connections routes", () => {
   });
 
   it("POST /store-connections/:id/test returns custom message for unknown platform", async () => {
-    seedTable("store_connections", [{ userId: 1, id: 50, storeName: "Custom", apiKey: "df_test", platform: "custom" },
+    seedTable("store_connections", [
+      {
+        userId: 1,
+        id: 50,
+        storeName: "Custom",
+        apiKey: "df_test",
+        platform: "custom",
+      },
     ]);
 
     const api = authedRequest(app);
@@ -171,7 +198,9 @@ describe("Store Connections routes", () => {
   });
 
   it("POST /webhooks/store returns 403 for inactive connection", async () => {
-    seedTable("store_connections", [{ userId: 1,
+    seedTable("store_connections", [
+      {
+        userId: 1,
         id: 60,
         storeName: "Disabled Store",
         apiKey: "df_disabled",
@@ -189,7 +218,9 @@ describe("Store Connections routes", () => {
   });
 
   it("POST /webhooks/store processes order.created event", async () => {
-    seedTable("store_connections", [{ userId: 1,
+    seedTable("store_connections", [
+      {
+        userId: 1,
         id: 70,
         storeName: "ActiveStore",
         apiKey: "df_active",
@@ -229,7 +260,14 @@ describe("Store Connections routes", () => {
   });
 
   it("POST /webhooks/store returns error for unknown event type", async () => {
-    seedTable("store_connections", [{ userId: 1, id: 80, storeName: "Test", apiKey: "df_test2", status: "active" },
+    seedTable("store_connections", [
+      {
+        userId: 1,
+        id: 80,
+        storeName: "Test",
+        apiKey: "df_test2",
+        status: "active",
+      },
     ]);
 
     const api = authedRequest(app);

@@ -78,7 +78,10 @@ function useAnimatedNumber(value: number | undefined, duration = 1200) {
     if (value === undefined) return;
     const start = display;
     const diff = value - start;
-    if (Math.abs(diff) < 0.01) { setDisplay(value); return; }
+    if (Math.abs(diff) < 0.01) {
+      setDisplay(value);
+      return;
+    }
     const startTime = performance.now();
     const animate = (now: number) => {
       const elapsed = now - startTime;
@@ -93,13 +96,30 @@ function useAnimatedNumber(value: number | undefined, duration = 1200) {
 }
 
 /* ─── Mini Sparkline Component ─── */
-function Sparkline({ data, color, height = 32 }: { data: number[]; color: string; height?: number }) {
+function Sparkline({
+  data,
+  color,
+  height = 32,
+}: {
+  data: number[];
+  color: string;
+  height?: number;
+}) {
   const chartData = data.map((v, i) => ({ x: i, y: v }));
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={chartData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+      <AreaChart
+        data={chartData}
+        margin={{ top: 2, right: 0, left: 0, bottom: 0 }}
+      >
         <defs>
-          <linearGradient id={`spark-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient
+            id={`spark-${color.replace("#", "")}`}
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="1"
+          >
             <stop offset="0%" stopColor={color} stopOpacity={0.3} />
             <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
@@ -109,7 +129,7 @@ function Sparkline({ data, color, height = 32 }: { data: number[]; color: string
           dataKey="y"
           stroke={color}
           strokeWidth={1.5}
-          fill={`url(#spark-${color.replace('#', '')})`}
+          fill={`url(#spark-${color.replace("#", "")})`}
           dot={false}
           isAnimationActive={true}
           animationDuration={1500}
@@ -120,10 +140,21 @@ function Sparkline({ data, color, height = 32 }: { data: number[]; color: string
 }
 
 /* ─── Gauge Component ─── */
-function SalesVelocityGauge({ value, max = 100 }: { value: number; max?: number }) {
+function SalesVelocityGauge({
+  value,
+  max = 100,
+}: {
+  value: number;
+  max?: number;
+}) {
   const percentage = Math.min((value / max) * 100, 100);
   const gaugeData = [
-    { name: "velocity", value: percentage, fill: percentage > 70 ? "#10B981" : percentage > 40 ? "#3B82F6" : "#EF4444" },
+    {
+      name: "velocity",
+      value: percentage,
+      fill:
+        percentage > 70 ? "#10B981" : percentage > 40 ? "#3B82F6" : "#EF4444",
+    },
   ];
   return (
     <div className="relative flex items-center justify-center">
@@ -157,10 +188,25 @@ function SalesVelocityGauge({ value, max = 100 }: { value: number; max?: number 
 /* ─── Virality Score Bar ─── */
 function ViralityBar({ score, label }: { score: number; label: string }) {
   const getColor = (s: number) => {
-    if (s >= 80) return { bar: "bg-gradient-to-r from-emerald-500 to-cyan-400", glow: "shadow-[0_0_12px_rgba(16,185,129,0.3)]" };
-    if (s >= 60) return { bar: "bg-gradient-to-r from-blue-500 to-violet-500", glow: "shadow-[0_0_12px_rgba(59,130,246,0.3)]" };
-    if (s >= 40) return { bar: "bg-gradient-to-r from-amber-500 to-orange-500", glow: "shadow-[0_0_12px_rgba(245,158,11,0.3)]" };
-    return { bar: "bg-gradient-to-r from-red-500 to-rose-500", glow: "shadow-[0_0_12px_rgba(239,68,68,0.3)]" };
+    if (s >= 80)
+      return {
+        bar: "bg-gradient-to-r from-emerald-500 to-cyan-400",
+        glow: "shadow-[0_0_12px_rgba(16,185,129,0.3)]",
+      };
+    if (s >= 60)
+      return {
+        bar: "bg-gradient-to-r from-blue-500 to-violet-500",
+        glow: "shadow-[0_0_12px_rgba(59,130,246,0.3)]",
+      };
+    if (s >= 40)
+      return {
+        bar: "bg-gradient-to-r from-amber-500 to-orange-500",
+        glow: "shadow-[0_0_12px_rgba(245,158,11,0.3)]",
+      };
+    return {
+      bar: "bg-gradient-to-r from-red-500 to-rose-500",
+      glow: "shadow-[0_0_12px_rgba(239,68,68,0.3)]",
+    };
   };
   const colors = getColor(score);
   return (
@@ -180,14 +226,28 @@ function ViralityBar({ score, label }: { score: number; label: string }) {
 }
 
 /* ─── Goal Progress Component ─── */
-function GoalProgress({ current, target, label, icon }: { current: number; target: number; label: string; icon: React.ReactNode }) {
+function GoalProgress({
+  current,
+  target,
+  label,
+  icon,
+}: {
+  current: number;
+  target: number;
+  label: string;
+  icon: React.ReactNode;
+}) {
   const percentage = Math.min((current / target) * 100, 100);
   const isComplete = percentage >= 100;
   return (
-    <div className={`p-4 rounded-xl border transition-all duration-300 ${isComplete ? "border-emerald-500/30 bg-emerald-500/5" : "border-white/5 bg-white/[0.02]"}`}>
+    <div
+      className={`p-4 rounded-xl border transition-all duration-300 ${isComplete ? "border-emerald-500/30 bg-emerald-500/5" : "border-white/5 bg-white/[0.02]"}`}
+    >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-lg ${isComplete ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-muted-foreground"}`}>
+          <div
+            className={`p-1.5 rounded-lg ${isComplete ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-muted-foreground"}`}
+          >
             {icon}
           </div>
           <span className="text-sm font-medium">{label}</span>
@@ -200,7 +260,9 @@ function GoalProgress({ current, target, label, icon }: { current: number; targe
       </div>
       <div className="flex items-baseline gap-2 mb-2">
         <span className="text-xl font-bold">${current.toLocaleString()}</span>
-        <span className="text-xs text-muted-foreground">/ ${target.toLocaleString()}</span>
+        <span className="text-xs text-muted-foreground">
+          / ${target.toLocaleString()}
+        </span>
       </div>
       <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
         <div
@@ -212,7 +274,9 @@ function GoalProgress({ current, target, label, icon }: { current: number; targe
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <p className="text-xs text-muted-foreground mt-1.5">{percentage.toFixed(0)}% achieved</p>
+      <p className="text-xs text-muted-foreground mt-1.5">
+        {percentage.toFixed(0)}% achieved
+      </p>
     </div>
   );
 }
@@ -237,18 +301,42 @@ export default function Dashboard() {
   const animatedMargin = useAnimatedNumber(stats?.avgMargin);
 
   // Mock sparkline data (would be replaced with real historical data)
-  const revenueSparkline = useMemo(() => Array.from({ length: 14 }, (_, i) => 2000 + Math.random() * 3000 + i * 200), []);
-  const profitSparkline = useMemo(() => Array.from({ length: 14 }, (_, i) => 500 + Math.random() * 1500 + i * 100), []);
-  const ordersSparkline = useMemo(() => Array.from({ length: 14 }, (_, i) => 5 + Math.floor(Math.random() * 15)), []);
-  const marginSparkline = useMemo(() => Array.from({ length: 14 }, (_, i) => 20 + Math.random() * 15), []);
+  const revenueSparkline = useMemo(
+    () =>
+      Array.from(
+        { length: 14 },
+        (_, i) => 2000 + Math.random() * 3000 + i * 200,
+      ),
+    [],
+  );
+  const profitSparkline = useMemo(
+    () =>
+      Array.from(
+        { length: 14 },
+        (_, i) => 500 + Math.random() * 1500 + i * 100,
+      ),
+    [],
+  );
+  const ordersSparkline = useMemo(
+    () =>
+      Array.from({ length: 14 }, (_, i) => 5 + Math.floor(Math.random() * 15)),
+    [],
+  );
+  const marginSparkline = useMemo(
+    () => Array.from({ length: 14 }, (_, i) => 20 + Math.random() * 15),
+    [],
+  );
 
   // Traffic data for bottom charts
-  const trafficData = useMemo(() =>
-    Array.from({ length: 7 }, (_, i) => ({
-      day: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i],
-      visits: 120 + Math.floor(Math.random() * 300),
-      conversions: 8 + Math.floor(Math.random() * 25),
-    })), []);
+  const trafficData = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, i) => ({
+        day: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i],
+        visits: 120 + Math.floor(Math.random() * 300),
+        conversions: 8 + Math.floor(Math.random() * 25),
+      })),
+    [],
+  );
 
   if (statsLoading || ordersLoading || trendingLoading)
     return (
@@ -256,9 +344,17 @@ export default function Dashboard() {
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary/20"></div>
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary absolute inset-0" style={{ animationDirection: "reverse", animationDuration: "0.8s" }}></div>
+            <div
+              className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary absolute inset-0"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "0.8s",
+              }}
+            ></div>
           </div>
-          <p className="text-sm text-muted-foreground animate-pulse">Loading War Room...</p>
+          <p className="text-sm text-muted-foreground animate-pulse">
+            Loading War Room...
+          </p>
         </div>
       </div>
     );
@@ -325,11 +421,12 @@ export default function Dashboard() {
   ];
 
   // Virality scores for trending products
-  const viralityScores = trendingProducts?.map((p, i) => ({
-    ...p,
-    viralityScore: [87, 72, 65, 58, 45][i] ?? 40,
-    velocity: [92, 78, 61, 55, 48][i] ?? 35,
-  })) ?? [];
+  const viralityScores =
+    trendingProducts?.map((p, i) => ({
+      ...p,
+      viralityScore: [87, 72, 65, 58, 45][i] ?? 40,
+      velocity: [92, 78, 61, 55, 48][i] ?? 35,
+    })) ?? [];
 
   return (
     <TooltipProvider>
@@ -343,13 +440,21 @@ export default function Dashboard() {
               </h1>
               <p className="text-muted-foreground flex items-center gap-2 mt-1">
                 <span className="relative flex h-2 w-2">
-                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isOperational ? "bg-emerald-400" : "bg-red-400"} opacity-75`}></span>
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${isOperational ? "bg-emerald-500" : "bg-red-500"}`}></span>
+                  <span
+                    className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isOperational ? "bg-emerald-400" : "bg-red-400"} opacity-75`}
+                  ></span>
+                  <span
+                    className={`relative inline-flex rounded-full h-2 w-2 ${isOperational ? "bg-emerald-500" : "bg-red-500"}`}
+                  ></span>
                 </span>
                 <span>System Status:</span>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${isOperational ? "status-operational" : "status-degraded"}`}>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${isOperational ? "status-operational" : "status-degraded"}`}
+                >
                   <CircleDot className="w-3 h-3" />
-                  {isOperational ? "All Systems Operational" : "Degraded Performance"}
+                  {isOperational
+                    ? "All Systems Operational"
+                    : "Degraded Performance"}
                 </span>
               </p>
             </div>
@@ -362,7 +467,9 @@ export default function Dashboard() {
                   <Bell className="h-5 w-5 text-muted-foreground group:text-foreground transition-colors" />
                   <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white items-center justify-center font-bold">3</span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white items-center justify-center font-bold">
+                      3
+                    </span>
                   </span>
                 </button>
               </TooltipTrigger>
@@ -396,16 +503,23 @@ export default function Dashboard() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-orange-300">
-                    {stockAlerts.length} product{stockAlerts.length !== 1 ? "s" : ""} running low on stock
+                    {stockAlerts.length} product
+                    {stockAlerts.length !== 1 ? "s" : ""} running low on stock
                   </p>
-                  <p className="text-xs text-orange-400/60 mt-0.5">Immediate restocking recommended</p>
+                  <p className="text-xs text-orange-400/60 mt-0.5">
+                    Immediate restocking recommended
+                  </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {stockAlerts.map((a) => (
                       <Link key={a.id} href={`/products/${a.id}`}>
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-orange-500/10 text-orange-300 border border-orange-500/15 hover:bg-orange-500/20 hover:border-orange-500/30 transition-all cursor-pointer">
                           {a.name}
-                          <span className="font-mono font-bold text-orange-200">{a.stockQuantity}</span>
-                          <span className="text-orange-400/40">/ {a.stockThreshold}</span>
+                          <span className="font-mono font-bold text-orange-200">
+                            {a.stockQuantity}
+                          </span>
+                          <span className="text-orange-400/40">
+                            / {a.stockThreshold}
+                          </span>
                         </span>
                       </Link>
                     ))}
@@ -433,15 +547,19 @@ export default function Dashboard() {
                 >
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-3">
-                      <div className={`p-2.5 rounded-xl ${kpi.iconBg} ${kpi.iconColor}`}>
+                      <div
+                        className={`p-2.5 rounded-xl ${kpi.iconBg} ${kpi.iconColor}`}
+                      >
                         {kpi.icon}
                       </div>
                       {kpi.trend !== undefined && kpi.trend !== null && (
-                        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                          kpi.trend >= 0
-                            ? "bg-emerald-500/10 text-emerald-400"
-                            : "bg-red-500/10 text-red-400"
-                        }`}>
+                        <div
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                            kpi.trend >= 0
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : "bg-red-500/10 text-red-400"
+                          }`}
+                        >
                           {kpi.trend >= 0 ? (
                             <ArrowUpRight className="w-3 h-3 animate-bounce-subtle" />
                           ) : (
@@ -456,14 +574,22 @@ export default function Dashboard() {
                         {kpi.title}
                       </p>
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-bold tracking-tight">{kpi.value}</span>
+                        <span className="text-2xl font-bold tracking-tight">
+                          {kpi.value}
+                        </span>
                         {kpi.subtitle && (
-                          <span className="text-sm text-muted-foreground">{kpi.subtitle}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {kpi.subtitle}
+                          </span>
                         )}
                       </div>
                     </div>
                     <div className="mt-3 -mx-1">
-                      <Sparkline data={kpi.sparkline} color={kpi.sparkColor} height={36} />
+                      <Sparkline
+                        data={kpi.sparkline}
+                        color={kpi.sparkColor}
+                        height={36}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -484,7 +610,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <span className="text-base">Revenue & Analytics</span>
-                <p className="text-xs text-muted-foreground font-normal mt-0.5">Performance overview across all channels</p>
+                <p className="text-xs text-muted-foreground font-normal mt-0.5">
+                  Performance overview across all channels
+                </p>
               </div>
             </CardTitle>
             <div className="flex items-center gap-1 p-1 rounded-xl glass">
@@ -525,13 +653,41 @@ export default function Dashboard() {
                         margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
                       >
                         <defs>
-                          <linearGradient id="colorRevenueNew" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                          <linearGradient
+                            id="colorRevenueNew"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="#3B82F6"
+                              stopOpacity={0.3}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="#3B82F6"
+                              stopOpacity={0}
+                            />
                           </linearGradient>
-                          <linearGradient id="colorProfitNew" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                          <linearGradient
+                            id="colorProfitNew"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="#10B981"
+                              stopOpacity={0.3}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="#10B981"
+                              stopOpacity={0}
+                            />
                           </linearGradient>
                         </defs>
                         <CartesianGrid
@@ -545,7 +701,9 @@ export default function Dashboard() {
                             if (!value) return "";
                             try {
                               const d = new Date(value);
-                              return period === "weekly" ? format(d, "EEE") : format(d, "MMM");
+                              return period === "weekly"
+                                ? format(d, "EEE")
+                                : format(d, "MMM");
                             } catch (e) {
                               return value;
                             }
@@ -589,7 +747,9 @@ export default function Dashboard() {
                             try {
                               return format(
                                 new Date(label),
-                                period === "weekly" ? "MMM d, yyyy" : "MMMM yyyy",
+                                period === "weekly"
+                                  ? "MMM d, yyyy"
+                                  : "MMMM yyyy",
                               );
                             } catch (e) {
                               return label;
@@ -605,7 +765,12 @@ export default function Dashboard() {
                           fill="url(#colorRevenueNew)"
                           name="Revenue"
                           dot={false}
-                          activeDot={{ r: 5, stroke: "#3B82F6", strokeWidth: 2, fill: "#0E0E10" }}
+                          activeDot={{
+                            r: 5,
+                            stroke: "#3B82F6",
+                            strokeWidth: 2,
+                            fill: "#0E0E10",
+                          }}
                         />
                         <Area
                           type="monotone"
@@ -616,7 +781,12 @@ export default function Dashboard() {
                           fill="url(#colorProfitNew)"
                           name="Profit"
                           dot={false}
-                          activeDot={{ r: 5, stroke: "#10B981", strokeWidth: 2, fill: "#0E0E10" }}
+                          activeDot={{
+                            r: 5,
+                            stroke: "#10B981",
+                            strokeWidth: 2,
+                            fill: "#0E0E10",
+                          }}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -646,7 +816,9 @@ export default function Dashboard() {
                             if (!value) return "";
                             try {
                               const d = new Date(value);
-                              return period === "weekly" ? format(d, "EEE") : format(d, "MMM");
+                              return period === "weekly"
+                                ? format(d, "EEE")
+                                : format(d, "MMM");
                             } catch (e) {
                               return value;
                             }
@@ -677,13 +849,18 @@ export default function Dashboard() {
                             marginBottom: "6px",
                             fontSize: "11px",
                           }}
-                          cursor={{ fill: "rgba(139, 92, 246, 0.08)", radius: 4 }}
+                          cursor={{
+                            fill: "rgba(139, 92, 246, 0.08)",
+                            radius: 4,
+                          }}
                           labelFormatter={(label: any) => {
                             if (!label) return "";
                             try {
                               return format(
                                 new Date(label),
-                                period === "weekly" ? "MMM d, yyyy" : "MMMM yyyy",
+                                period === "weekly"
+                                  ? "MMM d, yyyy"
+                                  : "MMMM yyyy",
                               );
                             } catch (e) {
                               return label;
@@ -697,9 +874,23 @@ export default function Dashboard() {
                           name="Orders"
                         />
                         <defs>
-                          <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.9} />
-                            <stop offset="100%" stopColor="#6D28D9" stopOpacity={0.6} />
+                          <linearGradient
+                            id="barGradient"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="#8B5CF6"
+                              stopOpacity={0.9}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="#6D28D9"
+                              stopOpacity={0.6}
+                            />
                           </linearGradient>
                         </defs>
                       </BarChart>
@@ -715,23 +906,49 @@ export default function Dashboard() {
                   </h3>
                   <div className="flex-1 glass rounded-xl p-5 flex flex-col justify-between">
                     {[
-                      { label: "Total Revenue", value: `$${analytics.totalRevenue.toLocaleString()}`, change: analytics.revenueChange, color: "blue" },
-                      { label: "Total Profit", value: `$${analytics.totalProfit.toLocaleString()}`, change: analytics.profitChange, color: "emerald" },
-                      { label: "Total Orders", value: analytics.totalOrders.toLocaleString(), change: analytics.ordersChange, color: "violet" },
+                      {
+                        label: "Total Revenue",
+                        value: `$${analytics.totalRevenue.toLocaleString()}`,
+                        change: analytics.revenueChange,
+                        color: "blue",
+                      },
+                      {
+                        label: "Total Profit",
+                        value: `$${analytics.totalProfit.toLocaleString()}`,
+                        change: analytics.profitChange,
+                        color: "emerald",
+                      },
+                      {
+                        label: "Total Orders",
+                        value: analytics.totalOrders.toLocaleString(),
+                        change: analytics.ordersChange,
+                        color: "violet",
+                      },
                     ].map((item) => (
                       <div key={item.label} className="space-y-1">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">{item.label}</p>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                          {item.label}
+                        </p>
                         <div className="flex items-baseline gap-3">
-                          <h4 className={`text-2xl font-bold tracking-tight ${item.color === "emerald" ? "text-emerald-400" : ""}`}>
+                          <h4
+                            className={`text-2xl font-bold tracking-tight ${item.color === "emerald" ? "text-emerald-400" : ""}`}
+                          >
                             {item.value}
                           </h4>
-                          <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                            item.change >= 0
-                              ? "bg-emerald-500/10 text-emerald-400"
-                              : "bg-red-500/10 text-red-400"
-                          }`}>
-                            {item.change >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                            {item.change > 0 ? "+" : ""}{item.change.toFixed(1)}%
+                          <span
+                            className={`inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                              item.change >= 0
+                                ? "bg-emerald-500/10 text-emerald-400"
+                                : "bg-red-500/10 text-red-400"
+                            }`}
+                          >
+                            {item.change >= 0 ? (
+                              <ArrowUpRight className="w-3 h-3" />
+                            ) : (
+                              <ArrowDownRight className="w-3 h-3" />
+                            )}
+                            {item.change > 0 ? "+" : ""}
+                            {item.change.toFixed(1)}%
                           </span>
                         </div>
                       </div>
@@ -762,7 +979,9 @@ export default function Dashboard() {
                 <span className="text-sm font-medium">Sales Velocity</span>
               </div>
               <SalesVelocityGauge value={73} max={100} />
-              <p className="text-xs text-muted-foreground text-center mt-2">orders per minute</p>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                orders per minute
+              </p>
             </CardContent>
           </Card>
 
@@ -777,12 +996,16 @@ export default function Dashboard() {
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-muted-foreground">Next Week Revenue</p>
+                  <p className="text-xs text-muted-foreground">
+                    Next Week Revenue
+                  </p>
                   <p className="text-2xl font-bold gradient-text">$4,280</p>
                 </div>
                 <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/15">
                   <Rocket className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-xs text-emerald-400 font-medium">+12% predicted growth</span>
+                  <span className="text-xs text-emerald-400 font-medium">
+                    +12% predicted growth
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -820,12 +1043,22 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1 space-y-1.5">
                   {profitSources.map((source) => (
-                    <div key={source.name} className="flex items-center justify-between text-xs">
+                    <div
+                      key={source.name}
+                      className="flex items-center justify-between text-xs"
+                    >
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: source.color }}></span>
-                        <span className="text-muted-foreground">{source.name}</span>
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: source.color }}
+                        ></span>
+                        <span className="text-muted-foreground">
+                          {source.name}
+                        </span>
                       </div>
-                      <span className="font-mono font-medium">{source.value}%</span>
+                      <span className="font-mono font-medium">
+                        {source.value}%
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -844,11 +1077,26 @@ export default function Dashboard() {
               </div>
               <div className="space-y-2.5">
                 {[
-                  { icon: <Flame className="w-3.5 h-3.5" />, text: "Trending: LED Strip Lights +340%", color: "text-orange-400 bg-orange-500/10" },
-                  { icon: <TrendingDown className="w-3.5 h-3.5" />, text: "Margin drop on Phone Cases", color: "text-red-400 bg-red-500/10" },
-                  { icon: <Star className="w-3.5 h-3.5" />, text: "5-star review streak: 12 days", color: "text-amber-400 bg-amber-500/10" },
+                  {
+                    icon: <Flame className="w-3.5 h-3.5" />,
+                    text: "Trending: LED Strip Lights +340%",
+                    color: "text-orange-400 bg-orange-500/10",
+                  },
+                  {
+                    icon: <TrendingDown className="w-3.5 h-3.5" />,
+                    text: "Margin drop on Phone Cases",
+                    color: "text-red-400 bg-red-500/10",
+                  },
+                  {
+                    icon: <Star className="w-3.5 h-3.5" />,
+                    text: "5-star review streak: 12 days",
+                    color: "text-amber-400 bg-amber-500/10",
+                  },
                 ].map((alert, i) => (
-                  <div key={i} className={`flex items-center gap-2 px-2.5 py-2 rounded-lg ${alert.color} text-xs`}>
+                  <div
+                    key={i}
+                    className={`flex items-center gap-2 px-2.5 py-2 rounded-lg ${alert.color} text-xs`}
+                  >
                     {alert.icon}
                     <span className="truncate">{alert.text}</span>
                   </div>
@@ -870,7 +1118,9 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <span>Recent Orders</span>
-                    <p className="text-xs text-muted-foreground font-normal mt-0.5">Latest transactions across your store</p>
+                    <p className="text-xs text-muted-foreground font-normal mt-0.5">
+                      Latest transactions across your store
+                    </p>
                   </div>
                 </CardTitle>
                 <Link href="/orders">
@@ -884,11 +1134,21 @@ export default function Dashboard() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-white/5 hover:bg-transparent">
-                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">Order</TableHead>
-                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">Customer</TableHead>
-                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">Product</TableHead>
-                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">Status</TableHead>
-                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider text-right">Profit</TableHead>
+                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">
+                      Order
+                    </TableHead>
+                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">
+                      Customer
+                    </TableHead>
+                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">
+                      Product
+                    </TableHead>
+                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-muted-foreground/70 font-medium text-xs uppercase tracking-wider text-right">
+                      Profit
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -908,7 +1168,8 @@ export default function Dashboard() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500/20 to-violet-500/20 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
-                            {order.customerName?.charAt(0)?.toUpperCase() ?? "?"}
+                            {order.customerName?.charAt(0)?.toUpperCase() ??
+                              "?"}
                           </div>
                           <span className="text-sm">{order.customerName}</span>
                         </div>
@@ -952,7 +1213,9 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <span>Trending Products</span>
-                    <p className="text-xs text-muted-foreground font-normal mt-0.5">Top performers this period</p>
+                    <p className="text-xs text-muted-foreground font-normal mt-0.5">
+                      Top performers this period
+                    </p>
                   </div>
                 </CardTitle>
                 <Link href="/products">
@@ -982,7 +1245,9 @@ export default function Dashboard() {
                             {product.name}
                           </Link>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1 ml-7">{product.category}</p>
+                        <p className="text-xs text-muted-foreground mt-1 ml-7">
+                          {product.category}
+                        </p>
                       </div>
                       <div className="text-right shrink-0">
                         <div className="font-mono text-sm text-emerald-400 font-semibold">
@@ -996,14 +1261,22 @@ export default function Dashboard() {
                               : "bg-white/5 text-muted-foreground border-white/10"
                           }`}
                         >
-                          {product.status === "listed" && <Flame className="w-2.5 h-2.5 mr-0.5" />}
+                          {product.status === "listed" && (
+                            <Flame className="w-2.5 h-2.5 mr-0.5" />
+                          )}
                           {product.status}
                         </Badge>
                       </div>
                     </div>
                     <div className="ml-7 space-y-2">
-                      <ViralityBar score={product.viralityScore} label="Virality Score" />
-                      <ViralityBar score={product.velocity} label="Sales Velocity" />
+                      <ViralityBar
+                        score={product.viralityScore}
+                        label="Virality Score"
+                      />
+                      <ViralityBar
+                        score={product.velocity}
+                        label="Sales Velocity"
+                      />
                     </div>
                   </div>
                 ))}
@@ -1023,7 +1296,9 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <span>Revenue Goals</span>
-                  <p className="text-xs text-muted-foreground font-normal mt-0.5">Track your milestones</p>
+                  <p className="text-xs text-muted-foreground font-normal mt-0.5">
+                    Track your milestones
+                  </p>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -1058,17 +1333,37 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <span>Weekly Traffic</span>
-                  <p className="text-xs text-muted-foreground font-normal mt-0.5">Visitors & conversions</p>
+                  <p className="text-xs text-muted-foreground font-normal mt-0.5">
+                    Visitors & conversions
+                  </p>
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={trafficData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
-                    <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                  <LineChart
+                    data={trafficData}
+                    margin={{ top: 5, right: 10, left: -10, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="rgba(255,255,255,0.04)"
+                    />
+                    <XAxis
+                      dataKey="day"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                    />
                     <RechartsTooltip
                       contentStyle={{
                         backgroundColor: "rgba(15, 15, 20, 0.9)",
@@ -1079,19 +1374,39 @@ export default function Dashboard() {
                         padding: "10px 14px",
                       }}
                       itemStyle={{ color: "#fff", fontSize: "12px" }}
-                      labelStyle={{ color: "rgba(255,255,255,0.5)", marginBottom: "4px", fontSize: "11px" }}
+                      labelStyle={{
+                        color: "rgba(255,255,255,0.5)",
+                        marginBottom: "4px",
+                        fontSize: "11px",
+                      }}
                     />
-                    <Line type="monotone" dataKey="visits" stroke="#3B82F6" strokeWidth={2} dot={false} name="Visits" />
-                    <Line type="monotone" dataKey="conversions" stroke="#8B5CF6" strokeWidth={2} dot={false} name="Conversions" />
+                    <Line
+                      type="monotone"
+                      dataKey="visits"
+                      stroke="#3B82F6"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Visits"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="conversions"
+                      stroke="#8B5CF6"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Conversions"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
               <div className="flex items-center gap-4 mt-3">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="h-2 w-2 rounded-full bg-blue-500"></span> Visits
+                  <span className="h-2 w-2 rounded-full bg-blue-500"></span>{" "}
+                  Visits
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="h-2 w-2 rounded-full bg-violet-500"></span> Conversions
+                  <span className="h-2 w-2 rounded-full bg-violet-500"></span>{" "}
+                  Conversions
                 </div>
               </div>
             </CardContent>
@@ -1106,31 +1421,69 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <span>Achievements</span>
-                  <p className="text-xs text-muted-foreground font-normal mt-0.5">Your milestones & badges</p>
+                  <p className="text-xs text-muted-foreground font-normal mt-0.5">
+                    Your milestones & badges
+                  </p>
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { icon: <Rocket className="w-5 h-5" />, label: "First Sale", earned: true, color: "from-blue-500 to-cyan-400" },
-                  { icon: <Package className="w-5 h-5" />, label: "50 Orders", earned: true, color: "from-violet-500 to-purple-400" },
-                  { icon: <Trophy className="w-5 h-5" />, label: "$1K Profit", earned: (stats?.totalProfit ?? 0) >= 1000, color: "from-amber-500 to-orange-400" },
-                  { icon: <Star className="w-5 h-5" />, label: "Top Rated", earned: false, color: "from-pink-500 to-rose-400" },
-                  { icon: <Zap className="w-5 h-5" />, label: "Speed Ship", earned: false, color: "from-emerald-500 to-teal-400" },
-                  { icon: <Flame className="w-5 h-5" />, label: "Hot Seller", earned: false, color: "from-red-500 to-orange-400" },
+                  {
+                    icon: <Rocket className="w-5 h-5" />,
+                    label: "First Sale",
+                    earned: true,
+                    color: "from-blue-500 to-cyan-400",
+                  },
+                  {
+                    icon: <Package className="w-5 h-5" />,
+                    label: "50 Orders",
+                    earned: true,
+                    color: "from-violet-500 to-purple-400",
+                  },
+                  {
+                    icon: <Trophy className="w-5 h-5" />,
+                    label: "$1K Profit",
+                    earned: (stats?.totalProfit ?? 0) >= 1000,
+                    color: "from-amber-500 to-orange-400",
+                  },
+                  {
+                    icon: <Star className="w-5 h-5" />,
+                    label: "Top Rated",
+                    earned: false,
+                    color: "from-pink-500 to-rose-400",
+                  },
+                  {
+                    icon: <Zap className="w-5 h-5" />,
+                    label: "Speed Ship",
+                    earned: false,
+                    color: "from-emerald-500 to-teal-400",
+                  },
+                  {
+                    icon: <Flame className="w-5 h-5" />,
+                    label: "Hot Seller",
+                    earned: false,
+                    color: "from-red-500 to-orange-400",
+                  },
                 ].map((badge) => (
                   <Tooltip key={badge.label}>
                     <TooltipTrigger asChild>
-                      <div className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-200 cursor-default ${
-                        badge.earned
-                          ? "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]"
-                          : "border-white/[0.03] bg-white/[0.01] opacity-40 grayscale"
-                      }`}>
-                        <div className={`p-2.5 rounded-xl ${badge.earned ? `bg-gradient-to-br ${badge.color} text-white shadow-lg` : "bg-white/5 text-muted-foreground"}`}>
+                      <div
+                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-200 cursor-default ${
+                          badge.earned
+                            ? "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]"
+                            : "border-white/[0.03] bg-white/[0.01] opacity-40 grayscale"
+                        }`}
+                      >
+                        <div
+                          className={`p-2.5 rounded-xl ${badge.earned ? `bg-gradient-to-br ${badge.color} text-white shadow-lg` : "bg-white/5 text-muted-foreground"}`}
+                        >
                           {badge.icon}
                         </div>
-                        <span className="text-[10px] text-muted-foreground text-center font-medium">{badge.label}</span>
+                        <span className="text-[10px] text-muted-foreground text-center font-medium">
+                          {badge.label}
+                        </span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -1150,7 +1503,16 @@ export default function Dashboard() {
 /* Award icon import (not in the main import list) */
 function Award(props: React.SVGProps<SVGSVGElement> & { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       <circle cx="12" cy="8" r="6" />
       <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
     </svg>

@@ -90,7 +90,10 @@ export function reportError(
       platform: "node",
       level: "error",
       logger: "api",
-      transaction: typeof context?.["path"] === "string" ? (context["path"] as string) : undefined,
+      transaction:
+        typeof context?.["path"] === "string"
+          ? (context["path"] as string)
+          : undefined,
       server_name: readString("HOSTNAME") || undefined,
       release,
       environment: readString("NODE_ENV") || "development",
@@ -100,9 +103,7 @@ export function reportError(
           {
             type: err instanceof Error ? err.name : "Error",
             value: message,
-            stacktrace: stack
-              ? { frames: parseStack(stack) }
-              : undefined,
+            stacktrace: stack ? { frames: parseStack(stack) } : undefined,
           },
         ],
       },
@@ -116,16 +117,10 @@ export function reportError(
       body: JSON.stringify(event),
       keepalive: true,
     }).catch((fetchErr) => {
-      logger.debug(
-        { err: fetchErr },
-        "[sentry] failed to send event (silent)",
-      );
+      logger.debug({ err: fetchErr }, "[sentry] failed to send event (silent)");
     });
   } catch (innerErr) {
-    logger.debug(
-      { err: innerErr },
-      "[sentry] reportError failed (silent)",
-    );
+    logger.debug({ err: innerErr }, "[sentry] reportError failed (silent)");
   }
 }
 
@@ -140,7 +135,9 @@ function pickStringValues(
   return out;
 }
 
-function parseStack(stack: string): { filename: string; function: string; lineno?: number; colno?: number }[] {
+function parseStack(
+  stack: string,
+): { filename: string; function: string; lineno?: number; colno?: number }[] {
   return stack
     .split("\n")
     .map((line) => line.trim())
@@ -165,7 +162,8 @@ function parseStack(stack: string): { filename: string; function: string; lineno
 function cryptoRandomHex(bytes: number): string {
   // Lazy require so test envs without crypto don't fail at import.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { randomBytes } = require("node:crypto") as typeof import("node:crypto");
+  const { randomBytes } =
+    require("node:crypto") as typeof import("node:crypto");
   return randomBytes(bytes).toString("hex");
 }
 

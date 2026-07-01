@@ -203,7 +203,9 @@ router.post("/orders/import", async (req, res): Promise<void> => {
         .insert(ordersTable)
         .values({
           userId: user.id,
-          orderNumber: row.orderNumber ? String(row.orderNumber) : generateOrderNumber(),
+          orderNumber: row.orderNumber
+            ? String(row.orderNumber)
+            : generateOrderNumber(),
           productName: row.productName,
           customerName: row.customerName ? String(row.customerName) : "Unknown",
           customerEmail: row.customerEmail ? String(row.customerEmail) : null,
@@ -212,7 +214,9 @@ router.post("/orders/import", async (req, res): Promise<void> => {
           costPrice: costPrice != null ? String(costPrice) : null,
           sellPrice: sellPrice != null ? String(sellPrice) : null,
           profit,
-          trackingNumber: row.trackingNumber ? String(row.trackingNumber) : null,
+          trackingNumber: row.trackingNumber
+            ? String(row.trackingNumber)
+            : null,
           supplierName: row.supplierName ? String(row.supplierName) : null,
         })
         .returning();

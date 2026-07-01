@@ -17,7 +17,8 @@ describe("Customer Insights", () => {
   beforeEach(() => resetDb());
 
   it("GET /orders/customer-insights returns aggregated data", async () => {
-    seedTable("orders", [{ userId: 1, customerName: "A", status: "paid", sellPrice: "100" },
+    seedTable("orders", [
+      { userId: 1, customerName: "A", status: "paid", sellPrice: "100" },
       { customerName: "B", status: "paid", sellPrice: "200" },
     ]);
     const res = await authedRequest(app).get("/orders/customer-insights");

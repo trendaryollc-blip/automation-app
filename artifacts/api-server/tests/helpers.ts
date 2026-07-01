@@ -50,7 +50,7 @@ export const DEFAULT_USER_EMAIL = "test@example.com";
  */
 export function authedRequest(
   app: Express,
-  userId: number = DEFAULT_USER_ID
+  userId: number = DEFAULT_USER_ID,
 ): AuthedRequest {
   const token = makeAuthToken(userId);
   const cookie = `dropflow_token=${token}`;
@@ -75,7 +75,7 @@ export interface AuthedTestContext {
  */
 export function setupAuthedUser(
   app: Express,
-  overrides: Partial<FakeUser> = {}
+  overrides: Partial<FakeUser> = {},
 ): AuthedTestContext {
   resetDb();
   const user = makeFakeUser({
@@ -95,7 +95,7 @@ export function setupAuthedUser(
  */
 export function asOwned<T extends Record<string, unknown>>(
   rows: T[],
-  userId: number = DEFAULT_USER_ID
+  userId: number = DEFAULT_USER_ID,
 ): (T & { userId: number })[] {
   return rows.map((r) => ({ ...r, userId }));
 }

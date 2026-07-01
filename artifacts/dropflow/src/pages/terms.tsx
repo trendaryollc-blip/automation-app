@@ -24,8 +24,8 @@ export default function Terms() {
 
         <Section title="1. Acceptance of terms">
           By creating an account or otherwise using DropFlow ("the Service"),
-          you agree to be bound by these Terms. If you do not agree, do not
-          use the Service.
+          you agree to be bound by these Terms. If you do not agree, do not use
+          the Service.
         </Section>
 
         <Section title="2. Accounts">
@@ -42,32 +42,31 @@ export default function Terms() {
 
         <Section title="4. Fees and billing">
           Paid features are billed in advance on a recurring basis. Fees are
-          non-refundable except where required by law. We may change prices
-          with 30 days' notice.
+          non-refundable except where required by law. We may change prices with
+          30 days' notice.
         </Section>
 
         <Section title="5. Termination">
-          We may suspend or terminate your access if you breach these Terms.
-          You may stop using the Service at any time. Sections that by their
-          nature should survive termination will do so.
+          We may suspend or terminate your access if you breach these Terms. You
+          may stop using the Service at any time. Sections that by their nature
+          should survive termination will do so.
         </Section>
 
         <Section title="6. Disclaimer">
           The Service is provided "as is" without warranties of any kind,
-          express or implied, including but not limited to merchantability
-          or fitness for a particular purpose.
+          express or implied, including but not limited to merchantability or
+          fitness for a particular purpose.
         </Section>
 
         <Section title="7. Limitation of liability">
-          To the maximum extent permitted by law, DropFlow shall not be
-          liable for any indirect, incidental, special, or consequential
-          damages.
+          To the maximum extent permitted by law, DropFlow shall not be liable
+          for any indirect, incidental, special, or consequential damages.
         </Section>
 
         <Section title="8. Changes">
           We may update these Terms from time to time. We will notify you of
-          material changes via email or in-app banner. Continued use after
-          the effective date constitutes acceptance.
+          material changes via email or in-app banner. Continued use after the
+          effective date constitutes acceptance.
         </Section>
 
         <Section title="9. Contact">

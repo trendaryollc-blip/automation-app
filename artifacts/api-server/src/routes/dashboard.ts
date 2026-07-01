@@ -1,11 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, count, sql, gte, and } from "drizzle-orm";
-import {
-  db,
-  productsTable,
-  suppliersTable,
-  ordersTable,
-} from "@workspace/db";
+import { db, productsTable, suppliersTable, ordersTable } from "@workspace/db";
 import { currentUser } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
@@ -37,10 +32,7 @@ async function getCounts(userId: number) {
       .select({ total: count() })
       .from(ordersTable)
       .where(
-        and(
-          eq(ordersTable.userId, userId),
-          eq(ordersTable.status, "pending"),
-        ),
+        and(eq(ordersTable.userId, userId), eq(ordersTable.status, "pending")),
       );
     const [deliveredStats] = await db
       .select({ total: count() })
@@ -150,9 +142,12 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
     prevStart = new Date(windowStart.getTime() - 7 * DAY);
     prevEnd = windowStart;
 
-    buckets = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-      (date) => ({ date, revenue: 0, profit: 0, orderCount: 0 }),
-    );
+    buckets = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((date) => ({
+      date,
+      revenue: 0,
+      profit: 0,
+      orderCount: 0,
+    }));
 
     bucketOf = (d: Date) => {
       const diff = new Date(d).setHours(0, 0, 0, 0) - windowStart.getTime();
@@ -165,10 +160,25 @@ router.get("/dashboard/analytics", async (req, res): Promise<void> => {
     prevEnd = windowStart;
 
     const months = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
-    buckets = months.map((date) => ({ date, revenue: 0, profit: 0, orderCount: 0 }));
+    buckets = months.map((date) => ({
+      date,
+      revenue: 0,
+      profit: 0,
+      orderCount: 0,
+    }));
 
     bucketOf = (d: Date) => {
       const months2 =

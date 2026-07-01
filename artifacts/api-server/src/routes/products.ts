@@ -189,7 +189,10 @@ router.get("/products/:id", async (req, res): Promise<void> => {
     .select()
     .from(productsTable)
     .where(
-      and(eq(productsTable.id, params.data.id), eq(productsTable.userId, user.id)),
+      and(
+        eq(productsTable.id, params.data.id),
+        eq(productsTable.userId, user.id),
+      ),
     );
   if (!product) {
     res.status(404).json({ error: "Product not found" });
@@ -221,7 +224,10 @@ router.patch("/products/:id", async (req, res): Promise<void> => {
     .update(productsTable)
     .set(updateData)
     .where(
-      and(eq(productsTable.id, params.data.id), eq(productsTable.userId, user.id)),
+      and(
+        eq(productsTable.id, params.data.id),
+        eq(productsTable.userId, user.id),
+      ),
     )
     .returning();
   if (!product) {
@@ -241,7 +247,10 @@ router.delete("/products/:id", async (req, res): Promise<void> => {
   const [product] = await db
     .delete(productsTable)
     .where(
-      and(eq(productsTable.id, params.data.id), eq(productsTable.userId, user.id)),
+      and(
+        eq(productsTable.id, params.data.id),
+        eq(productsTable.userId, user.id),
+      ),
     )
     .returning();
   if (!product) {

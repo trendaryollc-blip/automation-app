@@ -13,18 +13,20 @@ vi.mock("@workspace/db", () => {
 describe("Product Tags routes", () => {
   beforeEach(() => {
     resetDb();
-  // Test-only auth setup: seed a default user so requireAuth() accepts
-  // requests.  This pattern is shared by every test in this folder;
-  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
-  seedTable("users", [{ userId: 1,
-      id: 1,
-      email: "test@example.com",
-      passwordHash: "x",
-      name: "Test",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ]);
+    // Test-only auth setup: seed a default user so requireAuth() accepts
+    // requests.  This pattern is shared by every test in this folder;
+    // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+    seedTable("users", [
+      {
+        userId: 1,
+        id: 1,
+        email: "test@example.com",
+        passwordHash: "x",
+        name: "Test",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
   });
 
   it("GET /product-tags returns empty array initially", async () => {
@@ -43,7 +45,8 @@ describe("Product Tags routes", () => {
 
   it("DELETE /product-tags/:id removes a tag and its links", async () => {
     seedTable("product_tags", [{ userId: 1, id: 50, name: "clearance" }]);
-    seedTable("product_tag_links", [{ userId: 1, id: 1, productId: 10, tagId: 50 },
+    seedTable("product_tag_links", [
+      { userId: 1, id: 1, productId: 10, tagId: 50 },
       { id: 2, productId: 20, tagId: 50 },
     ]);
 
@@ -63,10 +66,12 @@ describe("Product Tags routes", () => {
   });
 
   it("GET /products/:id/tags returns tags for a product", async () => {
-    seedTable("product_tags", [{ userId: 1, id: 1, name: "sale" },
+    seedTable("product_tags", [
+      { userId: 1, id: 1, name: "sale" },
       { id: 2, name: "new" },
     ]);
-    seedTable("product_tag_links", [{ userId: 1, id: 10, productId: 100, tagId: 1 },
+    seedTable("product_tag_links", [
+      { userId: 1, id: 10, productId: 100, tagId: 1 },
       { id: 11, productId: 100, tagId: 2 },
     ]);
 
@@ -91,7 +96,9 @@ describe("Product Tags routes", () => {
   });
 
   it("DELETE /products/:id/tags/:tagId removes link", async () => {
-    seedTable("product_tag_links", [{ userId: 1, id: 1, productId: 10, tagId: 20 }]);
+    seedTable("product_tag_links", [
+      { userId: 1, id: 1, productId: 10, tagId: 20 },
+    ]);
 
     const api = authedRequest(app);
     const res = await api.delete("/api/products/10/tags/20");

@@ -43,9 +43,7 @@ describe("API route coverage", () => {
     expect(stats.status).toBe(200);
     expect(stats.body).toHaveProperty("totalProducts");
 
-    const monthly = await api.get(
-      "/api/dashboard/analytics?period=monthly",
-    );
+    const monthly = await api.get("/api/dashboard/analytics?period=monthly");
     expect(monthly.status).toBe(200);
     expect(monthly.body.data).toHaveLength(12);
   });
@@ -109,7 +107,9 @@ describe("API route coverage", () => {
 
     seedTable(
       "products",
-      asOwned([{ userId: 1, name: "Supplier Item", status: "listed", supplierId }]),
+      asOwned([
+        { userId: 1, name: "Supplier Item", status: "listed", supplierId },
+      ]),
     );
 
     const getByCountry = await api.get("/api/suppliers?country=USA");

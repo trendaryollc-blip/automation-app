@@ -110,7 +110,9 @@ function KpiCard({
       </p>
       <p className="text-2xl font-bold tabular-nums">
         {prefix}
-        {decimals > 0 ? animatedValue.toFixed(decimals) : Math.round(animatedValue).toLocaleString()}
+        {decimals > 0
+          ? animatedValue.toFixed(decimals)
+          : Math.round(animatedValue).toLocaleString()}
         {suffix && (
           <span className="text-base font-normal text-muted-foreground ml-0.5">
             {suffix}
@@ -126,7 +128,9 @@ function KpiCard({
               : "bg-red-500/15 text-red-400"
           }`}
         >
-          <TrendingUp className={`w-3 h-3 ${!isPositive ? "rotate-180" : ""}`} />
+          <TrendingUp
+            className={`w-3 h-3 ${!isPositive ? "rotate-180" : ""}`}
+          />
           {Math.abs(change).toFixed(1)}%
         </span>
         <span className="text-[10px] text-muted-foreground">vs last month</span>
@@ -144,7 +148,9 @@ const KPI_DATA = [
     change: 12.5,
     icon: <Users className="w-4 h-4" />,
     color: "#3B82F6",
-    sparkline: [800, 850, 920, 980, 1050, 1100, 1150, 1200, 1230, 1260, 1270, 1280, 1284],
+    sparkline: [
+      800, 850, 920, 980, 1050, 1100, 1150, 1200, 1230, 1260, 1270, 1280, 1284,
+    ],
   },
   {
     label: "Total Revenue",
@@ -165,7 +171,9 @@ const KPI_DATA = [
     icon: <BarChart3 className="w-4 h-4" />,
     color: "#8B5CF6",
     decimals: 2,
-    sparkline: [220, 240, 260, 280, 290, 310, 320, 330, 335, 340, 345, 347, 348],
+    sparkline: [
+      220, 240, 260, 280, 290, 310, 320, 330, 335, 340, 345, 347, 348,
+    ],
   },
   {
     label: "VIP Customers",

@@ -53,7 +53,9 @@ function CustomTooltip({ active, payload, label }: any) {
             className="w-2 h-2 rounded-full"
             style={{ background: entry.color }}
           />
-          <span className="text-muted-foreground capitalize">{entry.dataKey}:</span>
+          <span className="text-muted-foreground capitalize">
+            {entry.dataKey}:
+          </span>
           <span className="font-semibold">{entry.value}</span>
         </div>
       ))}
@@ -62,7 +64,14 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 /* ─── Custom Pie Label ─── */
-function renderCustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) {
+function renderCustomLabel({
+  cx,
+  cy,
+  midAngle,
+  innerRadius,
+  outerRadius,
+  percent,
+}: any) {
   const RADIAN = Math.PI / 180;
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -101,7 +110,9 @@ export default function ProductCharts() {
             </div>
             <div>
               <h3 className="text-sm font-semibold">Product Discovery Trend</h3>
-              <p className="text-[10px] text-muted-foreground">Monthly pipeline performance</p>
+              <p className="text-[10px] text-muted-foreground">
+                Monthly pipeline performance
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
@@ -118,7 +129,10 @@ export default function ProductCharts() {
         </div>
 
         <ResponsiveContainer width="100%" height={260}>
-          <AreaChart data={trendData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+          <AreaChart
+            data={trendData}
+            margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+          >
             <defs>
               <linearGradient id="gradDiscovered" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.25} />
@@ -133,7 +147,10 @@ export default function ProductCharts() {
                 <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.04)"
+            />
             <XAxis
               dataKey="month"
               tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
@@ -192,7 +209,9 @@ export default function ProductCharts() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">Category Distribution</h3>
-            <p className="text-[10px] text-muted-foreground">Products by category</p>
+            <p className="text-[10px] text-muted-foreground">
+              Products by category
+            </p>
           </div>
         </div>
 
@@ -226,10 +245,15 @@ export default function ProductCharts() {
                 return (
                   <div className="glass rounded-lg p-2.5 border border-white/[0.1] shadow-xl text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} />
+                      <span
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ background: d.color }}
+                      />
                       <span className="font-semibold">{d.name}</span>
                     </div>
-                    <span className="text-muted-foreground">{d.value} products</span>
+                    <span className="text-muted-foreground">
+                      {d.value} products
+                    </span>
                   </div>
                 );
               }}
@@ -240,10 +264,18 @@ export default function ProductCharts() {
         {/* Legend */}
         <div className="grid grid-cols-2 gap-1.5 mt-2">
           {categoryData.map((cat) => (
-            <div key={cat.name} className="flex items-center gap-1.5 text-[10px]">
-              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: cat.color }} />
+            <div
+              key={cat.name}
+              className="flex items-center gap-1.5 text-[10px]"
+            >
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ background: cat.color }}
+              />
               <span className="text-muted-foreground truncate">{cat.name}</span>
-              <span className="ml-auto font-mono font-semibold text-foreground">{cat.value}</span>
+              <span className="ml-auto font-mono font-semibold text-foreground">
+                {cat.value}
+              </span>
             </div>
           ))}
         </div>

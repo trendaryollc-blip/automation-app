@@ -41,7 +41,9 @@ router.get("/cash-flow/forecast", async (req, res): Promise<void> => {
     );
 
   const pendingRevenue = allOrders
-    .filter((o) => ["pending", "processing", "shipped"].includes(o.status ?? ""))
+    .filter((o) =>
+      ["pending", "processing", "shipped"].includes(o.status ?? ""),
+    )
     .reduce(
       (s, o) => s + Number(o.sellPrice ?? 0) * Number(o.quantity ?? 1),
       0,

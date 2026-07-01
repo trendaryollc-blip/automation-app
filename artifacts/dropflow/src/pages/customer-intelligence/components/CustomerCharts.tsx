@@ -131,7 +131,9 @@ export default function CustomerCharts() {
               <TrendingUp className="w-4 h-4 text-violet-400" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold">Customer Lifetime Value Trend</h3>
+              <h3 className="text-sm font-semibold">
+                Customer Lifetime Value Trend
+              </h3>
               <p className="text-[10px] text-muted-foreground">
                 Monthly LTV growth & customer composition
               </p>
@@ -169,7 +171,10 @@ export default function CustomerCharts() {
                 <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.04)"
+            />
             <XAxis
               dataKey="month"
               tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}

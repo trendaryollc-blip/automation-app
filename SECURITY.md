@@ -1,14 +1,14 @@
 # Security Policy
 
-DropFlow takes the security of customer data seriously.  This document
+DropFlow takes the security of customer data seriously. This document
 explains how to report a vulnerability, what we promise, and what we
 expect from you.
 
 ## Supported versions
 
-| Version | Supported           |
-| ------- | ------------------- |
-| 0.1.x   | ✅ Active           |
+| Version | Supported               |
+| ------- | ----------------------- |
+| 0.1.x   | ✅ Active               |
 | < 0.1   | ❌ No longer maintained |
 
 ## Reporting a vulnerability
@@ -29,7 +29,7 @@ We will:
 - Provide a status update within **7 business days**.
 - Work with you to coordinate disclosure and a fix timeline.
 
-We follow a 90-day responsible-disclosure window.  Please give us a
+We follow a 90-day responsible-disclosure window. Please give us a
 reasonable amount of time to patch before publishing details.
 
 ## Security architecture (high level)
@@ -39,7 +39,7 @@ reasonable amount of time to patch before publishing details.
   `Secure` flag is set automatically in production.
 - **Tokens** (password-reset, email-verify): random 32 bytes,
   base64url-encoded, hashed with SHA-256 before being stored in the
-  database.  Plaintext tokens are never persisted.
+  database. Plaintext tokens are never persisted.
 - **Rate limiting**: 300 req/min/IP globally, 30/15min on auth.
   Account-level lockout after 5 consecutive failed logins.
 - **CORS**: only the configured `CORS_ORIGIN` (production refuses `*`).

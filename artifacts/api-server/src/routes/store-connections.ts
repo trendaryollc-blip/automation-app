@@ -2,11 +2,7 @@ import { Router, type IRouter } from "express";
 import { z } from "zod/v4";
 import crypto from "node:crypto";
 import { eq, desc, and } from "drizzle-orm";
-import {
-  db,
-  storeConnectionsTable,
-  syncLogsTable,
-} from "@workspace/db";
+import { db, storeConnectionsTable, syncLogsTable } from "@workspace/db";
 import { currentUser } from "../middlewares/auth.js";
 import { testCJDropshipping } from "../services/cjdropshipping.js";
 import { testZendrop } from "../services/zendrop.js";

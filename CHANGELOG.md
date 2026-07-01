@@ -1,15 +1,16 @@
 # Changelog
 
-All notable changes to DropFlow are documented in this file.  The format
+All notable changes to DropFlow are documented in this file. The format
 is based on [Keep a Changelog](https://keepachangelog.com/) and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [0.1.0] - 2026-06-30
 
-First production-ready cut.  Everything below was added or hardened
+First production-ready cut. Everything below was added or hardened
 relative to the previous dev snapshot.
 
 ### Added
+
 - **Authentication & security**
   - Account lockout after 5 failed logins (15-minute cooldown).
   - Forgot-password + reset-password flow with SHA-256 hashed tokens.
@@ -44,7 +45,7 @@ relative to the previous dev snapshot.
   - React Query tuned with sane defaults.
 - **Health & observability**
   - `GET /api/healthz` — liveness probe.
-  - `GET /api/readyz`  — readiness probe with DB round-trip.
+  - `GET /api/readyz` — readiness probe with DB round-trip.
 - **Build & deploy**
   - LICENSE field added to every `package.json`.
   - `mockup-sandbox` removed from the pnpm workspace (kept on disk
@@ -64,6 +65,7 @@ relative to the previous dev snapshot.
   - `docs/STATUS_PAGE.md` (template for status.dropflow.com).
 
 ### Changed
+
 - `pnpm-workspace.yaml` now lists workspace packages explicitly so a
   future sandbox directory can't accidentally leak into CI.
 - `db` / `pool` exports no longer use the `!` non-null assertion; in
@@ -75,12 +77,14 @@ relative to the previous dev snapshot.
   so business volume is not exposed sequentially.
 
 ### Removed
+
 - Windows-only `INSTALL.bat`, `Resume.bat`, root-level `setup.bat` /
-  `Start.bat`.  Use `scripts/setup.{sh,bat}` and
+  `Start.bat`. Use `scripts/setup.{sh,bat}` and
   `scripts/start.{sh,bat}` instead.
 - Throwaway `debug-*.{mjs,ts}` and `temp-*` files at the repo root.
 
 ### Security
+
 - README, SECURITY.md, and PRODUCTION_CHECKLIST.md document the
   minimum required environment for a production deploy.
 - Helmet + trust-proxy + per-route CORS already in place; new
@@ -91,4 +95,4 @@ relative to the previous dev snapshot.
 
 ## [0.0.0] - initial dev snapshot
 
-Pre-release development version.  Not safe to expose to customers.
+Pre-release development version. Not safe to expose to customers.

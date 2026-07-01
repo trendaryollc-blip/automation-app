@@ -105,7 +105,10 @@ router.patch("/returns/:id", async (req, res): Promise<void> => {
     .update(returnsTable)
     .set(updateData)
     .where(
-      and(eq(returnsTable.id, params.data.id), eq(returnsTable.userId, user.id)),
+      and(
+        eq(returnsTable.id, params.data.id),
+        eq(returnsTable.userId, user.id),
+      ),
     )
     .returning();
   if (!updated) {
@@ -125,7 +128,10 @@ router.delete("/returns/:id", async (req, res): Promise<void> => {
   await db
     .delete(returnsTable)
     .where(
-      and(eq(returnsTable.id, params.data.id), eq(returnsTable.userId, user.id)),
+      and(
+        eq(returnsTable.id, params.data.id),
+        eq(returnsTable.userId, user.id),
+      ),
     );
   res.json({ success: true });
 });

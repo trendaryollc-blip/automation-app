@@ -25,8 +25,7 @@ export type PoolHandle = pg.Pool;
 
 // Determine which database mode to use
 const dbMode = (process.env["DB_MODE"] || "postgres").toLowerCase();
-const isVitest =
-  typeof process !== "undefined" && !!process.env["VITEST"];
+const isVitest = typeof process !== "undefined" && !!process.env["VITEST"];
 const isProduction = process.env["NODE_ENV"] === "production";
 
 if (dbMode === "firestore") {

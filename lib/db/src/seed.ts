@@ -8,7 +8,13 @@
  * If you really need a starter dataset, run with FORCE_SEED=1.
  */
 import { randomBytes } from "node:crypto";
-import { db, usersTable, suppliersTable, productsTable, ordersTable } from "./index.js";
+import {
+  db,
+  usersTable,
+  suppliersTable,
+  productsTable,
+  ordersTable,
+} from "./index.js";
 import { hashPassword } from "./auth-utils.js";
 
 function isProduction(): boolean {
@@ -56,9 +62,7 @@ async function seed() {
   const userId = demoUser.id;
   console.log(`Created demo user (id=${userId}, email=${demoEmail})`);
   if (isProduction()) {
-    console.log(
-      `[seed] Generated password (capture it now): ${demoPassword}`,
-    );
+    console.log(`[seed] Generated password (capture it now): ${demoPassword}`);
   }
 
   // ---------------------------------------------------------------------------
@@ -283,7 +287,7 @@ async function seed() {
   ];
 
   type OrderStatus =
-    | "pending" | "placed" | "shipped" | "delivered" | "cancelled";
+    "pending" | "placed" | "shipped" | "delivered" | "cancelled";
   const orderRows: {
     userId: number;
     orderNumber: string;

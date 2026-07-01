@@ -30,9 +30,7 @@ export default function VerifyEmail() {
       })
       .catch((err: unknown) => {
         setStatus("error");
-        setMessage(
-          err instanceof Error ? err.message : "Verification failed.",
-        );
+        setMessage(err instanceof Error ? err.message : "Verification failed.");
       });
   }, []);
 

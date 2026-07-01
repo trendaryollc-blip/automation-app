@@ -22,9 +22,18 @@ describe("Products", () => {
   });
 
   it("GET /products returns seeded", async () => {
-    seedTable("products", [{ userId: 1, name: "Widget", status: "listed", costPrice: "5", sellPrice: "15" },
+    seedTable("products", [
+      {
+        userId: 1,
+        name: "Widget",
+        status: "listed",
+        costPrice: "5",
+        sellPrice: "15",
+      },
     ]);
-    const res = await authedRequest(express().use(productsRouter)).get("/products");
+    const res = await authedRequest(express().use(productsRouter)).get(
+      "/products",
+    );
     expect(res.body[0].name).toBe("Widget");
     expect(res.body[0].margin).toBe(67);
   });
@@ -37,7 +46,14 @@ describe("Products", () => {
   });
 
   it("GET /products/stock-alerts", async () => {
-    seedTable("products", [{ userId: 1, name: "Low", stockQuantity: 2, stockThreshold: 10, status: "listed" },
+    seedTable("products", [
+      {
+        userId: 1,
+        name: "Low",
+        stockQuantity: 2,
+        stockThreshold: 10,
+        status: "listed",
+      },
     ]);
     const res = await authedRequest(express().use(productsRouter)).get(
       "/products/stock-alerts",

@@ -47,8 +47,7 @@ function parseLcov(file) {
     statements:
       statementsTotal === 0 ? 0 : (statementsHit / statementsTotal) * 100,
     branches: branchesTotal === 0 ? 0 : (branchesHit / branchesTotal) * 100,
-    functions:
-      functionsTotal === 0 ? 0 : (functionsHit / functionsTotal) * 100,
+    functions: functionsTotal === 0 ? 0 : (functionsHit / functionsTotal) * 100,
     lines: linesTotal === 0 ? 0 : (linesHit / linesTotal) * 100,
   };
 }

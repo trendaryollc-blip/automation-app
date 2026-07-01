@@ -20,11 +20,7 @@ export function AccountMenu() {
   const { user, logout, refresh } = useAuth();
   const [, navigate] = useLocation();
   const [open, setOpen] = useState<
-    | null
-    | "changePassword"
-    | "resendVerify"
-    | "exportData"
-    | "deleteAccount"
+    null | "changePassword" | "resendVerify" | "exportData" | "deleteAccount"
   >(null);
   const [info, setInfo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +54,9 @@ export function AccountMenu() {
       setConfirm("");
       setOpen(null);
     } catch (err) {
-      setError(err instanceof AuthError ? err.message : "Failed to update password.");
+      setError(
+        err instanceof AuthError ? err.message : "Failed to update password.",
+      );
     } finally {
       setBusy(false);
     }
@@ -72,7 +70,9 @@ export function AccountMenu() {
       await authClient.resendVerification();
       setInfo("Verification email sent. Check your inbox.");
     } catch (err) {
-      setError(err instanceof AuthError ? err.message : "Failed to resend email.");
+      setError(
+        err instanceof AuthError ? err.message : "Failed to resend email.",
+      );
     } finally {
       setBusy(false);
     }
@@ -255,12 +255,8 @@ export function AccountMenu() {
         Sign out
       </button>
 
-      {error ? (
-        <p className="px-2 text-xs text-red-400">{error}</p>
-      ) : null}
-      {info ? (
-        <p className="px-2 text-xs text-emerald-500">{info}</p>
-      ) : null}
+      {error ? <p className="px-2 text-xs text-red-400">{error}</p> : null}
+      {info ? <p className="px-2 text-xs text-emerald-500">{info}</p> : null}
     </div>
   );
 }

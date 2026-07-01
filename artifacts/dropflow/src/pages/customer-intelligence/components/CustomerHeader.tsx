@@ -7,7 +7,10 @@ interface CustomerHeaderProps {
   toggleTheme: () => void;
 }
 
-export default function CustomerHeader({ theme, toggleTheme }: CustomerHeaderProps) {
+export default function CustomerHeader({
+  theme,
+  toggleTheme,
+}: CustomerHeaderProps) {
   const [liveCount, setLiveCount] = useState(0);
 
   useEffect(() => {
@@ -83,8 +86,8 @@ export default function CustomerHeader({ theme, toggleTheme }: CustomerHeaderPro
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            Unlock deep insights into customer behavior, RFM segmentation, lifetime
-            value trends, and AI-powered retention strategies.
+            Unlock deep insights into customer behavior, RFM segmentation,
+            lifetime value trends, and AI-powered retention strategies.
           </motion.p>
 
           <div className="flex items-center gap-4 mt-3 text-xs text-white/70">

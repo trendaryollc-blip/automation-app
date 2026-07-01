@@ -17,7 +17,10 @@ function useAnimatedNumber(value: number, duration = 1200) {
   useEffect(() => {
     const start = display;
     const diff = value - start;
-    if (Math.abs(diff) < 0.01) { setDisplay(value); return; }
+    if (Math.abs(diff) < 0.01) {
+      setDisplay(value);
+      return;
+    }
     const startTime = performance.now();
     const animate = (now: number) => {
       const elapsed = now - startTime;
@@ -49,11 +52,13 @@ function MiniSparkline({ data, color }: { data: number[]; color: string }) {
   const range = max - min || 1;
   const height = 28;
   const width = 60;
-  const points = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * width;
-    const y = height - ((v - min) / range) * (height - 4) - 2;
-    return `${x},${y}`;
-  }).join(" ");
+  const points = data
+    .map((v, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - ((v - min) / range) * (height - 4) - 2;
+      return `${x},${y}`;
+    })
+    .join(" ");
 
   return (
     <svg width={width} height={height} className="opacity-60">
@@ -69,7 +74,17 @@ function MiniSparkline({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-function KpiCard({ label, value, prefix = "", suffix = "", change, icon, color, delay, sparkline }: KpiCardProps) {
+function KpiCard({
+  label,
+  value,
+  prefix = "",
+  suffix = "",
+  change,
+  icon,
+  color,
+  delay,
+  sparkline,
+}: KpiCardProps) {
   const animatedValue = useAnimatedNumber(value);
   const isPositive = change >= 0;
 
@@ -87,9 +102,7 @@ function KpiCard({ label, value, prefix = "", suffix = "", change, icon, color, 
         >
           {icon}
         </div>
-        {sparkline && (
-          <MiniSparkline data={sparkline} color={color} />
-        )}
+        {sparkline && <MiniSparkline data={sparkline} color={color} />}
       </div>
 
       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
@@ -100,7 +113,9 @@ function KpiCard({ label, value, prefix = "", suffix = "", change, icon, color, 
         {suffix === "%" || suffix === "x"
           ? animatedValue.toFixed(1)
           : Math.round(animatedValue).toLocaleString()}
-        <span className="text-base font-normal text-muted-foreground ml-0.5">{suffix}</span>
+        <span className="text-base font-normal text-muted-foreground ml-0.5">
+          {suffix}
+        </span>
       </p>
 
       <div className="flex items-center gap-1.5 mt-2">
@@ -111,7 +126,9 @@ function KpiCard({ label, value, prefix = "", suffix = "", change, icon, color, 
               : "bg-red-500/15 text-red-400"
           }`}
         >
-          <TrendingUp className={`w-3 h-3 ${!isPositive ? "rotate-180" : ""}`} />
+          <TrendingUp
+            className={`w-3 h-3 ${!isPositive ? "rotate-180" : ""}`}
+          />
           {Math.abs(change).toFixed(1)}%
         </span>
         <span className="text-[10px] text-muted-foreground">vs last week</span>
@@ -159,7 +176,9 @@ const KPI_DATA = [
     change: 15.3,
     icon: <DollarSign className="w-4 h-4" />,
     color: "#10B981",
-    sparkline: [500, 600, 550, 700, 680, 800, 750, 900, 850, 1000, 950, 1100, 1050, 1200],
+    sparkline: [
+      500, 600, 550, 700, 680, 800, 750, 900, 850, 1000, 950, 1100, 1050, 1200,
+    ],
   },
 ];
 

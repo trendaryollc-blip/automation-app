@@ -39,8 +39,8 @@ export function VerifyEmailBanner() {
     >
       <div className="flex items-center justify-between gap-3 px-6 py-2 text-sm">
         <div className="flex-1 min-w-0">
-          <strong className="font-semibold">Verify your email</strong>{" "}
-          to unlock all features. Check your inbox for the link.
+          <strong className="font-semibold">Verify your email</strong> to unlock
+          all features. Check your inbox for the link.
           {info ? <span className="ml-2 text-xs">({info})</span> : null}
         </div>
         <div className="flex items-center gap-2 shrink-0">

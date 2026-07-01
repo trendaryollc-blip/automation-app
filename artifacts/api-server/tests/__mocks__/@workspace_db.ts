@@ -457,9 +457,7 @@ import { createHmac } from "node:crypto";
 
 const TEST_JWT_SECRET =
   process.env["JWT_SECRET"] ||
-  createHmac("sha256", "")
-    .update("dropflow-test-secret")
-    .digest("hex");
+  createHmac("sha256", "").update("dropflow-test-secret").digest("hex");
 
 export interface FakeUser {
   id: number;

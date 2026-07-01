@@ -13,18 +13,20 @@ vi.mock("@workspace/db", () => {
 describe("Product Scorer routes", () => {
   beforeEach(() => {
     resetDb();
-  // Test-only auth setup: seed a default user so requireAuth() accepts
-  // requests.  This pattern is shared by every test in this folder;
-  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
-  seedTable("users", [{ userId: 1,
-      id: 1,
-      email: "test@example.com",
-      passwordHash: "x",
-      name: "Test",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ]);
+    // Test-only auth setup: seed a default user so requireAuth() accepts
+    // requests.  This pattern is shared by every test in this folder;
+    // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+    seedTable("users", [
+      {
+        userId: 1,
+        id: 1,
+        email: "test@example.com",
+        passwordHash: "x",
+        name: "Test",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
   });
 
   it("POST /products/score returns 400 when name missing", async () => {

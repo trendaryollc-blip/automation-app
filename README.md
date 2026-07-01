@@ -101,23 +101,23 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY----
 
 ## Available commands
 
-| Command                | Description                                          |
-| ---------------------- | ---------------------------------------------------- |
-| `pnpm run dev`         | Start API + frontend                                 |
-| `pnpm run dev:server`  | Start API server only                                |
-| `pnpm run dev:client`  | Start frontend only                                  |
-| `pnpm run build`       | Typecheck + build all                                |
-| `pnpm run db:push`     | Push Drizzle schema to PostgreSQL                    |
-| `pnpm run db:seed`     | Seed PostgreSQL data (dev only by default)           |
-| `pnpm run typecheck`   | TypeScript check across the workspace                |
-| `pnpm run lint`        | Format check (Prettier)                              |
-| `pnpm run format`      | Format all files                                     |
-| `pnpm run test`        | Run unit + integration tests with coverage          |
-| `pnpm run test:e2e`    | Run Playwright E2E tests                             |
+| Command               | Description                                |
+| --------------------- | ------------------------------------------ |
+| `pnpm run dev`        | Start API + frontend                       |
+| `pnpm run dev:server` | Start API server only                      |
+| `pnpm run dev:client` | Start frontend only                        |
+| `pnpm run build`      | Typecheck + build all                      |
+| `pnpm run db:push`    | Push Drizzle schema to PostgreSQL          |
+| `pnpm run db:seed`    | Seed PostgreSQL data (dev only by default) |
+| `pnpm run typecheck`  | TypeScript check across the workspace      |
+| `pnpm run lint`       | Format check (Prettier)                    |
+| `pnpm run format`     | Format all files                           |
+| `pnpm run test`       | Run unit + integration tests with coverage |
+| `pnpm run test:e2e`   | Run Playwright E2E tests                   |
 
 ## Going to production
 
-**Read `PRODUCTION_CHECKLIST.md` first.**  In summary:
+**Read `PRODUCTION_CHECKLIST.md` first.** In summary:
 
 1. Generate a strong `JWT_SECRET` (`openssl rand -hex 32`).
 2. Set `CORS_ORIGIN` to the exact production origin (NOT `*`).
@@ -154,26 +154,26 @@ Referrer-Policy, and Permissions-Policy by default.
 
 ## Environment variables
 
-| Variable                         | Required   | Description                                       |
-| -------------------------------- | ---------- | ------------------------------------------------- |
-| `PORT`                           | No         | API server port (default: 8080)                   |
-| `DATABASE_URL`                   | PostgreSQL | PostgreSQL connection string                      |
-| `DB_MODE`                        | No         | `postgres` or `firestore`                         |
-| `FIREBASE_PROJECT_ID`            | Firestore  | Firebase project ID                               |
-| `FIREBASE_CLIENT_EMAIL`          | Firestore  | Service account email                             |
-| `FIREBASE_PRIVATE_KEY`           | Firestore  | Service account private key                       |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Firestore  | Path to service account JSON                      |
-| `JWT_SECRET`                     | **Yes (prod)** | 32+ char random secret                       |
-| `CORS_ORIGIN`                    | **Yes (prod)** | Exact production origin                     |
-| `SIGNUP_ENABLED`                 | No         | `true`/`false`; `false` for invite-only launches  |
-| `VITE_API_URL`                   | No         | API URL (omit for same-origin on Vercel)          |
-| `APP_URL`                        | Yes (prod) | Public origin of the app, used in emails          |
-| `EMAIL_PROVIDER`                 | No         | `log` (default) or `resend`                       |
-| `RESEND_API_KEY`                 | If resend  | Resend API key                                    |
-| `EMAIL_FROM`                     | If resend  | From address, e.g. `DropFlow <no-reply@…>`        |
-| `SENTRY_DSN`                     | No         | Server-side Sentry DSN                            |
-| `VITE_SENTRY_DSN`                | No         | Browser-side Sentry DSN                           |
-| `LOG_LEVEL`                      | No         | `debug` / `info` / `warn` / `error`               |
+| Variable                         | Required       | Description                                      |
+| -------------------------------- | -------------- | ------------------------------------------------ |
+| `PORT`                           | No             | API server port (default: 8080)                  |
+| `DATABASE_URL`                   | PostgreSQL     | PostgreSQL connection string                     |
+| `DB_MODE`                        | No             | `postgres` or `firestore`                        |
+| `FIREBASE_PROJECT_ID`            | Firestore      | Firebase project ID                              |
+| `FIREBASE_CLIENT_EMAIL`          | Firestore      | Service account email                            |
+| `FIREBASE_PRIVATE_KEY`           | Firestore      | Service account private key                      |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Firestore      | Path to service account JSON                     |
+| `JWT_SECRET`                     | **Yes (prod)** | 32+ char random secret                           |
+| `CORS_ORIGIN`                    | **Yes (prod)** | Exact production origin                          |
+| `SIGNUP_ENABLED`                 | No             | `true`/`false`; `false` for invite-only launches |
+| `VITE_API_URL`                   | No             | API URL (omit for same-origin on Vercel)         |
+| `APP_URL`                        | Yes (prod)     | Public origin of the app, used in emails         |
+| `EMAIL_PROVIDER`                 | No             | `log` (default) or `resend`                      |
+| `RESEND_API_KEY`                 | If resend      | Resend API key                                   |
+| `EMAIL_FROM`                     | If resend      | From address, e.g. `DropFlow <no-reply@…>`       |
+| `SENTRY_DSN`                     | No             | Server-side Sentry DSN                           |
+| `VITE_SENTRY_DSN`                | No             | Browser-side Sentry DSN                          |
+| `LOG_LEVEL`                      | No             | `debug` / `info` / `warn` / `error`              |
 
 ## Architecture
 

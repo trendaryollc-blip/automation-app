@@ -8,7 +8,9 @@ beforeEach(() => {
   // Test-only auth setup: seed a default user so requireAuth() accepts
   // requests.  This pattern is shared by every test in this folder;
   // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
-  seedTable("users", [{ userId: 1,
+  seedTable("users", [
+    {
+      userId: 1,
       id: 1,
       email: "test@example.com",
       passwordHash: "x",
@@ -20,7 +22,13 @@ beforeEach(() => {
 });
 
 test("hasKey returns true when key is present", async () => {
-  seedTable("ai_settings", [{ userId: 1, provider: "groq", apiKey: "test-key", model: "llama-3.3-70b-versatile" },
+  seedTable("ai_settings", [
+    {
+      userId: 1,
+      provider: "groq",
+      apiKey: "test-key",
+      model: "llama-3.3-70b-versatile",
+    },
   ]);
 
   const result = await hasKey("groq");
@@ -44,7 +52,13 @@ test("tryProviders throws when no keys available", async () => {
 });
 
 test("tryProviders uses groq when groq key exists", async () => {
-  seedTable("ai_settings", [{ userId: 1, provider: "groq", apiKey: "test-key", model: "llama-3.3-70b-versatile" },
+  seedTable("ai_settings", [
+    {
+      userId: 1,
+      provider: "groq",
+      apiKey: "test-key",
+      model: "llama-3.3-70b-versatile",
+    },
   ]);
 
   vi.stubGlobal(

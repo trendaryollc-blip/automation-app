@@ -1,13 +1,13 @@
 # Contributing to DropFlow
 
-Thanks for your interest in making DropFlow better!  This document
+Thanks for your interest in making DropFlow better! This document
 covers everything you need to know to get set up and submit a pull
 request.
 
 ## Code of conduct
 
 This project follows the [Contributor Covenant](https://www.contributor-covenant.org/).
-By participating you agree to abide by its terms.  Be kind, assume
+By participating you agree to abide by its terms. Be kind, assume
 good faith, and help us keep this a welcoming community.
 
 ## Reporting bugs / requesting features
@@ -67,12 +67,12 @@ pnpm run dev
    pnpm run build
    ```
 4. Open a pull request targeting `main`.
-5. Address review feedback.  PRs require one approval and a green
+5. Address review feedback. PRs require one approval and a green
    CI run.
 
 ## Code style
 
-- TypeScript everywhere.  Avoid `any` outside of narrowly-scoped
+- TypeScript everywhere. Avoid `any` outside of narrowly-scoped
   type assertions.
 - Use the workspace `zod` package for runtime validation at every
   trust boundary (HTTP request, queue message, etc.).
@@ -88,7 +88,7 @@ pnpm run dev
 - Unit + integration tests use Vitest (`pnpm run test`).
 - E2E tests use Playwright (`pnpm run test:e2e`).
 - The coverage gate is enforced in CI: 60% statements / 60%
-  branches / 60% functions / 55% lines.  Add or update tests with
+  branches / 60% functions / 55% lines. Add or update tests with
   every behavioral change.
 
 ## Pull request checklist

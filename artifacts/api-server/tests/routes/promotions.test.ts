@@ -31,7 +31,8 @@ describe("Promotions routes", () => {
   });
 
   it("PATCH /promotions/:id updates a promotion", async () => {
-    const [p] = seedTable("promotions", [{ userId: 1, id: 10, name: "Old", discountPercent: 10 },
+    const [p] = seedTable("promotions", [
+      { userId: 1, id: 10, name: "Old", discountPercent: 10 },
     ]);
     const res = await authedRequest(app)
       .patch(`/promotions/${p.id}`)

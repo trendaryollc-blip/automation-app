@@ -1,6 +1,6 @@
 # Status Page
 
-This is a **template** for the DropFlow public status page.  Once
+This is a **template** for the DropFlow public status page. Once
 you've chosen a status-page provider (Atlassian Statuspage, Better
 Stack, Instatus, Hyperping, or a self-hosted alternative like
 Cachet), copy this content into the relevant fields and adjust the
@@ -34,7 +34,7 @@ internal monitoring, …):
 
 - `GET https://app.dropflow.com/api/healthz` — liveness (200 = up).
 - `GET https://app.dropflow.com/api/readyz` — readiness (200 = ready,
-  503 = degraded).  Includes a database round-trip.
+  503 = degraded). Includes a database round-trip.
 
 ## Incident communication policy
 
@@ -61,7 +61,7 @@ falling back to the in-process log sender).
 ## Runbook (internal)
 
 The internal incident runbook lives at `runbook/INCIDENTS.md` (not
-checked in).  It includes:
+checked in). It includes:
 
 - Who is on-call (PagerDuty rotation).
 - How to acknowledge an alert.

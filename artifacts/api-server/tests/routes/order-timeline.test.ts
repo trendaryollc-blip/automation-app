@@ -13,18 +13,20 @@ vi.mock("@workspace/db", () => {
 describe("Order Timeline routes", () => {
   beforeEach(() => {
     resetDb();
-  // Test-only auth setup: seed a default user so requireAuth() accepts
-  // requests.  This pattern is shared by every test in this folder;
-  // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
-  seedTable("users", [{ userId: 1,
-      id: 1,
-      email: "test@example.com",
-      passwordHash: "x",
-      name: "Test",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ]);
+    // Test-only auth setup: seed a default user so requireAuth() accepts
+    // requests.  This pattern is shared by every test in this folder;
+    // the row matches the FakeUser in tests/helpers.ts and lib/db/src/test-utils.ts.
+    seedTable("users", [
+      {
+        userId: 1,
+        id: 1,
+        email: "test@example.com",
+        passwordHash: "x",
+        name: "Test",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
   });
 
   it("GET /orders/:id/timeline returns empty for unknown order", async () => {
@@ -49,7 +51,14 @@ describe("Order Timeline routes", () => {
   });
 
   it("GET /orders/:id/timeline returns events for an order", async () => {
-    seedTable("order_timeline", [{ userId: 1, id: 1, orderId: 3, status: "confirmed", note: "Order confirmed" },
+    seedTable("order_timeline", [
+      {
+        userId: 1,
+        id: 1,
+        orderId: 3,
+        status: "confirmed",
+        note: "Order confirmed",
+      },
       { id: 2, orderId: 3, status: "shipped", note: "Shipped out" },
     ]);
 

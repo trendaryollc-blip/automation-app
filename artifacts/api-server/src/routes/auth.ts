@@ -294,9 +294,15 @@ async function sendVerificationEmail(
       `all features. The link is valid for 24 hours.`,
     ctaLabel: "Verify email",
     ctaUrl: url,
-    footer: "If you didn't create this account, you can safely ignore this email.",
+    footer:
+      "If you didn't create this account, you can safely ignore this email.",
   });
-  await sendEmail({ to: user.email, subject: "Verify your DropFlow email", text, html });
+  await sendEmail({
+    to: user.email,
+    subject: "Verify your DropFlow email",
+    text,
+    html,
+  });
 }
 
 router.post("/auth/verify-email", async (req, res): Promise<void> => {
@@ -333,33 +339,40 @@ router.post("/auth/verify-email", async (req, res): Promise<void> => {
     })
     .where(eq(usersTable.id, user.id));
 
-  res.json({ ok: true, user: publicUser({ ...user, emailVerifiedAt: new Date() }) });
+  res.json({
+    ok: true,
+    user: publicUser({ ...user, emailVerifiedAt: new Date() }),
+  });
 });
 
-router.post("/auth/resend-verify", requireAuth, async (req, res): Promise<void> => {
-  const u = currentUser(req);
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.id, u.id))
-    .limit(1);
-  if (!user) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-  if (user.emailVerifiedAt) {
-    res.json({ ok: true, message: "Email already verified" });
-    return;
-  }
-  try {
-    await sendVerificationEmail(user);
-  } catch (err) {
-    logger.error({ err, userId: user.id }, "resend-verify failed");
-    res.status(500).json({ error: "Failed to send verification email" });
-    return;
-  }
-  res.json({ ok: true });
-});
+router.post(
+  "/auth/resend-verify",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const u = currentUser(req);
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, u.id))
+      .limit(1);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    if (user.emailVerifiedAt) {
+      res.json({ ok: true, message: "Email already verified" });
+      return;
+    }
+    try {
+      await sendVerificationEmail(user);
+    } catch (err) {
+      logger.error({ err, userId: user.id }, "resend-verify failed");
+      res.status(500).json({ error: "Failed to send verification email" });
+      return;
+    }
+    res.json({ ok: true });
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Password reset
@@ -538,33 +551,40 @@ router.delete("/auth/account", requireAuth, async (req, res): Promise<void> => {
   res.status(204).end();
 });
 
-router.get("/auth/data-export", requireAuth, async (req, res): Promise<void> => {
-  const u = currentUser(req);
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.id, u.id))
-    .limit(1);
-  if (!user) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-  const exportData: Record<string, unknown> = {
-    exportedAt: new Date().toISOString(),
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      createdAt: user.createdAt,
-      emailVerifiedAt: user.emailVerifiedAt,
-    },
-  };
-  // Note: full data export across all owned tables is a heavier
-  // operation; we provide a starter shape here.  Production deployments
-  // should expand this with the actual records (or hand-roll a
-  // background job for very large tenants).
-  res.setHeader("Content-Disposition", 'attachment; filename="dropflow-data.json"');
-  res.json(exportData);
-});
+router.get(
+  "/auth/data-export",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const u = currentUser(req);
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, u.id))
+      .limit(1);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    const exportData: Record<string, unknown> = {
+      exportedAt: new Date().toISOString(),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        createdAt: user.createdAt,
+        emailVerifiedAt: user.emailVerifiedAt,
+      },
+    };
+    // Note: full data export across all owned tables is a heavier
+    // operation; we provide a starter shape here.  Production deployments
+    // should expand this with the actual records (or hand-roll a
+    // background job for very large tenants).
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="dropflow-data.json"',
+    );
+    res.json(exportData);
+  },
+);
 
 export default router;

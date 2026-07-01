@@ -86,7 +86,7 @@ export default function ProductFilters({
   }, []);
 
   const filteredSuggestions = AI_SUGGESTIONS.filter((s) =>
-    s.toLowerCase().includes(search.toLowerCase())
+    s.toLowerCase().includes(search.toLowerCase()),
   );
 
   const activeFilters = [
@@ -149,7 +149,10 @@ export default function ProductFilters({
                 {AI_SUGGESTIONS.map((s) => (
                   <button
                     key={s}
-                    onClick={() => { setSearch(s); setShowSuggestions(false); }}
+                    onClick={() => {
+                      setSearch(s);
+                      setShowSuggestions(false);
+                    }}
                     className="w-full text-left px-2 py-1.5 rounded-md text-xs text-muted-foreground
                       hover:bg-white/[0.05] hover:text-foreground transition-colors flex items-center gap-2"
                   >
@@ -171,7 +174,9 @@ export default function ProductFilters({
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
             {SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Sort"}
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSortDropdown ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`w-3.5 h-3.5 transition-transform ${showSortDropdown ? "rotate-180" : ""}`}
+            />
           </button>
 
           <AnimatePresence>
@@ -185,7 +190,10 @@ export default function ProductFilters({
                 {SORT_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
-                    onClick={() => { setSortBy(opt.value); setShowSortDropdown(false); }}
+                    onClick={() => {
+                      setSortBy(opt.value);
+                      setShowSortDropdown(false);
+                    }}
                     className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors ${
                       sortBy === opt.value
                         ? "bg-blue-500/15 text-blue-400"
@@ -253,7 +261,10 @@ export default function ProductFilters({
               </motion.span>
             ))}
             <button
-              onClick={() => { setSelectedCategory("All"); setSelectedMargin(0); }}
+              onClick={() => {
+                setSelectedCategory("All");
+                setSelectedMargin(0);
+              }}
               className="text-[10px] text-muted-foreground hover:text-foreground underline transition-colors"
             >
               Clear all

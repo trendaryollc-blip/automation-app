@@ -120,7 +120,10 @@ router.patch("/launches/:id", async (req, res): Promise<void> => {
   }
   const user = currentUser(req);
   const { targetLaunchDate, ...rest } = parsed.data;
-  const updateData: Record<string, unknown> = { ...rest, updatedAt: new Date() };
+  const updateData: Record<string, unknown> = {
+    ...rest,
+    updatedAt: new Date(),
+  };
   if (targetLaunchDate !== undefined) {
     updateData.targetLaunchDate =
       targetLaunchDate != null ? new Date(targetLaunchDate) : null;
@@ -129,7 +132,10 @@ router.patch("/launches/:id", async (req, res): Promise<void> => {
     .update(launchesTable)
     .set(updateData)
     .where(
-      and(eq(launchesTable.id, params.data.id), eq(launchesTable.userId, user.id)),
+      and(
+        eq(launchesTable.id, params.data.id),
+        eq(launchesTable.userId, user.id),
+      ),
     )
     .returning();
   if (!updated) {
@@ -149,7 +155,10 @@ router.delete("/launches/:id", async (req, res): Promise<void> => {
   await db
     .delete(launchesTable)
     .where(
-      and(eq(launchesTable.id, params.data.id), eq(launchesTable.userId, user.id)),
+      and(
+        eq(launchesTable.id, params.data.id),
+        eq(launchesTable.userId, user.id),
+      ),
     );
   res.json({ success: true });
 });

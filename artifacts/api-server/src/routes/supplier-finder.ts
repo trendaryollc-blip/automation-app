@@ -63,11 +63,23 @@ const SOURCING_TIPS: Record<string, string[]> = {
 
 function detectCategory(name: string): string {
   const n = name.toLowerCase();
-  if (/phone|laptop|charge|cable|usb|gadget|electronic|watch|earbud|speaker|tech/.test(n))
+  if (
+    /phone|laptop|charge|cable|usb|gadget|electronic|watch|earbud|speaker|tech/.test(
+      n,
+    )
+  )
     return "tech";
-  if (/health|fitness|gym|yoga|posture|muscle|vitamin|workout|exercise|belt|corrector/.test(n))
+  if (
+    /health|fitness|gym|yoga|posture|muscle|vitamin|workout|exercise|belt|corrector/.test(
+      n,
+    )
+  )
     return "health";
-  if (/home|decor|light|candle|plant|organiz|storage|bedroom|living|desk|lamp/.test(n))
+  if (
+    /home|decor|light|candle|plant|organiz|storage|bedroom|living|desk|lamp/.test(
+      n,
+    )
+  )
     return "home";
   if (/cook|food|blender|coffee|cup|mug|bottle|tumbler|meal|kitchen/.test(n))
     return "kitchen";
@@ -117,7 +129,10 @@ router.post("/suppliers/find", async (req, res): Promise<void> => {
           ? 5
           : 0;
     const jitter = Math.round(rand() * 10);
-    const matchScore = Math.min(99, baseScore + countryBonus + shippingBonus + jitter);
+    const matchScore = Math.min(
+      99,
+      baseScore + countryBonus + shippingBonus + jitter,
+    );
 
     const baseCost = targetCostPrice
       ? targetCostPrice * (0.85 + rand() * 0.3)
@@ -170,8 +185,7 @@ router.post("/suppliers/find", async (req, res): Promise<void> => {
     .values({
       userId: user.id,
       productName: productName.trim(),
-      targetCostPrice:
-        targetCostPrice != null ? String(targetCostPrice) : null,
+      targetCostPrice: targetCostPrice != null ? String(targetCostPrice) : null,
       preferredCountry: preferredCountry ?? null,
       topPick,
       matches,

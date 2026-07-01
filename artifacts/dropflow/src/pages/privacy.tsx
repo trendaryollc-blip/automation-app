@@ -22,23 +22,22 @@ export default function Privacy() {
         </p>
 
         <Section title="1. What we collect">
-          We collect account information (email, name), data you submit
-          through the Service (products, orders, suppliers, etc.), and basic
-          technical data (IP address, user agent) for security and abuse
-          prevention.
+          We collect account information (email, name), data you submit through
+          the Service (products, orders, suppliers, etc.), and basic technical
+          data (IP address, user agent) for security and abuse prevention.
         </Section>
 
         <Section title="2. How we use it">
           We use this information to provide and improve the Service, to
-          authenticate you, to prevent abuse, and to communicate with you
-          about your account.
+          authenticate you, to prevent abuse, and to communicate with you about
+          your account.
         </Section>
 
         <Section title="3. Sharing">
-          We do not sell your data. We share it only with: (a) service
-          providers who help us operate the Service (hosting, email, error
-          monitoring), (b) legal authorities when required, or (c) a buyer
-          in a merger or acquisition (with notice).
+          We do not sell your data. We share it only with: (a) service providers
+          who help us operate the Service (hosting, email, error monitoring),
+          (b) legal authorities when required, or (c) a buyer in a merger or
+          acquisition (with notice).
         </Section>
 
         <Section title="4. Cookies">
@@ -48,33 +47,33 @@ export default function Privacy() {
 
         <Section title="5. Data retention">
           We keep your data for as long as your account is active. You can
-          delete your account at any time from Settings, and we will erase
-          your data within 30 days (subject to legal retention obligations).
+          delete your account at any time from Settings, and we will erase your
+          data within 30 days (subject to legal retention obligations).
         </Section>
 
         <Section title="6. Your rights (GDPR / CCPA)">
-          You have the right to access, correct, port, and delete your data.
-          Use Settings → Account to export or delete your data, or email
+          You have the right to access, correct, port, and delete your data. Use
+          Settings → Account to export or delete your data, or email
           privacy@dropflow.com.
         </Section>
 
         <Section title="7. Security">
           We use industry-standard safeguards including TLS in transit,
           bcrypt-hashed passwords, hashed password-reset tokens, and
-          rate-limited authentication endpoints.  No system is 100% secure;
+          rate-limited authentication endpoints. No system is 100% secure;
           please use a strong, unique password.
         </Section>
 
         <Section title="8. International transfers">
           Data may be processed in the United States or the European Union
-          depending on the hosting region you select. By using the Service
-          you understand your data may be transferred to and processed in
-          these locations.
+          depending on the hosting region you select. By using the Service you
+          understand your data may be transferred to and processed in these
+          locations.
         </Section>
 
         <Section title="9. Children">
-          The Service is not intended for children under 16. We do not
-          knowingly collect data from children.
+          The Service is not intended for children under 16. We do not knowingly
+          collect data from children.
         </Section>
 
         <Section title="10. Changes">

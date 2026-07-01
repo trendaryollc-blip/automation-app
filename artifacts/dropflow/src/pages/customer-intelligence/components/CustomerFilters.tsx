@@ -13,7 +13,15 @@ import {
   Activity,
 } from "lucide-react";
 
-const REGIONS = ["All", "North America", "Europe", "Asia", "South America", "Africa", "Oceania"];
+const REGIONS = [
+  "All",
+  "North America",
+  "Europe",
+  "Asia",
+  "South America",
+  "Africa",
+  "Oceania",
+];
 
 const SPEND_RANGES = [
   { label: "All Spend", min: 0, max: 100000 },
@@ -84,7 +92,7 @@ export default function CustomerFilters({
   }, []);
 
   const filteredSuggestions = AI_SUGGESTIONS.filter((s) =>
-    s.toLowerCase().includes(search.toLowerCase())
+    s.toLowerCase().includes(search.toLowerCase()),
   );
 
   const activeFilters = [

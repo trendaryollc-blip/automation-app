@@ -13,9 +13,7 @@ import { createHmac } from "node:crypto";
 export const TEST_JWT_SECRET =
   process.env["JWT_SECRET"] ||
   // Dev fallback mirrors src/lib/auth.ts so tests behave the same.
-  createHmac("sha256", "")
-    .update("dropflow-test-secret")
-    .digest("hex");
+  createHmac("sha256", "").update("dropflow-test-secret").digest("hex");
 
 export interface FakeUser {
   id: number;
@@ -31,8 +29,7 @@ export function makeFakeUser(overrides: Partial<FakeUser> = {}): FakeUser {
     id: 1,
     email: "test@example.com",
     name: "Test User",
-    passwordHash:
-      "$2a$12$invalid.hash.placeholder.value.xxxxxxxxxxxxxx",
+    passwordHash: "$2a$12$invalid.hash.placeholder.value.xxxxxxxxxxxxxx",
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

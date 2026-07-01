@@ -112,7 +112,10 @@ router.patch("/ad-campaigns/:id", async (req, res): Promise<void> => {
     return;
   }
   const user = currentUser(req);
-  const updateData: Record<string, unknown> = { ...parsed.data, updatedAt: new Date() };
+  const updateData: Record<string, unknown> = {
+    ...parsed.data,
+    updatedAt: new Date(),
+  };
   if (parsed.data.spend !== undefined) {
     updateData.spend = String(parsed.data.spend);
   }
@@ -169,23 +172,11 @@ router.get("/ad-campaigns/stats", async (req, res): Promise<void> => {
     .from(adCampaignsTable)
     .where(eq(adCampaignsTable.userId, user.id));
 
-  const totalSpend = all.reduce(
-    (s, c) => s + Number(c.spend ?? 0),
-    0,
-  );
-  const totalRevenue = all.reduce(
-    (s, c) => s + Number(c.revenue ?? 0),
-    0,
-  );
-  const totalImpressions = all.reduce(
-    (s, c) => s + (c.impressions ?? 0),
-    0,
-  );
+  const totalSpend = all.reduce((s, c) => s + Number(c.spend ?? 0), 0);
+  const totalRevenue = all.reduce((s, c) => s + Number(c.revenue ?? 0), 0);
+  const totalImpressions = all.reduce((s, c) => s + (c.impressions ?? 0), 0);
   const totalClicks = all.reduce((s, c) => s + (c.clicks ?? 0), 0);
-  const totalConversions = all.reduce(
-    (s, c) => s + (c.conversions ?? 0),
-    0,
-  );
+  const totalConversions = all.reduce((s, c) => s + (c.conversions ?? 0), 0);
   const roas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
   const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
   const cpc = totalClicks > 0 ? totalSpend / totalClicks : 0;

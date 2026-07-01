@@ -219,7 +219,7 @@ function detectCategory(query: string): string {
 function buildFallback(query: string): ReportData {
   const cat = detectCategory(query);
   const seed = [...query].reduce((s, c) => s + c.charCodeAt(0), 0);
-  const rng = ((n: number) => (n * 9301 + 49297) % 233280 / 233280);
+  const rng = (n: number) => ((n * 9301 + 49297) % 233280) / 233280;
   const r = rng(seed);
   const demandScore = Math.round(40 + r * 55);
   const compRoll = rng(seed + 1);
@@ -237,7 +237,15 @@ function buildFallback(query: string): ReportData {
     .slice(0, 4)
     .map((name, i) => ({ name, score: Math.round(60 + rng(seed + i) * 35) }))
     .sort((a, b) => b.score - a.score);
-  const verdictScore = demandScore + (competitionLevel === "low" ? 20 : competitionLevel === "medium" ? 10 : competitionLevel === "high" ? -10 : -20);
+  const verdictScore =
+    demandScore +
+    (competitionLevel === "low"
+      ? 20
+      : competitionLevel === "medium"
+        ? 10
+        : competitionLevel === "high"
+          ? -10
+          : -20);
   const verdict: Verdict =
     verdictScore >= 80
       ? "strong-buy"

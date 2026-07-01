@@ -91,13 +91,18 @@ router.patch("/promotions/:id", async (req, res): Promise<void> => {
     return;
   }
   const user = currentUser(req);
-  const updateData: Record<string, unknown> = { ...parsed.data, updatedAt: new Date() };
+  const updateData: Record<string, unknown> = {
+    ...parsed.data,
+    updatedAt: new Date(),
+  };
   if (parsed.data.value !== undefined) {
     updateData.value = String(parsed.data.value);
   }
   if (parsed.data.revenueImpact !== undefined) {
     updateData.revenueImpact =
-      parsed.data.revenueImpact != null ? String(parsed.data.revenueImpact) : null;
+      parsed.data.revenueImpact != null
+        ? String(parsed.data.revenueImpact)
+        : null;
   }
   if (parsed.data.startDate !== undefined) {
     updateData.startDate =

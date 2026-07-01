@@ -22,7 +22,8 @@ describe("Reports", () => {
   });
 
   it("GET /reports/pl returns P&L data", async () => {
-    seedTable("orders", [{ userId: 1, status: "paid", sellPrice: "100", costPrice: "40" },
+    seedTable("orders", [
+      { userId: 1, status: "paid", sellPrice: "100", costPrice: "40" },
     ]);
     const res = await authedRequest(app).get(
       "/reports/pl?from=2020-01-01&to=2030-01-01",

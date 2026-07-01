@@ -66,7 +66,12 @@ app.use(
   cors({
     origin: parseOrigins(),
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-DropFlow-Key", "X-DropFlow-Signature"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-DropFlow-Key",
+      "X-DropFlow-Signature",
+    ],
     credentials: true,
     maxAge: 86400,
   }),

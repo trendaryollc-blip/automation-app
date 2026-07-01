@@ -26,7 +26,11 @@ const PROVIDERS = [
   { id: "groq", label: "Groq", defaultModel: "llama-3.3-70b-versatile" },
   { id: "mistral", label: "Mistral AI", defaultModel: "mistral-small-latest" },
   { id: "deepseek", label: "DeepSeek", defaultModel: "deepseek-chat" },
-  { id: "openrouter", label: "OpenRouter", defaultModel: "mistralai/mistral-7b-instruct:free" },
+  {
+    id: "openrouter",
+    label: "OpenRouter",
+    defaultModel: "mistralai/mistral-7b-instruct:free",
+  },
   { id: "cohere", label: "Cohere", defaultModel: "command-r" },
   { id: "serpapi", label: "SerpAPI", defaultModel: null },
 ] as const;
@@ -153,7 +157,9 @@ router.post("/ai-settings/test/:provider", async (req, res): Promise<void> => {
     .limit(1);
 
   if (!row) {
-    res.status(404).json({ ok: false, error: "No key saved for this provider" });
+    res
+      .status(404)
+      .json({ ok: false, error: "No key saved for this provider" });
     return;
   }
 

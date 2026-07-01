@@ -17,12 +17,15 @@ describe("Suppliers", () => {
   beforeEach(() => resetDb());
 
   it("GET /suppliers returns empty", async () => {
-    const res = await authedRequest(express().use(suppliersRouter)).get("/suppliers");
+    const res = await authedRequest(express().use(suppliersRouter)).get(
+      "/suppliers",
+    );
     expect(res.body).toEqual([]);
   });
 
   it("GET /suppliers filters by country", async () => {
-    seedTable("suppliers", [{ userId: 1, name: "A", country: "China" },
+    seedTable("suppliers", [
+      { userId: 1, name: "A", country: "China" },
       { name: "B", country: "USA" },
     ]);
     const res = await authedRequest(express().use(suppliersRouter)).get(

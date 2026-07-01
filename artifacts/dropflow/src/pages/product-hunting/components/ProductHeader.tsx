@@ -10,7 +10,8 @@ export default function ProductHeader() {
       className="relative overflow-hidden rounded-2xl"
       style={{
         background: "linear-gradient(135deg, #3B82F6, #8B5CF6)",
-        boxShadow: "0 0 30px rgba(139, 92, 246, 0.3), 0 0 60px rgba(59, 130, 246, 0.15)",
+        boxShadow:
+          "0 0 30px rgba(139, 92, 246, 0.3), 0 0 60px rgba(59, 130, 246, 0.15)",
       }}
     >
       {/* Animated background orbs */}

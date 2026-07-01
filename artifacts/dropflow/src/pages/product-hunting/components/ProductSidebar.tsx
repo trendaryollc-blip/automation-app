@@ -27,10 +27,30 @@ const TRENDING = [
 
 /* ─── Supplier Performance Data ─── */
 const SUPPLIERS = [
-  { name: "TechSource CN", reliability: 96, delivery: "3-5 days", status: "excellent" },
-  { name: "BeautyDrop Co", reliability: 92, delivery: "4-6 days", status: "excellent" },
-  { name: "SmartHome Ltd", reliability: 88, delivery: "5-7 days", status: "good" },
-  { name: "GadgetWorld", reliability: 78, delivery: "6-8 days", status: "fair" },
+  {
+    name: "TechSource CN",
+    reliability: 96,
+    delivery: "3-5 days",
+    status: "excellent",
+  },
+  {
+    name: "BeautyDrop Co",
+    reliability: 92,
+    delivery: "4-6 days",
+    status: "excellent",
+  },
+  {
+    name: "SmartHome Ltd",
+    reliability: 88,
+    delivery: "5-7 days",
+    status: "good",
+  },
+  {
+    name: "GadgetWorld",
+    reliability: 78,
+    delivery: "6-8 days",
+    status: "fair",
+  },
 ];
 
 /* ─── AI Recommendations ─── */
@@ -89,7 +109,9 @@ export default function ProductSidebar() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">Trending Products</h3>
-            <p className="text-[10px] text-muted-foreground">Top 5 by virality score</p>
+            <p className="text-[10px] text-muted-foreground">
+              Top 5 by virality score
+            </p>
           </div>
         </div>
 
@@ -109,13 +131,17 @@ export default function ProductSidebar() {
                   <span className="text-[10px] text-emerald-400 font-mono font-semibold">
                     {item.profit}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">profit</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    profit
+                  </span>
                 </div>
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-0.5">
                   <TrendingUp className="w-2.5 h-2.5 text-red-400" />
-                  <span className="text-[10px] font-mono font-bold text-red-400">{item.score}</span>
+                  <span className="text-[10px] font-mono font-bold text-red-400">
+                    {item.score}
+                  </span>
                 </div>
               </div>
               <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -137,7 +163,9 @@ export default function ProductSidebar() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">Supplier Performance</h3>
-            <p className="text-[10px] text-muted-foreground">Reliability & delivery speed</p>
+            <p className="text-[10px] text-muted-foreground">
+              Reliability & delivery speed
+            </p>
           </div>
         </div>
 
@@ -152,13 +180,15 @@ export default function ProductSidebar() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium">{sup.name}</span>
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                  sup.status === "excellent"
-                    ? "bg-emerald-500/15 text-emerald-400"
-                    : sup.status === "good"
-                      ? "bg-blue-500/15 text-blue-400"
-                      : "bg-amber-500/15 text-amber-400"
-                }`}>
+                <span
+                  className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                    sup.status === "excellent"
+                      ? "bg-emerald-500/15 text-emerald-400"
+                      : sup.status === "good"
+                        ? "bg-blue-500/15 text-blue-400"
+                        : "bg-amber-500/15 text-amber-400"
+                  }`}
+                >
                   {sup.reliability}%
                 </span>
               </div>
@@ -194,7 +224,9 @@ export default function ProductSidebar() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">AI Recommendations</h3>
-            <p className="text-[10px] text-muted-foreground">Suggested products to research</p>
+            <p className="text-[10px] text-muted-foreground">
+              Suggested products to research
+            </p>
           </div>
         </div>
 
@@ -212,8 +244,12 @@ export default function ProductSidebar() {
                   {rec.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold leading-tight">{rec.title}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">{rec.reason}</p>
+                  <p className="text-xs font-semibold leading-tight">
+                    {rec.title}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
+                    {rec.reason}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 mt-2">
@@ -222,14 +258,18 @@ export default function ProductSidebar() {
                   <span className="text-[10px] font-mono font-semibold text-violet-400">
                     {rec.confidence}%
                   </span>
-                  <span className="text-[10px] text-muted-foreground">confidence</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    confidence
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <DollarSign className="w-2.5 h-2.5 text-emerald-400" />
                   <span className="text-[10px] font-mono font-semibold text-emerald-400">
                     {rec.estimatedMargin}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">margin</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    margin
+                  </span>
                 </div>
               </div>
             </motion.div>

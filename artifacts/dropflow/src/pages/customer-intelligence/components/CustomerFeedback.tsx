@@ -183,14 +183,23 @@ export default function CustomerFeedback() {
           <p className="text-[10px] text-muted-foreground mb-1">NPS Trend</p>
           <div className="flex items-end gap-1 h-12">
             {NPS_HISTORY.map((d, i) => (
-              <div key={d.month} className="flex-1 flex flex-col items-center gap-0.5">
+              <div
+                key={d.month}
+                className="flex-1 flex flex-col items-center gap-0.5"
+              >
                 <motion.div
                   initial={{ height: 0 }}
                   animate={{ height: `${d.score}%` }}
-                  transition={{ delay: 1 + i * 0.1, duration: 0.6, ease: "easeOut" }}
+                  transition={{
+                    delay: 1 + i * 0.1,
+                    duration: 0.6,
+                    ease: "easeOut",
+                  }}
                   className="w-full rounded-t bg-gradient-to-t from-blue-500/40 to-blue-500/80 min-h-[4px]"
                 />
-                <span className="text-[8px] text-muted-foreground">{d.month}</span>
+                <span className="text-[8px] text-muted-foreground">
+                  {d.month}
+                </span>
               </div>
             ))}
           </div>
@@ -237,7 +246,11 @@ export default function CustomerFeedback() {
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${item.pct}%` }}
-                    transition={{ delay: 1.2 + idx * 0.08, duration: 1, ease: "easeOut" }}
+                    transition={{
+                      delay: 1.2 + idx * 0.08,
+                      duration: 1,
+                      ease: "easeOut",
+                    }}
                     className="h-full rounded-full"
                     style={{ background: item.color }}
                   />
@@ -272,7 +285,9 @@ export default function CustomerFeedback() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">Recent Reviews</h3>
-            <p className="text-[10px] text-muted-foreground">Customer feedback</p>
+            <p className="text-[10px] text-muted-foreground">
+              Customer feedback
+            </p>
           </div>
         </div>
 
@@ -291,7 +306,9 @@ export default function CustomerFeedback() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-medium truncate">{review.name}</p>
+                    <p className="text-xs font-medium truncate">
+                      {review.name}
+                    </p>
                     <div className="flex items-center gap-0.5 shrink-0">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star

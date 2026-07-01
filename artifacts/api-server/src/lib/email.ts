@@ -52,10 +52,7 @@ async function sendViaLog(msg: EmailMessage): Promise<EmailResult> {
     },
     "[email:log] would send email",
   );
-  logger.debug(
-    { body: msg.text, html: msg.html },
-    "[email:log] email body",
-  );
+  logger.debug({ body: msg.text, html: msg.html }, "[email:log] email body");
   return { ok: true, id: "log:" + Date.now().toString(36) };
 }
 

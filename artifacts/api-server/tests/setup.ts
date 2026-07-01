@@ -4,8 +4,7 @@ import { beforeEach, vi } from "vitest";
 // helpers match the ones verified by the real auth middleware in
 // src/middlewares/auth.ts (which falls back to TEST_JWT_SECRET when
 // JWT_SECRET is unset).
-process.env["JWT_SECRET"] =
-  "ci-jwt-secret-must-be-32-chars-long-please";
+process.env["JWT_SECRET"] = "ci-jwt-secret-must-be-32-chars-long-please";
 
 beforeEach(() => {
   vi.restoreAllMocks();
